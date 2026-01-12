@@ -3,23 +3,13 @@
  * Handles API requests with proper base URL for both dev and production
  */
 
-const getApiBaseUrl = () => {
-  // In production, use environment variable or fallback to relative path
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-  
-  // In development, use Vite proxy (relative path)
-  if (import.meta.env.DEV) {
-    return '/api';
-  }
-  
-  // Production fallback - try to detect Railway URL or use relative
-  // This will work if frontend and backend are on same domain
-  return '/api';
-};
+import { API_BASE_URL, getApiUrl } from '../config/api';
 
-export const apiBaseUrl = getApiBaseUrl();
+// Export the hardcoded Railway URL
+export const apiBaseUrl = API_BASE_URL;
+
+// Helper to build full API URLs
+export { getApiUrl };
 
 /**
  * Make API request with proper error handling
