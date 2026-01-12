@@ -7,7 +7,6 @@ import ModalOverlay from '../../components/navigation/ModalOverlay';
 import { loyaltyService } from '../../services/loyalty/loyaltyService';
 import { formatPhoneForAPI } from '../../utils/iikoLoyaltyHelpers';
 import { getApiUrl } from '../../config/api';
-import { getApiUrl } from '../../config/api';
 
 const SignupPage = () => {
   const navigate = useNavigate();
