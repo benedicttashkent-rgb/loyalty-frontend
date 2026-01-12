@@ -136,11 +136,11 @@ const SignupPage = () => {
       const cleanPhone = getCleanPhone(formData.phone);
       
       // Call backend API to send OTP
-      // Using hardcoded Railway URL from config
       const apiUrl = getApiUrl('auth/send-otp');
       
       // Debug logging
       console.log('🔍 Sending OTP request:');
+      console.log('   VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET (using fallback)');
       console.log('   Full API URL:', apiUrl);
       console.log('   Phone:', cleanPhone);
       
@@ -200,6 +200,7 @@ const SignupPage = () => {
       const apiUrl = getApiUrl('auth/verify-otp');
       
       console.log('🔍 Verifying OTP:');
+      console.log('   VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET (using fallback)');
       console.log('   API URL:', apiUrl);
       
       const response = await fetch(apiUrl, {
@@ -223,6 +224,7 @@ const SignupPage = () => {
           const checkUrl = getApiUrl('customers/check');
           
           console.log('🔍 Checking customer:');
+          console.log('   VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET (using fallback)');
           console.log('   Check URL:', checkUrl);
           
           const customerResponse = await fetch(checkUrl, {
@@ -315,10 +317,10 @@ const SignupPage = () => {
       }
 
       // Register customer via backend API
-      // Build API URL using config
       const registerUrl = getApiUrl('customers/register');
       
       console.log('🔍 Registering customer:');
+      console.log('   VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET (using fallback)');
       console.log('   Register URL:', registerUrl);
       
       const response = await fetch(registerUrl, {
