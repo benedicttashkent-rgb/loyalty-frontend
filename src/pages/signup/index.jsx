@@ -204,9 +204,15 @@ const SignupPage = () => {
       // Get clean phone (998XXXXXXXXX)
       const cleanPhone = getCleanPhone(formData.phone);
       
-      const apiUrl = import.meta.env.VITE_API_BASE_URL 
-        ? `${import.meta.env.VITE_API_BASE_URL}/auth/verify-otp`
+      // Build API URL - VITE_API_BASE_URL should already include /api
+      const verifyApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const cleanVerifyApiBaseUrl = verifyApiBaseUrl.endsWith('/') ? verifyApiBaseUrl.slice(0, -1) : verifyApiBaseUrl;
+      const apiUrl = cleanVerifyApiBaseUrl 
+        ? `${cleanVerifyApiBaseUrl}/auth/verify-otp`
         : '/api/auth/verify-otp';
+      
+      console.log('🔍 Verifying OTP:');
+      console.log('   API URL:', apiUrl);
       
       const response = await fetch(apiUrl, {
         method: 'POST',
