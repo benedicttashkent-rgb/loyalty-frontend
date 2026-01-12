@@ -127,7 +127,11 @@ const SignupPage = () => {
       const cleanPhone = getCleanPhone(formData.phone);
       
       // Call backend API to send OTP
-      const response = await fetch('/api/auth/send-otp', {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL 
+        ? `${import.meta.env.VITE_API_BASE_URL}/auth/send-otp`
+        : '/api/auth/send-otp';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: cleanPhone }),
@@ -162,7 +166,11 @@ const SignupPage = () => {
       // Get clean phone (998XXXXXXXXX)
       const cleanPhone = getCleanPhone(formData.phone);
       
-      const response = await fetch('/api/auth/verify-otp', {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL 
+        ? `${import.meta.env.VITE_API_BASE_URL}/auth/verify-otp`
+        : '/api/auth/verify-otp';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -179,7 +187,11 @@ const SignupPage = () => {
         
         // Check if customer already exists (quick check - no iiko API call)
         try {
-          const customerResponse = await fetch('/api/customers/check', {
+          const checkUrl = import.meta.env.VITE_API_BASE_URL 
+            ? `${import.meta.env.VITE_API_BASE_URL}/customers/check`
+            : '/api/customers/check';
+          
+          const customerResponse = await fetch(checkUrl, {
             headers: {
               'Authorization': `Bearer ${data.token}`,
             },
@@ -269,7 +281,11 @@ const SignupPage = () => {
       }
 
       // Register customer via backend API
-      const response = await fetch('/api/customers/register', {
+      const registerUrl = import.meta.env.VITE_API_BASE_URL 
+        ? `${import.meta.env.VITE_API_BASE_URL}/customers/register`
+        : '/api/customers/register';
+      
+      const response = await fetch(registerUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
