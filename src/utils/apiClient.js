@@ -3,7 +3,7 @@
  * Handles API requests with proper base URL for both dev and production
  */
 
-import { API_BASE_URL, getApiUrl } from '../config/api';
+import API_BASE_URL, { getApiUrl } from '../config/api';
 
 // Export the hardcoded Railway URL
 export const apiBaseUrl = API_BASE_URL;

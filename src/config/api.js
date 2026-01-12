@@ -1,17 +1,13 @@
-// API Configuration
-// NUCLEAR OPTION: Hardcode the Railway URL
-// This will work IMMEDIATELY without any env var issues
+// src/config/api.js
+// НИЧЕГО СЛОЖНОГО - ПРОСТО КОНСТАНТА
 
-export const API_BASE_URL = 'https://web-production-9dbea.up.railway.app/api';
+const API_BASE_URL = 'https://web-production-9dbea.up.railway.app/api';
 
-// Helper function to build full API URL
-export const getApiUrl = (endpoint) => {
-  // Remove leading slash from endpoint if present
-  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-  // Remove trailing slash from base URL if present
-  const cleanBaseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
-  return `${cleanBaseUrl}/${cleanEndpoint}`;
+export const getApiUrl = (endpoint = '') => {
+  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  console.log('🔥 API URL:', url);
+  return url;
 };
 
-// Later you can change it back to:
-// export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://web-production-9dbea.up.railway.app/api';
+// Export default for easy import
+export default API_BASE_URL;
