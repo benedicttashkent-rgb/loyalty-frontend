@@ -145,6 +145,15 @@ const SignupPage = () => {
       // Call backend API to send OTP
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
       
+      // CRITICAL: In production, VITE_API_BASE_URL MUST be set
+      if (import.meta.env.PROD && !apiBaseUrl) {
+        const errorMsg = '❌ CRITICAL ERROR: VITE_API_BASE_URL is not set in production! Please set it in Vercel Environment Variables.';
+        console.error(errorMsg);
+        setErrors({ phone: 'Ошибка конфигурации. Пожалуйста, свяжитесь с поддержкой.' });
+        setIsLoading(false);
+        return;
+      }
+      
       // Remove trailing slash if present
       const cleanApiBaseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
       
@@ -154,9 +163,17 @@ const SignupPage = () => {
         // Use full Railway URL (should be like: https://...railway.app/api)
         apiUrl = `${cleanApiBaseUrl}/auth/send-otp`;
       } else {
-        // Fallback to relative path (will fail in production if not configured)
-        apiUrl = '/api/auth/send-otp';
-        console.warn('⚠️  VITE_API_BASE_URL is not set! Requests will fail in production.');
+        // Fallback to relative path (only works in development with Vite proxy)
+        if (import.meta.env.DEV) {
+          apiUrl = '/api/auth/send-otp';
+        } else {
+          // Production without VITE_API_BASE_URL - this should not happen
+          const errorMsg = '❌ CRITICAL: VITE_API_BASE_URL is not set in production!';
+          console.error(errorMsg);
+          setErrors({ phone: 'Ошибка конфигурации. Пожалуйста, свяжитесь с поддержкой.' });
+          setIsLoading(false);
+          return;
+        }
       }
       
       // Debug logging
