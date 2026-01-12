@@ -26,6 +26,22 @@ const SignupPage = () => {
   const [isTelegram, setIsTelegram] = useState(false);
   const [telegramUser, setTelegramUser] = useState(null);
 
+  // Debug: Log API URL on component mount
+  useEffect(() => {
+    console.log('🔍 Signup Page - Environment Check:');
+    console.log('   VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET ❌');
+    console.log('   MODE:', import.meta.env.MODE);
+    console.log('   DEV:', import.meta.env.DEV);
+    console.log('   PROD:', import.meta.env.PROD);
+    console.log('   All VITE vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
+    
+    if (!import.meta.env.VITE_API_BASE_URL) {
+      console.error('❌ CRITICAL: VITE_API_BASE_URL is not set!');
+      console.error('   Registration will fail in production.');
+      console.error('   Please set VITE_API_BASE_URL in Vercel Environment Variables.');
+    }
+  }, []);
+
   useEffect(() => {
     // Check if opened from Telegram
     if (window.Telegram?.WebApp) {
