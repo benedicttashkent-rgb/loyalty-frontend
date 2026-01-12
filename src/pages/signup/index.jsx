@@ -127,9 +127,16 @@ const SignupPage = () => {
       const cleanPhone = getCleanPhone(formData.phone);
       
       // Call backend API to send OTP
-      const apiUrl = import.meta.env.VITE_API_BASE_URL 
-        ? `${import.meta.env.VITE_API_BASE_URL}/auth/send-otp`
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const apiUrl = apiBaseUrl 
+        ? `${apiBaseUrl}${apiBaseUrl.endsWith('/') ? '' : '/'}auth/send-otp`
         : '/api/auth/send-otp';
+      
+      // Debug logging
+      console.log('🔍 Sending OTP request:');
+      console.log('   VITE_API_BASE_URL:', apiBaseUrl || 'NOT SET');
+      console.log('   Full API URL:', apiUrl);
+      console.log('   Phone:', cleanPhone);
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -137,7 +144,23 @@ const SignupPage = () => {
         body: JSON.stringify({ phone: cleanPhone }),
       });
 
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          setErrors({ phone: errorData.error || `Ошибка ${response.status}: ${errorText}` });
+        } catch {
+          setErrors({ phone: `Ошибка ${response.status}: ${errorText || 'Неизвестная ошибка'}` });
+        }
+        return;
+      }
+
       const data = await response.json();
+      console.log('✅ API Response:', data);
 
       if (data.success) {
         setOtpSent(true);
@@ -147,7 +170,8 @@ const SignupPage = () => {
         setErrors({ phone: data.error || 'Ошибка отправки SMS' });
       }
     } catch (error) {
-      setErrors({ phone: 'Ошибка соединения. Попробуйте позже.' });
+      console.error('❌ Network Error:', error);
+      setErrors({ phone: `Ошибка соединения: ${error.message}. Проверьте, что backend доступен.` });
     } finally {
       setIsLoading(false);
     }
