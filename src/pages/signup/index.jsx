@@ -132,10 +132,10 @@ const SignupPage = () => {
       // Remove trailing slash if present
       const cleanApiBaseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
       
-      // Build API URL
+      // Build API URL - VITE_API_BASE_URL should already include /api
       let apiUrl;
       if (cleanApiBaseUrl) {
-        // Use full Railway URL
+        // Use full Railway URL (should be like: https://...railway.app/api)
         apiUrl = `${cleanApiBaseUrl}/auth/send-otp`;
       } else {
         // Fallback to relative path (will fail in production if not configured)
@@ -150,6 +150,7 @@ const SignupPage = () => {
       console.log('   Full API URL:', apiUrl);
       console.log('   Phone:', cleanPhone);
       console.log('   Environment:', import.meta.env.MODE);
+      console.log('   All env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
       
       const response = await fetch(apiUrl, {
         method: 'POST',
