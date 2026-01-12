@@ -21,7 +21,7 @@
 - **Output Directory:** `build`
 
 ### Backend Repository
-- **GitHub URL:** `https://github.com/benedicttashkent-rgb/loyalty-backend.git`
+- **GitHub URL:** `https://github.com/azamoviich/loyaltyback.git`
 - **Local Path:** `d:\27\loyalty-backend`
 - **Framework:** Node.js + Express
 - **Entry Points:**
@@ -539,7 +539,7 @@ constructor() {
 
 ### Repositories
 - **Frontend:** https://github.com/benedicttashkent-rgb/loyalty-frontend.git
-- **Backend:** https://github.com/benedicttashkent-rgb/loyalty-backend.git
+- **Backend:** https://github.com/azamoviich/loyaltyback.git
 
 ### Critical Files
 - `src/config/api.js` - **CHANGE THIS IF RAILWAY URL CHANGES**
