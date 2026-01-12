@@ -231,9 +231,15 @@ const SignupPage = () => {
         
         // Check if customer already exists (quick check - no iiko API call)
         try {
-          const checkUrl = import.meta.env.VITE_API_BASE_URL 
-            ? `${import.meta.env.VITE_API_BASE_URL}/customers/check`
+          // Build API URL - VITE_API_BASE_URL should already include /api
+          const checkApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+          const cleanCheckApiBaseUrl = checkApiBaseUrl.endsWith('/') ? checkApiBaseUrl.slice(0, -1) : checkApiBaseUrl;
+          const checkUrl = cleanCheckApiBaseUrl 
+            ? `${cleanCheckApiBaseUrl}/customers/check`
             : '/api/customers/check';
+          
+          console.log('🔍 Checking customer:');
+          console.log('   Check URL:', checkUrl);
           
           const customerResponse = await fetch(checkUrl, {
             headers: {
@@ -325,9 +331,16 @@ const SignupPage = () => {
       }
 
       // Register customer via backend API
-      const registerUrl = import.meta.env.VITE_API_BASE_URL 
-        ? `${import.meta.env.VITE_API_BASE_URL}/customers/register`
+      // Build API URL - VITE_API_BASE_URL should already include /api
+      const registerApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+      const cleanRegisterApiBaseUrl = registerApiBaseUrl.endsWith('/') ? registerApiBaseUrl.slice(0, -1) : registerApiBaseUrl;
+      const registerUrl = cleanRegisterApiBaseUrl 
+        ? `${cleanRegisterApiBaseUrl}/customers/register`
         : '/api/customers/register';
+      
+      console.log('🔍 Registering customer:');
+      console.log('   VITE_API_BASE_URL:', registerApiBaseUrl || 'NOT SET ❌');
+      console.log('   Register URL:', registerUrl);
       
       const response = await fetch(registerUrl, {
         method: 'POST',
