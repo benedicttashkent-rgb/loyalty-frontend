@@ -7,6 +7,7 @@ import ModalOverlay from '../../components/navigation/ModalOverlay';
 import { loyaltyService } from '../../services/loyalty/loyaltyService';
 import { formatPhoneForAPI } from '../../utils/iikoLoyaltyHelpers';
 import { getApiUrl } from '../../config/api';
+import { getApiUrl } from '../../config/api';
 
 const SignupPage = () => {
   const navigate = useNavigate();
@@ -29,18 +30,9 @@ const SignupPage = () => {
 
   // Debug: Log API URL on component mount
   useEffect(() => {
-    console.log('🔍 Signup Page - Environment Check:');
-    console.log('   VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET ❌');
-    console.log('   MODE:', import.meta.env.MODE);
-    console.log('   DEV:', import.meta.env.DEV);
-    console.log('   PROD:', import.meta.env.PROD);
-    console.log('   All VITE vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
-    
-    if (!import.meta.env.VITE_API_BASE_URL) {
-      console.error('❌ CRITICAL: VITE_API_BASE_URL is not set!');
-      console.error('   Registration will fail in production.');
-      console.error('   Please set VITE_API_BASE_URL in Vercel Environment Variables.');
-    }
+    console.log('🔍 Signup Page - API Configuration:');
+    console.log('   Using hardcoded Railway URL from config');
+    console.log('   API Base URL:', getApiUrl(''));
   }, []);
 
   useEffect(() => {
@@ -144,47 +136,13 @@ const SignupPage = () => {
       const cleanPhone = getCleanPhone(formData.phone);
       
       // Call backend API to send OTP
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      
-      // CRITICAL: In production, VITE_API_BASE_URL MUST be set
-      if (import.meta.env.PROD && !apiBaseUrl) {
-        const errorMsg = '❌ CRITICAL ERROR: VITE_API_BASE_URL is not set in production! Please set it in Vercel Environment Variables.';
-        console.error(errorMsg);
-        setErrors({ phone: 'Ошибка конфигурации. Пожалуйста, свяжитесь с поддержкой.' });
-        setIsLoading(false);
-        return;
-      }
-      
-      // Remove trailing slash if present
-      const cleanApiBaseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
-      
-      // Build API URL - VITE_API_BASE_URL should already include /api
-      let apiUrl;
-      if (cleanApiBaseUrl) {
-        // Use full Railway URL (should be like: https://...railway.app/api)
-        apiUrl = `${cleanApiBaseUrl}/auth/send-otp`;
-      } else {
-        // Fallback to relative path (only works in development with Vite proxy)
-        if (import.meta.env.DEV) {
-          apiUrl = '/api/auth/send-otp';
-        } else {
-          // Production without VITE_API_BASE_URL - this should not happen
-          const errorMsg = '❌ CRITICAL: VITE_API_BASE_URL is not set in production!';
-          console.error(errorMsg);
-          setErrors({ phone: 'Ошибка конфигурации. Пожалуйста, свяжитесь с поддержкой.' });
-          setIsLoading(false);
-          return;
-        }
-      }
+      // Using hardcoded Railway URL from config
+      const apiUrl = getApiUrl('auth/send-otp');
       
       // Debug logging
       console.log('🔍 Sending OTP request:');
-      console.log('   VITE_API_BASE_URL:', apiBaseUrl || 'NOT SET ❌');
-      console.log('   Clean API Base URL:', cleanApiBaseUrl || 'NOT SET ❌');
       console.log('   Full API URL:', apiUrl);
       console.log('   Phone:', cleanPhone);
-      console.log('   Environment:', import.meta.env.MODE);
-      console.log('   All env vars:', Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -238,12 +196,8 @@ const SignupPage = () => {
       // Get clean phone (998XXXXXXXXX)
       const cleanPhone = getCleanPhone(formData.phone);
       
-      // Build API URL - VITE_API_BASE_URL should already include /api
-      const verifyApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      const cleanVerifyApiBaseUrl = verifyApiBaseUrl.endsWith('/') ? verifyApiBaseUrl.slice(0, -1) : verifyApiBaseUrl;
-      const apiUrl = cleanVerifyApiBaseUrl 
-        ? `${cleanVerifyApiBaseUrl}/auth/verify-otp`
-        : '/api/auth/verify-otp';
+      // Build API URL using config
+      const apiUrl = getApiUrl('auth/verify-otp');
       
       console.log('🔍 Verifying OTP:');
       console.log('   API URL:', apiUrl);
@@ -265,12 +219,8 @@ const SignupPage = () => {
         
         // Check if customer already exists (quick check - no iiko API call)
         try {
-          // Build API URL - VITE_API_BASE_URL should already include /api
-          const checkApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-          const cleanCheckApiBaseUrl = checkApiBaseUrl.endsWith('/') ? checkApiBaseUrl.slice(0, -1) : checkApiBaseUrl;
-          const checkUrl = cleanCheckApiBaseUrl 
-            ? `${cleanCheckApiBaseUrl}/customers/check`
-            : '/api/customers/check';
+          // Build API URL using config
+          const checkUrl = getApiUrl('customers/check');
           
           console.log('🔍 Checking customer:');
           console.log('   Check URL:', checkUrl);
@@ -365,15 +315,10 @@ const SignupPage = () => {
       }
 
       // Register customer via backend API
-      // Build API URL - VITE_API_BASE_URL should already include /api
-      const registerApiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      const cleanRegisterApiBaseUrl = registerApiBaseUrl.endsWith('/') ? registerApiBaseUrl.slice(0, -1) : registerApiBaseUrl;
-      const registerUrl = cleanRegisterApiBaseUrl 
-        ? `${cleanRegisterApiBaseUrl}/customers/register`
-        : '/api/customers/register';
+      // Build API URL using config
+      const registerUrl = getApiUrl('customers/register');
       
       console.log('🔍 Registering customer:');
-      console.log('   VITE_API_BASE_URL:', registerApiBaseUrl || 'NOT SET ❌');
       console.log('   Register URL:', registerUrl);
       
       const response = await fetch(registerUrl, {
