@@ -5,7 +5,7 @@
 
 import API_BASE_URL, { getApiUrl } from '../config/api';
 
-// Export the hardcoded Railway URL
+// Export the API base URL (uses VITE_API_BASE_URL or fallback)
 export const apiBaseUrl = API_BASE_URL;
 
 // Helper to build full API URLs

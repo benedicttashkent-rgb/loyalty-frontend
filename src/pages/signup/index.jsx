@@ -30,7 +30,8 @@ const SignupPage = () => {
   // Debug: Log API URL on component mount
   useEffect(() => {
     console.log('🔍 Signup Page - API Configuration:');
-    console.log('   Using hardcoded Railway URL from config');
+    console.log('   VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET');
+    console.log('   Environment:', import.meta.env.MODE);
     console.log('   API Base URL:', getApiUrl(''));
   }, []);
 

@@ -6,7 +6,7 @@ import API_BASE_URL from './api';
 
 export const restaurantConfig = {
   restaurantId: 'benedict-cafe',
-  apiBaseUrl: API_BASE_URL, // Using hardcoded Railway URL from api.js
+  apiBaseUrl: API_BASE_URL, // Uses VITE_API_BASE_URL or fallback from api.js
   branches: {
     mirabad: {
       id: 'mirabad',
