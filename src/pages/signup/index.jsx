@@ -128,15 +128,28 @@ const SignupPage = () => {
       
       // Call backend API to send OTP
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-      const apiUrl = apiBaseUrl 
-        ? `${apiBaseUrl}${apiBaseUrl.endsWith('/') ? '' : '/'}auth/send-otp`
-        : '/api/auth/send-otp';
+      
+      // Remove trailing slash if present
+      const cleanApiBaseUrl = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
+      
+      // Build API URL
+      let apiUrl;
+      if (cleanApiBaseUrl) {
+        // Use full Railway URL
+        apiUrl = `${cleanApiBaseUrl}/auth/send-otp`;
+      } else {
+        // Fallback to relative path (will fail in production if not configured)
+        apiUrl = '/api/auth/send-otp';
+        console.warn('⚠️  VITE_API_BASE_URL is not set! Requests will fail in production.');
+      }
       
       // Debug logging
       console.log('🔍 Sending OTP request:');
-      console.log('   VITE_API_BASE_URL:', apiBaseUrl || 'NOT SET');
+      console.log('   VITE_API_BASE_URL:', apiBaseUrl || 'NOT SET ❌');
+      console.log('   Clean API Base URL:', cleanApiBaseUrl || 'NOT SET ❌');
       console.log('   Full API URL:', apiUrl);
       console.log('   Phone:', cleanPhone);
+      console.log('   Environment:', import.meta.env.MODE);
       
       const response = await fetch(apiUrl, {
         method: 'POST',
