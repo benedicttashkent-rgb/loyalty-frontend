@@ -1,0 +1,138 @@
+import React, { useState } from 'react';
+import Icon from '../../../components/AppIcon';
+import AppImage from '../../../components/AppImage';
+import Button from '../../../components/ui/Button';
+import ModalOverlay from '../../../components/navigation/ModalOverlay';
+
+const BranchSelectionModal = ({ isOpen, onClose, onBranchSelect }) => {
+  const [selectedBranch, setSelectedBranch] = useState(null);
+
+  const branches = [
+  {
+    id: 'nukus',
+    name: 'Benedict Nukus',
+    address: 'г. Нукус, ул. Достлик, 15',
+    phone: '+998 61 222-33-44',
+    menuUrl: 'https://benedictnuk.myresto.online',
+    image: "https://images.unsplash.com/photo-1647969396278-93eae768c44c",
+    imageAlt: 'Modern café interior with comfortable seating area, warm lighting and contemporary design in Nukus branch',
+    workingHours: '08:00 - 22:00',
+    features: ['Wi-Fi', 'Парковка', 'Терраса']
+  },
+  {
+    id: 'mirabad',
+    name: 'Benedict Mirabad',
+    address: 'г. Ташкент, район Мирабад, ул. Шота Руставели, 25',
+    phone: '+998 71 333-44-55',
+    menuUrl: 'https://benedictmir.myresto.online',
+    image: "https://images.unsplash.com/photo-1620466093449-207a11cf5b72",
+    imageAlt: 'Elegant café space with wooden furniture, large windows and cozy atmosphere in Mirabad branch',
+    workingHours: '07:00 - 23:00',
+    features: ['Wi-Fi', 'Детская зона', 'Банкетный зал']
+  }];
+
+
+  const handleBranchClick = (branch) => {
+    setSelectedBranch(branch);
+  };
+
+  const handleConfirm = () => {
+    if (selectedBranch) {
+      onBranchSelect(selectedBranch);
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <ModalOverlay isOpen={isOpen} onClose={onClose}>
+      <div className="bg-card rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-card border-b border-border p-4 z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold text-foreground">Выберите филиал</h2>
+            <button
+              onClick={onClose}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted transition-smooth"
+              aria-label="Закрыть">
+
+              <Icon name="X" size={20} />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {branches?.map((branch) =>
+          <div
+            key={branch?.id}
+            onClick={() => handleBranchClick(branch)}
+            className={`rounded-2xl overflow-hidden border-2 cursor-pointer transition-all duration-200 ${
+            selectedBranch?.id === branch?.id ?
+            'border-accent shadow-lg scale-[1.02]' :
+            'border-border hover:border-accent/50'}`
+            }>
+
+              <div className="relative h-48">
+                <AppImage
+                src={branch?.image}
+                alt={branch?.imageAlt}
+                className="w-full h-full object-cover" />
+
+                {selectedBranch?.id === branch?.id &&
+              <div className="absolute top-3 right-3 bg-accent text-white rounded-full p-2">
+                    <Icon name="Check" size={20} />
+                  </div>
+              }
+              </div>
+
+              <div className="p-4 space-y-3">
+                <h3 className="text-lg font-bold text-foreground">{branch?.name}</h3>
+
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Icon name="MapPin" size={16} className="text-accent mt-1 flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground">{branch?.address}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Icon name="Phone" size={16} className="text-accent flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground">{branch?.phone}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Icon name="Clock" size={16} className="text-accent flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground">{branch?.workingHours}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {branch?.features?.map((feature, index) =>
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-muted rounded-full text-xs font-medium text-foreground">
+
+                      {feature}
+                    </span>
+                )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="sticky bottom-0 bg-card border-t border-border p-4">
+          <Button
+            variant="default"
+            fullWidth
+            onClick={handleConfirm}
+            disabled={!selectedBranch}>
+
+            Продолжить
+          </Button>
+        </div>
+      </div>
+    </ModalOverlay>);
+
+};
+
+export default BranchSelectionModal;

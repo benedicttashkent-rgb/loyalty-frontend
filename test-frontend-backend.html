@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend ↔ Backend Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-card h3 {
+            margin-top: 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Frontend ↔ Backend Connection Test</h1>
+    
+    <div class="test-card">
+        <h3>1. Health Check</h3>
+        <div id="health-status" class="status loading">Waiting...</div>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <pre id="health-result"></pre>
+    </div>
+
+    <div class="test-card">
+        <h3>2. Telegram Bot Info</h3>
+        <div id="telegram-status" class="status loading">Waiting...</div>
+        <button onclick="testTelegram()">Test Telegram Info</button>
+        <pre id="telegram-result"></pre>
+    </div>
+
+    <div class="test-card">
+        <h3>3. Send OTP (Test)</h3>
+        <div id="otp-status" class="status loading">Waiting...</div>
+        <input type="text" id="phone-input" placeholder="+998 90 123 45 67" style="padding: 8px; width: 200px; margin: 10px 0;">
+        <br>
+        <button onclick="testSendOTP()">Test Send OTP</button>
+        <pre id="otp-result"></pre>
+    </div>
+
+    <div class="test-card">
+        <h3>4. Run All Tests</h3>
+        <button onclick="runAllTests()" style="background: #28a745;">Run All Tests</button>
+    </div>
+
+    <script>
+        const API_BASE = '/api'; // Uses Vite proxy
+
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.textContent = message;
+        }
+
+        async function testHealth() {
+            updateStatus('health-status', 'loading', 'Testing...');
+            try {
+                const response = await fetch(`${API_BASE.replace('/api', '')}/health`);
+                const data = await response.json();
+                document.getElementById('health-result').textContent = JSON.stringify(data, null, 2);
+                updateStatus('health-status', 'success', `✅ Success (${response.status})`);
+            } catch (error) {
+                document.getElementById('health-result').textContent = error.message;
+                updateStatus('health-status', 'error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testTelegram() {
+            updateStatus('telegram-status', 'loading', 'Testing...');
+            try {
+                const response = await fetch(`${API_BASE}/telegram/info`);
+                const data = await response.json();
+                document.getElementById('telegram-result').textContent = JSON.stringify(data, null, 2);
+                updateStatus('telegram-status', 'success', `✅ Success (${response.status})`);
+            } catch (error) {
+                document.getElementById('telegram-result').textContent = error.message;
+                updateStatus('telegram-status', 'error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testSendOTP() {
+            const phone = document.getElementById('phone-input').value;
+            if (!phone) {
+                alert('Please enter a phone number');
+                return;
+            }
+
+            updateStatus('otp-status', 'loading', 'Testing...');
+            try {
+                const response = await fetch(`${API_BASE}/auth/send-otp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phone: phone.replace(/\s/g, '') }),
+                });
+                const data = await response.json();
+                document.getElementById('otp-result').textContent = JSON.stringify(data, null, 2);
+                if (data.success) {
+                    updateStatus('otp-status', 'success', `✅ Success (${response.status})`);
+                } else {
+                    updateStatus('otp-status', 'error', `⚠️ ${data.error || 'Failed'}`);
+                }
+            } catch (error) {
+                document.getElementById('otp-result').textContent = error.message;
+                updateStatus('otp-status', 'error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            await testHealth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testTelegram();
+        }
+
+        // Auto-run health check on load
+        window.addEventListener('load', () => {
+            testHealth();
+        });
+    </script>
+</body>
+</html>
+
