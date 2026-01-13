@@ -22,24 +22,29 @@ const AdminLayout = () => {
   const checkAuth = async () => {
     try {
       const apiUrl = getApiUrl('admin/auth/me');
-      console.log('🔍 Checking auth with URL:', apiUrl);
       
       // Check for stored token - prioritize token over cookies for cross-origin
       const adminToken = localStorage.getItem('adminToken');
-      const headers = {
-        'Content-Type': 'application/json',
-      };
+      console.log('🔍 Auth check - Token in localStorage:', adminToken ? 'EXISTS' : 'MISSING');
+      console.log('🔍 Auth check - Token value:', adminToken ? `${adminToken.substring(0, 20)}...` : 'none');
+      
+      const headers = {};
       
       // Always use token if available (for cross-origin support)
       if (adminToken) {
         headers['Authorization'] = `Bearer ${adminToken}`;
         console.log('🔍 Using stored admin token for auth');
+      } else {
+        console.warn('⚠️ No admin token found in localStorage - will rely on cookies');
       }
+      
+      console.log('🔍 Auth check request headers:', headers);
+      console.log('🔍 Auth check URL:', apiUrl);
       
       const response = await fetch(apiUrl, {
         method: 'GET',
         credentials: 'include', // Still include for cookie fallback
-        headers: headers,
+        headers: Object.keys(headers).length > 0 ? headers : undefined,
       });
 
       console.log('🔍 Auth check response:', {

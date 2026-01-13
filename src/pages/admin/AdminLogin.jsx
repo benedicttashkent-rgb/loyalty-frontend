@@ -64,12 +64,24 @@ const AdminLogin = () => {
         // Store token if provided (for token-based auth)
         if (data.token) {
           localStorage.setItem('adminToken', data.token);
-          console.log('✅ Admin token stored in localStorage');
+          console.log('✅ Admin token stored in localStorage:', data.token.substring(0, 20) + '...');
+        } else {
+          console.warn('⚠️ Login successful but no token in response! Backend must return token for cross-origin auth.');
+          console.warn('⚠️ Response data:', data);
         }
         
         // Store session info if provided
         if (data.sessionId) {
           localStorage.setItem('adminSessionId', data.sessionId);
+        }
+        
+        // Verify token was stored
+        const storedToken = localStorage.getItem('adminToken');
+        if (!storedToken) {
+          console.error('❌ CRITICAL: Token was not stored in localStorage!');
+          setError('Login successful but authentication token was not received. Please contact support.');
+          setLoading(false);
+          return;
         }
         
         console.log('✅ Login successful, navigating to dashboard...');
