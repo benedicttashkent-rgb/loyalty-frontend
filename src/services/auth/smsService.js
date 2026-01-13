@@ -3,6 +3,7 @@
  * Handles OTP generation and verification
  * This should be connected to your backend API
  */
+import { getApiUrl } from '../../config/api';
 
 class SMSService {
   /**
@@ -12,7 +13,7 @@ class SMSService {
    */
   async sendOTP(phone) {
     try {
-      const response = await fetch('/api/auth/send-otp', {
+      const response = await fetch(getApiUrl('auth/send-otp'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,7 +39,7 @@ class SMSService {
    */
   async verifyOTP(phone, otp) {
     try {
-      const response = await fetch('/api/auth/verify-otp', {
+      const response = await fetch(getApiUrl('auth/verify-otp'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

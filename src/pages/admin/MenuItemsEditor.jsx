@@ -37,7 +37,7 @@ const MenuItemsEditor = () => {
     try {
       setLoading(true);
       console.log(`[MenuItemsEditor] Fetching menu items for branch: ${selectedBranch}`);
-      const response = await fetch(`/api/admin/menu-items?branchId=${selectedBranch}`, {
+      const response = await fetch(`${getApiUrl('admin/menu-items')}?branchId=${selectedBranch}`, {
         credentials: 'include',
       });
 

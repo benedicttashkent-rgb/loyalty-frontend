@@ -53,8 +53,8 @@ const NewsBannerEditor = () => {
 
     try {
       const url = editingBanner
-        ? `/api/admin/news/${editingBanner.id}`
-        : '/api/admin/news';
+        ? getApiUrl(`admin/news/${editingBanner.id}`)
+        : getApiUrl('admin/news');
       
       const method = editingBanner ? 'PUT' : 'POST';
 
