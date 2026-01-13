@@ -24,15 +24,27 @@ const AdminLayout = () => {
       const apiUrl = getApiUrl('admin/auth/me');
       console.log('🔍 Checking auth with URL:', apiUrl);
       
+      // Check for stored token
+      const adminToken = localStorage.getItem('adminToken');
+      const headers = {};
+      
+      // If we have a token, use it instead of cookies
+      if (adminToken) {
+        headers['Authorization'] = `Bearer ${adminToken}`;
+        console.log('🔍 Using stored admin token');
+      }
+      
       const response = await fetch(apiUrl, {
         credentials: 'include',
+        headers: Object.keys(headers).length > 0 ? headers : undefined,
       });
 
       console.log('🔍 Auth check response:', {
         status: response.status,
         ok: response.ok,
         url: apiUrl,
-        headers: Object.fromEntries(response.headers.entries())
+        headers: Object.fromEntries(response.headers.entries()),
+        cookies: document.cookie
       });
 
       if (response.ok) {
@@ -68,13 +80,28 @@ const AdminLayout = () => {
 
   const handleLogout = async () => {
     try {
+      const adminToken = localStorage.getItem('adminToken');
+      const headers = {};
+      if (adminToken) {
+        headers['Authorization'] = `Bearer ${adminToken}`;
+      }
+      
       await fetch(getApiUrl('admin/auth/logout'), {
         method: 'POST',
         credentials: 'include',
+        headers: Object.keys(headers).length > 0 ? headers : undefined,
       });
+      
+      // Clear stored tokens
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminSessionId');
+      
       navigate('/admin/login');
     } catch (error) {
       console.error('Logout error:', error);
+      // Clear stored tokens even on error
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminSessionId');
       navigate('/admin/login');
     }
   };

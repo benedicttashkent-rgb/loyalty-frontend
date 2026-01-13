@@ -25,7 +25,8 @@ const AdminLogin = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important for sessions
+        credentials: 'include', // Important for sessions (cookies)
+        mode: 'cors', // Explicitly set CORS mode
         body: JSON.stringify({ username, password }),
       });
       
@@ -55,8 +56,25 @@ const AdminLogin = () => {
         data: data
       });
 
+      // Check for Set-Cookie header
+      const setCookieHeader = response.headers.get('set-cookie');
+      console.log('🔍 Set-Cookie header:', setCookieHeader);
+
       if (data.success) {
+        // Store token if provided (for token-based auth)
+        if (data.token) {
+          localStorage.setItem('adminToken', data.token);
+          console.log('✅ Admin token stored in localStorage');
+        }
+        
+        // Store session info if provided
+        if (data.sessionId) {
+          localStorage.setItem('adminSessionId', data.sessionId);
+        }
+        
         console.log('✅ Login successful, navigating to dashboard...');
+        // Small delay to ensure cookies are processed
+        await new Promise(resolve => setTimeout(resolve, 200));
         // Navigate to dashboard - AdminLayout will check auth
         // Use replace to avoid back button issues
         navigate('/admin/dashboard', { replace: true });
