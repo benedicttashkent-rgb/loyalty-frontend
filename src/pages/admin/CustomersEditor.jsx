@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
+import { bulkAddCardsToCustomers } from '../../utils/bulkAddCards';
 
 const CustomersEditor = () => {
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,7 @@ const CustomersEditor = () => {
   const [includeBalance, setIncludeBalance] = useState(true);
   const [showAll, setShowAll] = useState(true); // Show all customers by default
   const [limit, setLimit] = useState(1000); // Large limit to show all
+  const [bulkAddingCards, setBulkAddingCards] = useState(false);
 
   useEffect(() => {
     fetchCustomers();
@@ -137,6 +139,29 @@ const CustomersEditor = () => {
     }
   };
 
+  const handleBulkAddCards = async () => {
+    if (!confirm('Вы уверены, что хотите добавить карты всем клиентам без карт? Это действие может занять некоторое время.')) {
+      return;
+    }
+
+    setBulkAddingCards(true);
+    try {
+      const result = await bulkAddCardsToCustomers();
+      if (result.success) {
+        alert(`✅ Успешно! ${result.message}\n${result.stats ? `Добавлено карт: ${result.stats.added || 0}\nОбработано клиентов: ${result.stats.processed || 0}` : ''}`);
+        fetchCustomers(); // Refresh the list
+        fetchStats(); // Refresh stats
+      } else {
+        alert(`❌ Ошибка: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Bulk add cards error:', error);
+      alert(`❌ Ошибка: ${error.message || 'Неизвестная ошибка'}`);
+    } finally {
+      setBulkAddingCards(false);
+    }
+  };
+
   if (loading && customers.length === 0) {
     return (
       <div className="p-6">
@@ -160,6 +185,23 @@ const CustomersEditor = () => {
           </p>
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={handleBulkAddCards}
+            disabled={bulkAddingCards}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {bulkAddingCards ? (
+              <>
+                <Icon name="Loader2" size={18} className="animate-spin" />
+                Добавление карт...
+              </>
+            ) : (
+              <>
+                <Icon name="CreditCard" size={18} />
+                Добавить карты клиентам без карт
+              </>
+            )}
+          </button>
           <button
             onClick={() => {
               setShowAll(!showAll);
