@@ -3,7 +3,7 @@
  * This should be called from the backend or run as a one-time migration
  */
 
-import { getApiUrl } from '../config/api';
+import { adminApiRequest } from './adminApiClient';
 
 /**
  * Bulk add cards to all customers without cards
@@ -13,12 +13,8 @@ export const bulkAddCardsToCustomers = async () => {
   try {
     console.log('🔄 Starting bulk card addition for customers without cards...');
     
-    const response = await fetch(getApiUrl('admin/customers/bulk-add-cards'), {
+    const response = await adminApiRequest('admin/customers/bulk-add-cards', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     });
 
     if (response.ok) {
@@ -58,10 +54,10 @@ export const bulkAddCardsToCustomers = async () => {
  * Check how many customers don't have cards
  * @returns {Promise<{success: boolean, count?: number, message?: string}>}
  */
-export const getCustomersWithoutCardsCount = async () => {
+export   const getCustomersWithoutCardsCount = async () => {
   try {
-    const response = await fetch(getApiUrl('admin/customers/stats'), {
-      credentials: 'include',
+    const response = await adminApiRequest('admin/customers/stats', {
+      method: 'GET',
     });
 
     if (response.ok) {

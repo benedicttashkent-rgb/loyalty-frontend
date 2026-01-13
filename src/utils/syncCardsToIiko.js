@@ -3,7 +3,7 @@
  * This fixes customers who have cards in our DB but not in iiko
  */
 
-import { getApiUrl } from '../config/api';
+import { adminApiRequest } from './adminApiClient';
 
 /**
  * Sync cards to iiko for customers who have card_number in DB but not in iiko
@@ -13,12 +13,8 @@ export const syncCardsToIiko = async () => {
   try {
     console.log('🔄 Starting card sync to iiko for existing customers...');
     
-    const response = await fetch(getApiUrl('admin/customers/sync-cards-to-iiko'), {
+    const response = await adminApiRequest('admin/customers/sync-cards-to-iiko', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
     });
 
     if (response.ok) {

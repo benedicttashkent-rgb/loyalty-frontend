@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
+import { adminApiRequest } from '../../utils/adminApiClient';
 import { bulkAddCardsToCustomers } from '../../utils/bulkAddCards';
 import { syncCardsToIiko } from '../../utils/syncCardsToIiko';
 
@@ -29,8 +30,8 @@ const CustomersEditor = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(getApiUrl('admin/customers/stats'), {
-        credentials: 'include',
+      const response = await adminApiRequest('admin/customers/stats', {
+        method: 'GET',
       });
 
       if (response.ok) {
@@ -56,8 +57,8 @@ const CustomersEditor = () => {
         includeBalance: includeBalance.toString(),
       });
 
-      const response = await fetch(`${getApiUrl('admin/customers')}?${params}`, {
-        credentials: 'include',
+      const response = await adminApiRequest(`admin/customers?${params}`, {
+        method: 'GET',
       });
 
       if (response.ok) {
@@ -88,8 +89,8 @@ const CustomersEditor = () => {
 
   const handleCustomerClick = async (customer) => {
     try {
-      const response = await fetch(getApiUrl(`admin/customers/${customer.id}`), {
-        credentials: 'include',
+      const response = await adminApiRequest(`admin/customers/${customer.id}`, {
+        method: 'GET',
       });
 
       if (response.ok) {

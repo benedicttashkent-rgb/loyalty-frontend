@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { getApiUrl } from '../../config/api';
+import { adminApiRequest } from '../../utils/adminApiClient';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -21,36 +22,20 @@ const AdminLayout = () => {
 
   const checkAuth = async () => {
     try {
-      const apiUrl = getApiUrl('admin/auth/me');
-      
-      // Check for stored token - prioritize token over cookies for cross-origin
+      // Check for stored token
       const adminToken = localStorage.getItem('adminToken');
       console.log('🔍 Auth check - Token in localStorage:', adminToken ? 'EXISTS' : 'MISSING');
       console.log('🔍 Auth check - Token value:', adminToken ? `${adminToken.substring(0, 20)}...` : 'none');
       
-      const headers = {};
-      
-      // Always use token if available (for cross-origin support)
-      if (adminToken) {
-        headers['Authorization'] = `Bearer ${adminToken}`;
-        console.log('🔍 Using stored admin token for auth');
-      } else {
-        console.warn('⚠️ No admin token found in localStorage - will rely on cookies');
-      }
-      
-      console.log('🔍 Auth check request headers:', headers);
-      console.log('🔍 Auth check URL:', apiUrl);
-      
-      const response = await fetch(apiUrl, {
+      // Use adminApiRequest helper which automatically adds token
+      const response = await adminApiRequest('admin/auth/me', {
         method: 'GET',
-        credentials: 'include', // Still include for cookie fallback
-        headers: Object.keys(headers).length > 0 ? headers : undefined,
       });
 
       console.log('🔍 Auth check response:', {
         status: response.status,
         ok: response.ok,
-        url: apiUrl,
+        url: getApiUrl('admin/auth/me'),
         headers: Object.fromEntries(response.headers.entries()),
         cookies: document.cookie
       });
@@ -88,16 +73,8 @@ const AdminLayout = () => {
 
   const handleLogout = async () => {
     try {
-      const adminToken = localStorage.getItem('adminToken');
-      const headers = {};
-      if (adminToken) {
-        headers['Authorization'] = `Bearer ${adminToken}`;
-      }
-      
-      await fetch(getApiUrl('admin/auth/logout'), {
+      await adminApiRequest('admin/auth/logout', {
         method: 'POST',
-        credentials: 'include',
-        headers: Object.keys(headers).length > 0 ? headers : undefined,
       });
       
       // Clear stored tokens

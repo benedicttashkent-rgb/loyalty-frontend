@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
-import { getApiUrl } from '../../config/api';
+import { adminApiRequest } from '../../utils/adminApiClient';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -22,8 +22,8 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(getApiUrl('admin/dashboard/stats'), {
-        credentials: 'include',
+      const response = await adminApiRequest('admin/dashboard/stats', {
+        method: 'GET',
       });
 
       if (response.ok) {
