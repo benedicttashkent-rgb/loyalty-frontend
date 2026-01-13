@@ -409,18 +409,6 @@ const FoodOrderingMenu = () => {
             </p>
         </div>
         )}
-
-        {filteredMenuItems?.length === 0 &&
-        <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Icon name="Coffee" size={32} color="var(--color-muted-foreground)" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Нет блюд</h3>
-            <p className="text-sm text-muted-foreground text-center">
-              В этой категории пока нет доступных блюд
-            </p>
-          </div>
-        }
       </div>
       <BottomTabNavigation cartCount={cartCount} />
       {cartCount > 0 &&

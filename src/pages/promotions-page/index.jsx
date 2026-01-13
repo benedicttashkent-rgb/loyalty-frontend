@@ -79,7 +79,7 @@ const PromotionsPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">
       {/* Header with gradient */}
-      <div className="sticky top-0 shadow-lg z-10 bg-gradient-to-r from-accent via-[#c89864] to-accent">
+      <div className="sticky top-0 shadow-lg z-10 bg-gradient-to-r from-[#b07c45] via-[#c89864] to-[#8b6a4e]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <button
@@ -89,9 +89,10 @@ const PromotionsPage = () => {
             >
               <Icon name="ArrowLeft" size={24} className="text-white" />
             </button>
-            <h1 className="text-xl font-semibold text-white drop-shadow-md">
-              Дайджест Событий
-            </h1>
+            <div className="text-center flex-1">
+              <h1 className="text-2xl font-bold text-white drop-shadow-lg">Дайджест Событий</h1>
+              <p className="text-sm text-white/80">Актуальные выступления и специальные вечера</p>
+            </div>
             <div className="w-10" />
           </div>
         </div>
@@ -100,17 +101,15 @@ const PromotionsPage = () => {
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Title Section with gradient and animation */}
-        <div className="text-center mb-8 animate-fade-in">
+        <div className="text-center mb-10 animate-fade-in">
           <div className="inline-block mb-4">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-3 text-primary drop-shadow-md">
-              ДАЙДЖЕСТ СОБЫТИЙ<br />
-              <span className="text-2xl md:text-3xl font-semibold text-primary/90">
-                филиала Мирабад
-              </span>
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-2 text-foreground drop-shadow-md tracking-tight">
+              ДАЙДЖЕСТ СОБЫТИЙ
             </h2>
-            <div className="h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50 mt-2"></div>
-                </div>
-              </div>
+            <p className="text-lg md:text-xl text-muted-foreground">филиала Мирабад</p>
+            <div className="h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-60 mt-3 rounded-full"></div>
+          </div>
+        </div>
 
         {/* Loading State */}
         {loading && (
@@ -131,7 +130,7 @@ const PromotionsPage = () => {
                 return (
                   <div
                     key={event.id || index}
-                    className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg animate-slide-up ${
+                    className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 hover:scale-[1.01] hover:shadow-lg animate-slide-up ${
                       isHighlighted
                         ? `bg-gradient-to-r ${colorClass} border-primary/40 shadow-md`
                         : `${colorClass} hover:border-primary/30`
@@ -146,7 +145,7 @@ const PromotionsPage = () => {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                     )}
                     
-                    <div className="relative p-4 flex items-center justify-between gap-4">
+                    <div className="relative p-5 flex items-center justify-between gap-4">
                       {/* Date Badge */}
                   <div className={`flex-shrink-0 ${
                     isHighlighted 
@@ -197,12 +196,12 @@ const PromotionsPage = () => {
                       />
                 </div>
                 <div className="flex-1">
-                      <div className={`font-semibold text-base ${
+                      <div className={`font-semibold text-lg ${
                         isHighlighted ? 'text-white' : 'text-foreground'
                       }`}>
                         {event.performer}
                       </div>
-                      <div className={`text-xs mt-0.5 ${
+                      <div className={`text-sm mt-0.5 ${
                         isHighlighted ? 'text-white/80' : 'text-muted-foreground'
                       }`}>
                         {getPerformerLabel(event.type)}

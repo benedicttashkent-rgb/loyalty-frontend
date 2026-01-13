@@ -11,22 +11,22 @@ const BranchSelectionModal = ({ isOpen, onClose, onBranchSelect }) => {
   {
     id: 'nukus',
     name: 'Benedict Nukus',
-    address: 'г. Нукус, ул. Достлик, 15',
-    phone: '+998 61 222-33-44',
+    address: 'г. Ташкент, ул. Нукус 31/2',
+    phone: '+998 33 8888807',
     menuUrl: 'https://benedictnuk.myresto.online',
-    image: "https://images.unsplash.com/photo-1647969396278-93eae768c44c",
-    imageAlt: 'Modern café interior with comfortable seating area, warm lighting and contemporary design in Nukus branch',
+    image: "/IMG_2272.JPG",
+    imageAlt: 'Benedict Nukus branch exterior',
     workingHours: '08:00 - 22:00',
     features: ['Wi-Fi', 'Парковка', 'Терраса']
   },
   {
     id: 'mirabad',
     name: 'Benedict Mirabad',
-    address: 'г. Ташкент, район Мирабад, ул. Шота Руставели, 25',
-    phone: '+998 71 333-44-55',
+    address: 'г. Ташкент, ул. Мирабад 60B',
+    phone: '+998 33 5556601',
     menuUrl: 'https://benedictmir.myresto.online',
-    image: "https://images.unsplash.com/photo-1620466093449-207a11cf5b72",
-    imageAlt: 'Elegant café space with wooden furniture, large windows and cozy atmosphere in Mirabad branch',
+    image: "/IMG_3311.JPG",
+    imageAlt: 'Benedict Mirabad branch exterior',
     workingHours: '07:00 - 23:00',
     features: ['Wi-Fi', 'Детская зона', 'Банкетный зал']
   }];

@@ -12,7 +12,7 @@ const BookTableModal = ({ isOpen, onClose }) => {
       address: "ул. Нукус 31/2",
       phone: "+998 33 8888807",
       hours: "Ежедневно: 08:00 - 00:00",
-      coordinates: { lat: 41.3111, lng: 69.2797 },
+    coordinates: { lat: 41.293115, lng: 69.281112 },
     },
     {
       id: 2,
@@ -20,7 +20,7 @@ const BookTableModal = ({ isOpen, onClose }) => {
       address: "ул. Мирабад 60B",
       phone: "+998 33 5556601",
       hours: "Ежедневно: 08:00 - 00:00",
-      coordinates: { lat: 41.2995, lng: 69.2401 },
+    coordinates: { lat: 41.293377, lng: 69.268479 },
     },
   ];
 
