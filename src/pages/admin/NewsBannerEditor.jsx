@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
+import { getApiUrl } from '../../config/api';
 
 const NewsBannerEditor = () => {
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ const NewsBannerEditor = () => {
 
   const fetchBanners = async () => {
     try {
-      const response = await fetch('/api/admin/news', {
+      const response = await fetch(getApiUrl('admin/news'), {
         credentials: 'include',
       });
 
@@ -109,7 +110,7 @@ const NewsBannerEditor = () => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
 
     try {
-      const response = await fetch(`/api/admin/news/${id}`, {
+      const response = await fetch(getApiUrl(`admin/news/${id}`), {
         method: 'DELETE',
         credentials: 'include',
       });

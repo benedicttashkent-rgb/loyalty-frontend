@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY, formatDateForInput, parseDateDDMMYYYY, getMonthAbbr } from '../../utils/formatDate';
+import { getApiUrl } from '../../config/api';
 
 const EventsEditor = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const EventsEditor = () => {
 
   const fetchEvents = async () => {
     try {
-      let url = '/api/admin/events';
+      let url = getApiUrl('admin/events');
       const params = new URLSearchParams();
       if (filter.type) params.append('type', filter.type);
       if (filter.month) params.append('month', filter.month);
@@ -90,8 +91,8 @@ const EventsEditor = () => {
 
     try {
       const url = editingEvent
-        ? `/api/admin/events/${editingEvent.id}`
-        : '/api/admin/events';
+        ? getApiUrl(`admin/events/${editingEvent.id}`)
+        : getApiUrl('admin/events');
       
       const method = editingEvent ? 'PUT' : 'POST';
 
@@ -190,7 +191,7 @@ const EventsEditor = () => {
     if (!confirm('Are you sure you want to delete this event?')) return;
 
     try {
-      const response = await fetch(`/api/admin/events/${id}`, {
+      const response = await fetch(getApiUrl(`admin/events/${id}`), {
         method: 'DELETE',
         credentials: 'include',
       });

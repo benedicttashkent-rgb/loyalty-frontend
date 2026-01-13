@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
+import { getApiUrl } from '../../config/api';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -15,7 +16,7 @@ const AdminLayout = () => {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/admin/auth/me', {
+      const response = await fetch(getApiUrl('admin/auth/me'), {
         credentials: 'include',
       });
 
@@ -39,7 +40,7 @@ const AdminLayout = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/admin/auth/logout', {
+      await fetch(getApiUrl('admin/auth/logout'), {
         method: 'POST',
         credentials: 'include',
       });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY } from '../../utils/formatDate';
+import { getApiUrl } from '../../config/api';
 
 const CustomersEditor = () => {
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ const CustomersEditor = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/customers/stats', {
+      const response = await fetch(getApiUrl('admin/customers/stats'), {
         credentials: 'include',
       });
 
@@ -51,7 +52,7 @@ const CustomersEditor = () => {
         includeBalance: includeBalance.toString(),
       });
 
-      const response = await fetch(`/api/admin/customers?${params}`, {
+      const response = await fetch(`${getApiUrl('admin/customers')}?${params}`, {
         credentials: 'include',
       });
 
@@ -83,7 +84,7 @@ const CustomersEditor = () => {
 
   const handleCustomerClick = async (customer) => {
     try {
-      const response = await fetch(`/api/admin/customers/${customer.id}`, {
+      const response = await fetch(getApiUrl(`admin/customers/${customer.id}`), {
         credentials: 'include',
       });
 

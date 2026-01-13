@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY, formatDateForInput, parseDateDDMMYYYY, ALL_TIERS } from '../../utils/formatDate';
+import { getApiUrl } from '../../config/api';
 
 const RewardsEditor = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const RewardsEditor = () => {
 
   const fetchRewards = async () => {
     try {
-      const response = await fetch('/api/admin/rewards', {
+      const response = await fetch(getApiUrl('admin/rewards'), {
         credentials: 'include',
       });
 
@@ -61,8 +62,8 @@ const RewardsEditor = () => {
 
     try {
       const url = editingReward
-        ? `/api/admin/rewards/${editingReward.id}`
-        : '/api/admin/rewards';
+        ? getApiUrl(`admin/rewards/${editingReward.id}`)
+        : getApiUrl('admin/rewards');
       
       const method = editingReward ? 'PUT' : 'POST';
 
@@ -176,7 +177,7 @@ const RewardsEditor = () => {
     if (!confirm('Are you sure you want to delete this reward?')) return;
 
     try {
-      const response = await fetch(`/api/admin/rewards/${id}`, {
+      const response = await fetch(getApiUrl(`admin/rewards/${id}`), {
         method: 'DELETE',
         credentials: 'include',
       });

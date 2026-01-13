@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
+import { getApiUrl } from '../../config/api';
 
 const MenuItemsEditor = () => {
   const navigate = useNavigate();
@@ -69,8 +70,8 @@ const MenuItemsEditor = () => {
 
     try {
       const url = editingItem
-        ? `/api/admin/menu-items/${editingItem.id}`
-        : '/api/admin/menu-items';
+        ? getApiUrl(`admin/menu-items/${editingItem.id}`)
+        : getApiUrl('admin/menu-items');
       
       const method = editingItem ? 'PUT' : 'POST';
 
@@ -170,7 +171,7 @@ const MenuItemsEditor = () => {
     }
 
     try {
-      const response = await fetch(`/api/admin/menu-items/${id}`, {
+      const response = await fetch(getApiUrl(`admin/menu-items/${id}`), {
         method: 'DELETE',
         credentials: 'include',
       });

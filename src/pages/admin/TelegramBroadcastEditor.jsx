@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
+import { getApiUrl } from '../../config/api';
 
 const TelegramBroadcastEditor = () => {
   const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ const TelegramBroadcastEditor = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/broadcast/stats', {
+      const response = await fetch(getApiUrl('admin/broadcast/stats'), {
         credentials: 'include',
       });
 
@@ -100,7 +101,7 @@ const TelegramBroadcastEditor = () => {
         formDataToSend.append('photo', photoFile);
       }
 
-      const response = await fetch('/api/admin/broadcast/send', {
+      const response = await fetch(getApiUrl('admin/broadcast/send'), {
         method: 'POST',
         credentials: 'include',
         body: formDataToSend,
@@ -138,7 +139,7 @@ const TelegramBroadcastEditor = () => {
 
     setTestSending(true);
     try {
-      const response = await fetch('/api/admin/broadcast/test', {
+      const response = await fetch(getApiUrl('admin/broadcast/test'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
