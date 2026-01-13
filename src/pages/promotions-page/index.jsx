@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import { formatDateDDMMYYYY, formatDateWithMonth } from '../../utils/formatDate';
+import { getApiUrl } from '../../config/api';
 
 const PromotionsPage = () => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const PromotionsPage = () => {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('/api/content/events');
+        const response = await fetch(getApiUrl('content/events'));
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.events) {

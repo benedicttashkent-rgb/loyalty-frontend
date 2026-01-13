@@ -4,15 +4,9 @@ import Icon from '../../../components/AppIcon';
 const SocialMediaLinks = () => {
   const socialLinks = [
     {
-      name: 'Telegram',
-      icon: 'Send',
-      url: 'https://t.me/benedictcafe',
-      color: '#0088cc'
-    },
-    {
       name: 'Instagram',
       icon: 'Instagram',
-      url: 'https://instagram.com/benedictcafe',
+      url: 'https://www.instagram.com/benedict_cafe_tashkent',
       color: '#E4405F'
     },
     {

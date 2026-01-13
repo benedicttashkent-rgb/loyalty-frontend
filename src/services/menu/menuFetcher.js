@@ -2,6 +2,7 @@
  * Menu Fetcher Service
  * Fetches menu data from branch-specific online menus
  */
+import { getApiUrl } from '../../config/api';
 
 class MenuFetcher {
   constructor() {
@@ -53,7 +54,7 @@ class MenuFetcher {
     // You'll need to implement actual scraping on the backend
     
     // This is a placeholder - replace with actual API call
-    const response = await fetch(`/api/menu/${branchId}`, {
+    const response = await fetch(getApiUrl(`menu/${branchId}`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

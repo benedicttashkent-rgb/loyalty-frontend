@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import { getApiUrl } from '../../../config/api';
 
 const QRCodeModal = ({ isOpen, onClose, userData }) => {
   const [qrCodeData, setQrCodeData] = useState('');
@@ -27,7 +28,7 @@ const QRCodeModal = ({ isOpen, onClose, userData }) => {
       }
 
       // Call backend QR generation endpoint
-      const response = await fetch('/api/qr/generate', {
+      const response = await fetch(getApiUrl('qr/generate'), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

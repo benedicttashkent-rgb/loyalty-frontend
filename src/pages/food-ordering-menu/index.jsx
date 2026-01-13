@@ -127,84 +127,9 @@ const FoodOrderingMenu = () => {
   ];
 
 
-  // Branch-specific menus
-  const nukusMenu = [
-    {
-      id: 1,
-      name: 'Круассан с лососем',
-      description: 'Свежий круассан с копченым лососем, сливочным сыром и зеленью',
-      price: 100000,
-      weight: '180г',
-      category: 'breakfast',
-      image: "https://images.unsplash.com/photo-1592966188115-cb122dafc3a8",
-      imageAlt: 'Золотистый слоеный круассан с розовым копченым лососем и белым сливочным сыром на белой тарелке',
-      isNew: true,
-      branch: 'nukus'
-    },
-    {
-      id: 2,
-      name: 'Панкейки с ягодами',
-      description: 'Пышные панкейки с клубникой, черникой и кленовым сиропом',
-      price: 280000,
-      weight: '250г',
-      category: 'breakfast',
-      image: "https://images.unsplash.com/photo-1619592982904-ef0a0da5b7e6",
-      imageAlt: 'Стопка золотистых панкейков с красной клубникой и синей черникой, политых янтарным кленовым сиропом',
-      isNew: false,
-      branch: 'nukus'
-    },
-    {
-      id: 10,
-      name: 'Капучино',
-      description: 'Классический капучино с молочной пенкой',
-      price: 180000,
-      weight: '250мл',
-      category: 'drinks',
-      image: "https://images.unsplash.com/photo-1665809542202-bc15e0003264",
-      imageAlt: 'Чашка капучино с белой молочной пенкой и узором в форме сердца на коричневом кофе',
-      isNew: false,
-      branch: 'nukus'
-    }
-  ];
-
-  const mirabadMenu = [
-    {
-      id: 3,
-      name: 'Авокадо тост',
-      description: 'Тост из цельнозернового хлеба с авокадо, яйцом пашот и микрозеленью',
-      price: 320000,
-      weight: '200г',
-      category: 'breakfast',
-      image: "https://images.unsplash.com/photo-1570956038799-dac77d6d0261",
-      imageAlt: 'Тост из темного цельнозернового хлеба с зеленым пюре авокадо, белым яйцом пашот и свежей микрозеленью',
-      isNew: false,
-      branch: 'mirabad'
-    },
-    {
-      id: 4,
-      name: 'Паста Карбонара',
-      description: 'Классическая паста с беконом, яйцом и сыром пармезан',
-      price: 450000,
-      weight: '300г',
-      category: 'lunch',
-      image: "https://img.rocket.new/generatedImages/rocket_gen_img_1a1ae504e-1765213394554.png",
-      imageAlt: 'Тарелка кремовой пасты карбонара с кусочками золотистого бекона и тертым белым пармезаном',
-      isNew: false,
-      branch: 'mirabad'
-    },
-    {
-      id: 11,
-      name: 'Латте',
-      description: 'Нежный латте с карамельным сиропом',
-      price: 200000,
-      weight: '300мл',
-      category: 'drinks',
-      image: "https://images.unsplash.com/photo-1658057542688-e32ef3883c85",
-      imageAlt: 'Высокий стакан латте со слоями кремового молока и эспрессо с карамельным топпингом',
-      isNew: false,
-      branch: 'mirabad'
-    }
-  ];
+  // Static menus removed to avoid mock data; rely solely on backend-provided menu
+  const nukusMenu = [];
+  const mirabadMenu = [];
 
   // Get current menu function - must be defined after nukusMenu and mirabadMenu
   const getCurrentMenu = () => {
@@ -212,15 +137,14 @@ const FoodOrderingMenu = () => {
     // Same branch = same menu, regardless of order type
     if (selectedBranch?.id) {
       const branchMenu = menuData[selectedBranch.id];
-      // Use fetched menu if available, otherwise fallback to static menu
+      // Use fetched menu if available, otherwise fallback to empty
       if (branchMenu && branchMenu.length > 0) {
         return branchMenu;
       }
-      // Fallback to static menu based on branch ID only
-      return selectedBranch.id === 'nukus' ? nukusMenu : mirabadMenu;
+      return [];
     }
-    // If no branch selected, show combined menu
-    return [...nukusMenu, ...mirabadMenu];
+    // If no branch selected, show empty list until branch picked
+    return [];
   };
 
   // Get categories dynamically from current menu
@@ -315,7 +239,7 @@ const FoodOrderingMenu = () => {
         
         if (token) {
           try {
-            const response = await fetch(getApiUrl('customers/me'), {
+        const response = await fetch(getApiUrl('customers/me'), {
               headers: {
                 'Authorization': `Bearer ${token}`,
               },
@@ -347,7 +271,7 @@ const FoodOrderingMenu = () => {
           customerName
         };
         
-        const response = await fetch('/api/orders/takeaway', {
+        const response = await fetch(getApiUrl('orders/takeaway'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

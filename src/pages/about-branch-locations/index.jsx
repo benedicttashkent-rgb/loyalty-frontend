@@ -61,15 +61,9 @@ const AboutBranchLocations = () => {
 
   const socialMedia = [
     {
-      platform: "Telegram",
-      icon: "Send",
-      followers: "12.5K",
-      url: "https://t.me/BenedictMirabad"
-    },
-    {
       platform: "Instagram",
       icon: "Instagram",
-      followers: "25.3K",
+      followers: "23.5K",
       url: "https://www.instagram.com/benedict_cafe_tashkent"
     }
   ];

@@ -79,6 +79,10 @@ const HomeDashboard = () => {
             // ALWAYS recalculate remaining from next - current
             // This ensures correctness even if backend sends wrong value
             const remaining = nextThreshold ? Math.max(0, nextThreshold - totalSpent) : 0;
+
+            // Hide news banner after first purchase
+            const hasMadePurchase = totalSpent > 0 || !!data.customer.lastProcessedOrderDate;
+            setShowNewsBanner(!hasMadePurchase);
             
             console.log('✅ Frontend progress calculation:', {
               totalSpent,

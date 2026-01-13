@@ -7,6 +7,7 @@
  */
 
 import restaurantConfig from '../../config/restaurant.config';
+import { getApiUrl } from '../../config/api';
 
 const MENU_URLS = {
   nukus: 'https://benedictnuk.myresto.online/',
@@ -33,7 +34,7 @@ class MenuScraper {
     try {
       // Call backend API to fetch menu from database
       // Backend endpoint: /api/menu/:branchId (public access)
-      const apiUrl = `/api/menu/${branchId}`;
+      const apiUrl = getApiUrl(`menu/${branchId}`);
       const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {

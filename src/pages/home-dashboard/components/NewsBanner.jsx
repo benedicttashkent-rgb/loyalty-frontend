@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
+import { getApiUrl } from '../../../config/api';
 
 const NewsBanner = ({ onClose }) => {
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
@@ -13,7 +14,7 @@ const NewsBanner = ({ onClose }) => {
   useEffect(() => {
     const fetchNewsBanners = async () => {
       try {
-        const response = await fetch('/api/content/news');
+        const response = await fetch(getApiUrl('content/news'));
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.banners && data.banners.length > 0) {
