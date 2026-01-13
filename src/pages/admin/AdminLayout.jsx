@@ -11,28 +11,56 @@ const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
+    // Don't check auth if we're on the login page
+    if (location.pathname === '/admin/login') {
+      setLoading(false);
+      return;
+    }
     checkAuth();
-  }, []);
+  }, [location.pathname]);
 
   const checkAuth = async () => {
     try {
-      const response = await fetch(getApiUrl('admin/auth/me'), {
+      const apiUrl = getApiUrl('admin/auth/me');
+      console.log('🔍 Checking auth with URL:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         credentials: 'include',
+      });
+
+      console.log('🔍 Auth check response:', {
+        status: response.status,
+        ok: response.ok,
+        url: apiUrl,
+        headers: Object.fromEntries(response.headers.entries())
       });
 
       if (response.ok) {
         const data = await response.json();
-        if (data.success) {
+        console.log('🔍 Auth check data:', data);
+        if (data.success && data.admin) {
           setAdmin(data.admin);
+          console.log('✅ Auth check passed, admin:', data.admin);
         } else {
-          navigate('/admin/login');
+          console.warn('⚠️ Auth check failed - no admin data:', data);
+          // Only redirect if we're not already on login page
+          if (location.pathname !== '/admin/login') {
+            navigate('/admin/login');
+          }
         }
       } else {
-        navigate('/admin/login');
+        console.warn('⚠️ Auth check failed - response not ok:', response.status);
+        // Only redirect if we're not already on login page
+        if (location.pathname !== '/admin/login') {
+          navigate('/admin/login');
+        }
       }
     } catch (error) {
-      console.error('Auth check error:', error);
-      navigate('/admin/login');
+      console.error('❌ Auth check error:', error);
+      // Only redirect if we're not already on login page
+      if (location.pathname !== '/admin/login') {
+        navigate('/admin/login');
+      }
     } finally {
       setLoading(false);
     }

@@ -16,7 +16,11 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(getApiUrl('admin/auth/login'), {
+      const apiUrl = getApiUrl('admin/auth/login');
+      console.log('🔍 Attempting login to:', apiUrl);
+      console.log('🔍 Credentials:', { username, password: '***' });
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -24,6 +28,9 @@ const AdminLogin = () => {
         credentials: 'include', // Important for sessions
         body: JSON.stringify({ username, password }),
       });
+      
+      console.log('🔍 Login response status:', response.status);
+      console.log('🔍 Login response headers:', Object.fromEntries(response.headers.entries()));
 
       // Check if response is ok
       if (!response.ok) {
@@ -40,10 +47,21 @@ const AdminLogin = () => {
       }
 
       const data = await response.json();
+      
+      console.log('🔍 Login response:', {
+        success: data.success,
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        data: data
+      });
 
       if (data.success) {
-        navigate('/admin/dashboard');
+        console.log('✅ Login successful, navigating to dashboard...');
+        // Navigate to dashboard - AdminLayout will check auth
+        // Use replace to avoid back button issues
+        navigate('/admin/dashboard', { replace: true });
       } else {
+        console.error('❌ Login failed:', data.error);
         setError(data.error || 'Invalid credentials');
       }
     } catch (err) {
