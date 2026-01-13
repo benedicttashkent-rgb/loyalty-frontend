@@ -34,9 +34,31 @@ const HomeDashboard = () => {
           return;
         }
 
+        // Check if opened from Telegram and update telegram_chat_id if needed
+        let telegramChatId = null;
+        if (window.Telegram?.WebApp) {
+          const tg = window.Telegram.WebApp;
+          telegramChatId = tg.initDataUnsafe?.chat?.id || tg.initDataUnsafe?.user?.id || null;
+          
+          if (telegramChatId) {
+            // Update telegram_chat_id in background (non-blocking)
+            fetch(getApiUrl('customers/me/telegram-chat-id'), {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ telegramChatId: telegramChatId.toString() }),
+            }).catch(err => {
+              console.log('⚠️ Failed to update telegram_chat_id (non-blocking):', err);
+            });
+          }
+        }
+
         const response = await fetch(getApiUrl('customers/me'), {
           headers: {
             'Authorization': `Bearer ${token}`,
+            ...(telegramChatId && { 'X-Telegram-Chat-Id': telegramChatId.toString() }),
           },
         });
 
