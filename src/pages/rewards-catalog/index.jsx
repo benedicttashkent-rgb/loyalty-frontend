@@ -57,20 +57,30 @@ const RewardsCatalog = () => {
           const rewardsData = await rewardsResponse.json();
           if (rewardsData.success && rewardsData.rewards) {
             // Map API data to component format
-            const mappedRewards = rewardsData.rewards.map(reward => ({
-              id: reward.id,
-              title: reward.title,
-              description: reward.description,
-              imageUrl: reward.image_url,
-              pointsCost: reward.points_cost,
-              tier: reward.tier,
-              category: reward.category,
-              isFeatured: reward.is_featured,
-              stockQuantity: reward.stock_quantity,
-              redemptionLimit: reward.redemption_limit,
-              validFrom: reward.valid_from,
-              validUntil: reward.valid_until,
-            }));
+            const mappedRewards = rewardsData.rewards.map(reward => {
+              // Convert relative image URL to full URL
+              let imageUrl = reward.image_url;
+              if (imageUrl && imageUrl.startsWith('/uploads/')) {
+                // Prepend API base URL to relative upload paths
+                const apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
+                imageUrl = `${apiBase}${imageUrl}`;
+              }
+              
+              return {
+                id: reward.id,
+                title: reward.title,
+                description: reward.description,
+                imageUrl: imageUrl,
+                pointsCost: reward.points_cost,
+                tier: reward.tier,
+                category: reward.category,
+                isFeatured: reward.is_featured,
+                stockQuantity: reward.stock_quantity,
+                redemptionLimit: reward.redemption_limit,
+                validFrom: reward.valid_from,
+                validUntil: reward.valid_until,
+              };
+            });
             setRewardsData(mappedRewards);
           }
         }

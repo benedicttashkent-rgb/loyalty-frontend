@@ -44,9 +44,6 @@ const CheckoutSuccessModal = ({ isOpen, onClose, orderNumber, estimatedTime }) =
           <Button variant="default" fullWidth onClick={onClose}>
             Отлично
           </Button>
-          <Button variant="outline" fullWidth iconName="MapPin" iconPosition="left">
-            Отследить заказ
-          </Button>
         </div>
       </div>
     </ModalOverlay>

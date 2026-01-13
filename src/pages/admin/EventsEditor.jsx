@@ -181,9 +181,6 @@ const EventsEditor = () => {
         setEventImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
-      
-      // Note: For OCR/text extraction from image, this would require additional processing
-      // on the backend. For now, we just upload the image and admin can manually enter event details.
     }
   };
 

@@ -28,14 +28,14 @@ const RedemptionModal = ({ isOpen, onClose, reward, userPoints, onConfirm }) => 
         <div className="mb-6">
           <div className="relative h-48 rounded-xl overflow-hidden bg-muted mb-4">
             <Image
-              src={reward?.image}
-              alt={reward?.imageAlt}
+              src={reward?.imageUrl}
+              alt={reward?.title || 'Reward image'}
               className="w-full h-full object-cover"
             />
           </div>
 
           <h3 className="text-lg font-semibold text-foreground mb-2">
-            {reward?.name}
+            {reward?.title}
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
             {reward?.description}
