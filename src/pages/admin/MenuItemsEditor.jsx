@@ -240,17 +240,23 @@ const MenuItemsEditor = () => {
   };
 
   const handleDeleteAll = async () => {
-    const count = filteredItems.length;
-    if (!confirm(`Вы уверены? Это удалит ВСЕ ${count} блюд для филиала ${selectedBranch === 'mirabad' ? 'Мирабад' : 'Нукус'}. Это действие нельзя отменить!`)) {
+    // Get total count for the branch (not filtered)
+    const totalCount = menuItems.length;
+    if (totalCount === 0) {
+      alert('Нет блюд для удаления');
+      return;
+    }
+
+    if (!confirm(`Вы уверены? Это удалит ВСЕ ${totalCount} блюд для филиала ${selectedBranch === 'mirabad' ? 'Мирабад' : 'Нукус'}. Это действие нельзя отменить!`)) {
       return;
     }
 
     // Double confirmation
-    if (!confirm(`ФИНАЛЬНОЕ ПОДТВЕРЖДЕНИЕ: Удалить ${count} блюд? Введите "УДАЛИТЬ" в следующем окне для подтверждения.`)) {
+    if (!confirm(`ФИНАЛЬНОЕ ПОДТВЕРЖДЕНИЕ: Удалить ${totalCount} блюд? Введите "УДАЛИТЬ" в следующем окне для подтверждения.`)) {
       return;
     }
 
-    const confirmation = prompt(`Введите "УДАЛИТЬ" для подтверждения удаления ${count} блюд:`);
+    const confirmation = prompt(`Введите "УДАЛИТЬ" для подтверждения удаления ${totalCount} блюд:`);
     if (confirmation !== 'УДАЛИТЬ') {
       alert('Удаление отменено');
       return;
@@ -404,14 +410,14 @@ const MenuItemsEditor = () => {
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
-          {filteredItems.length > 0 && (
+          {menuItems.length > 0 && (
             <button
               onClick={handleDeleteAll}
               disabled={deletingAll}
               className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors flex items-center gap-2 disabled:opacity-50"
             >
               <Icon name={deletingAll ? "Loader2" : "Trash2"} size={18} className={deletingAll ? "animate-spin" : ""} />
-              {deletingAll ? 'Удаление...' : `Удалить все (${filteredItems.length})`}
+              {deletingAll ? 'Удаление...' : `Удалить все (${menuItems.length})`}
             </button>
           )}
         </div>
