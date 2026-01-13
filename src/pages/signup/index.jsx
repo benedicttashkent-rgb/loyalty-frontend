@@ -45,12 +45,18 @@ const SignupPage = () => {
       tg.expand();
       
       const user = tg.initDataUnsafe?.user;
+      // For personal chats, chat_id is the same as user.id
+      // For group chats, use chat.id
       const chatId = tg.initDataUnsafe?.chat?.id || tg.initDataUnsafe?.user?.id || null;
       if (user) {
         setTelegramUser(user);
         if (chatId) {
           setTelegramChatId(chatId.toString());
           console.log('📱 Telegram chat_id detected:', chatId);
+          console.log('   User ID:', user.id);
+          console.log('   Chat ID:', tg.initDataUnsafe?.chat?.id);
+        } else {
+          console.warn('⚠️ Telegram chat_id not found in initDataUnsafe');
         }
         // Pre-fill phone if available
         if (user.phone_number) {
