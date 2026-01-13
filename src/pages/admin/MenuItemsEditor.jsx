@@ -30,6 +30,7 @@ const MenuItemsEditor = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [resettingMenu, setResettingMenu] = useState(false);
+  const [resettingMenu, setResettingMenu] = useState(false);
 
   useEffect(() => {
     fetchMenuItems();
@@ -166,6 +167,32 @@ const MenuItemsEditor = () => {
     setShowModal(true);
   };
 
+  const handleResetMenu = async () => {
+    if (!confirm('Вы уверены? Это удалит ВСЕ существующие блюда для филиала Мирабад и создаст новые из структуры меню. Это действие нельзя отменить!')) {
+      return;
+    }
+
+    setResettingMenu(true);
+    try {
+      const response = await adminApiRequest('admin/menu-items/reset-mirabad', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        alert('✅ Меню успешно сброшено! Все новые блюда созданы.');
+        fetchMenuItems();
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`❌ Ошибка: ${errorData.error || 'Не удалось сбросить меню'}`);
+      }
+    } catch (error) {
+      console.error('Reset menu error:', error);
+      alert('❌ Ошибка при сбросе меню: ' + error.message);
+    } finally {
+      setResettingMenu(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!confirm('Вы уверены, что хотите удалить это блюдо?')) {
       return;
@@ -204,29 +231,41 @@ const MenuItemsEditor = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-foreground">Редактор блюд</h1>
-        <button
-          onClick={() => {
-            setEditingItem(null);
-            setFormData({
-              iikoProductId: '',
-              branchId: selectedBranch,
-              name: '',
-              description: '',
-              imageUrl: '',
-              calories: '',
-              proteins: '',
-              fats: '',
-              carbohydrates: ''
-            });
-            setImageFile(null);
-            setImagePreview(null);
-            setShowModal(true);
-          }}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
-        >
-          <Icon name="Plus" size={20} />
-          Добавить блюдо
-        </button>
+        <div className="flex gap-2">
+          {selectedBranch === 'mirabad' && (
+            <button
+              onClick={handleResetMenu}
+              disabled={resettingMenu}
+              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <Icon name={resettingMenu ? "Loader2" : "RefreshCw"} size={20} className={resettingMenu ? "animate-spin" : ""} />
+              {resettingMenu ? 'Сброс меню...' : 'Сбросить меню Мирабад'}
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setEditingItem(null);
+              setFormData({
+                iikoProductId: '',
+                branchId: selectedBranch,
+                name: '',
+                description: '',
+                imageUrl: '',
+                calories: '',
+                proteins: '',
+                fats: '',
+                carbohydrates: ''
+              });
+              setImageFile(null);
+              setImagePreview(null);
+              setShowModal(true);
+            }}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+          >
+            <Icon name="Plus" size={20} />
+            Добавить блюдо
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-4 mb-4">
