@@ -98,8 +98,8 @@ const AboutBranchLocations = () => {
   return (
     <>
       <Helmet>
-        <title>О нас - plagueson.xyz</title>
-        <meta name="description" content="Информация о локациях plagueson.xyz, контакты и социальные сети" />
+        <title>О нас - Benedict Café</title>
+        <meta name="description" content="Информация о локациях Benedict Café, контакты и социальные сети" />
       </Helmet>
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-50 bg-card border-b border-border">
