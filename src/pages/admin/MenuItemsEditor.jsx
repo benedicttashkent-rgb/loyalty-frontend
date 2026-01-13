@@ -29,6 +29,7 @@ const MenuItemsEditor = () => {
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [resettingMenu, setResettingMenu] = useState(false);
 
   useEffect(() => {
     fetchMenuItems();
