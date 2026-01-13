@@ -107,7 +107,17 @@ class MenuScraper {
         isNew: item.isNew || false,
         branch: branchId,
         modifiers: item.modifiers || [],
-        nutritionalInfo: item.nutritionalInfo || null
+        // Extract nutritional info - support both nested and flat structures
+        calories: item.calories || item.nutritionalInfo?.calories || null,
+        proteins: item.proteins || item.nutritionalInfo?.proteins || null,
+        fats: item.fats || item.nutritionalInfo?.fats || null,
+        carbohydrates: item.carbohydrates || item.nutritionalInfo?.carbohydrates || null,
+        nutritionalInfo: item.nutritionalInfo || {
+          calories: item.calories || null,
+          proteins: item.proteins || null,
+          fats: item.fats || null,
+          carbohydrates: item.carbohydrates || null
+        }
       };
     }) || [];
   }

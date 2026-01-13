@@ -4,7 +4,7 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { formatPrice } from '../../../utils/formatPrice';
 
-const MenuItemCard = ({ item, onAddToCart, cartQuantity }) => {
+const MenuItemCard = ({ item, onAddToCart, cartQuantity, onItemClick }) => {
   const [quantity, setQuantity] = React.useState(1);
 
   const handleIncrement = () => {
@@ -17,13 +17,23 @@ const MenuItemCard = ({ item, onAddToCart, cartQuantity }) => {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.stopPropagation(); // Prevent card click when adding to cart
     onAddToCart(item, quantity);
     setQuantity(1);
   };
 
+  const handleCardClick = () => {
+    if (onItemClick) {
+      onItemClick(item);
+    }
+  };
+
   return (
-    <div className="bg-card rounded-xl overflow-hidden card-shadow transition-smooth hover:card-shadow-lg">
+    <div 
+      className="bg-card rounded-xl overflow-hidden card-shadow transition-smooth hover:card-shadow-lg cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="relative h-48 overflow-hidden">
         <Image
           src={item?.image}
@@ -56,7 +66,7 @@ const MenuItemCard = ({ item, onAddToCart, cartQuantity }) => {
         <div className="flex items-center gap-2">
           <div className="flex items-center border border-border rounded-lg overflow-hidden">
             <button
-              onClick={handleDecrement}
+              onClick={(e) => { e.stopPropagation(); handleDecrement(); }}
               className="w-10 h-10 flex items-center justify-center hover:bg-muted transition-smooth"
               aria-label="Уменьшить количество"
             >
@@ -66,7 +76,7 @@ const MenuItemCard = ({ item, onAddToCart, cartQuantity }) => {
               {quantity}
             </span>
             <button
-              onClick={handleIncrement}
+              onClick={(e) => { e.stopPropagation(); handleIncrement(); }}
               className="w-10 h-10 flex items-center justify-center hover:bg-muted transition-smooth"
               aria-label="Увеличить количество"
             >

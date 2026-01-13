@@ -5,6 +5,7 @@ import BrandLogo from '../../components/navigation/BrandLogo';
 import CategoryFilter from './components/CategoryFilter';
 import DeliveryInfoCard from './components/DeliveryInfoCard';
 import MenuItemCard from './components/MenuItemCard';
+import MenuItemDetailModal from './components/MenuItemDetailModal';
 import CartModal from './components/CartModal';
 import CheckoutSuccessModal from './components/CheckoutSuccessModal';
 import BranchSelectionModal from './components/BranchSelectionModal';
@@ -28,6 +29,8 @@ const FoodOrderingMenu = () => {
   const [itemComments, setItemComments] = useState({});
   const [menuData, setMenuData] = useState({ nukus: null, mirabad: null });
   const [isLoadingMenu, setIsLoadingMenu] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Force takeaway only for MVP - delivery removed
   useEffect(() => {
@@ -335,6 +338,16 @@ const FoodOrderingMenu = () => {
     return cartItem ? cartItem?.quantity : 0;
   };
 
+  const handleMenuItemClick = (item) => {
+    setSelectedMenuItem(item);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedMenuItem(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="main-content max-w-md mx-auto">
@@ -388,6 +401,7 @@ const FoodOrderingMenu = () => {
               item={item}
               onAddToCart={handleAddToCart}
               cartQuantity={getCartQuantity(item?.id)}
+              onItemClick={handleMenuItemClick}
             />
                   ))
                 ) : (
@@ -436,6 +450,13 @@ const FoodOrderingMenu = () => {
         isOpen={isBranchModalOpen}
         onClose={() => setIsBranchModalOpen(false)}
         onBranchSelect={handleBranchSelect} />
+
+      <MenuItemDetailModal
+        item={selectedMenuItem}
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseDetailModal}
+        onAddToCart={handleAddToCart}
+      />
     </div>);
 
 };
