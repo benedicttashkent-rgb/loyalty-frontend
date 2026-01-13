@@ -26,6 +26,7 @@ const SignupPage = () => {
   // Detect Telegram Web App
   const [isTelegram, setIsTelegram] = useState(false);
   const [telegramUser, setTelegramUser] = useState(null);
+  const [telegramChatId, setTelegramChatId] = useState(null);
 
   // Debug: Log API URL on component mount
   useEffect(() => {
@@ -44,8 +45,13 @@ const SignupPage = () => {
       tg.expand();
       
       const user = tg.initDataUnsafe?.user;
+      const chatId = tg.initDataUnsafe?.chat?.id || tg.initDataUnsafe?.user?.id || null;
       if (user) {
         setTelegramUser(user);
+        if (chatId) {
+          setTelegramChatId(chatId.toString());
+          console.log('📱 Telegram chat_id detected:', chatId);
+        }
         // Pre-fill phone if available
         if (user.phone_number) {
           // Extract digits from Telegram phone (usually +998XXXXXXXXX)
@@ -335,6 +341,7 @@ const SignupPage = () => {
           surName: formData.surName,
           birthDate: formatDateForAPI(formData.birthDate),
           email: telegramUser?.email || null,
+          telegramChatId: telegramChatId || null,
         }),
       });
 
