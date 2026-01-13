@@ -147,13 +147,24 @@ const FoodOrderingMenu = () => {
     return [];
   };
 
-  // Get categories dynamically from current menu
+  // Get categories dynamically from current menu - use actual category names from backend
   const categories = useMemo(() => {
     const currentMenu = getCurrentMenu();
     if (!currentMenu || !Array.isArray(currentMenu)) {
       return [{ id: 'all', name: 'Все' }];
     }
-    const uniqueCategories = [...new Set(currentMenu.map(item => item?.category))].filter(Boolean);
+    
+    // Build a map of category ID -> category name from actual menu items
+    const categoryMap = new Map();
+    currentMenu.forEach(item => {
+      if (item?.category) {
+        // Use original category name if available, otherwise fallback to mapped name
+        const categoryName = item.categoryName || categoryNames[item.category] || item.category;
+        categoryMap.set(item.category, categoryName);
+      }
+    });
+    
+    const uniqueCategories = Array.from(categoryMap.keys());
     
     // Create category list with "Все" first, then sorted by custom order
     const categoryList = [
@@ -167,7 +178,7 @@ const FoodOrderingMenu = () => {
         })
         .map(catId => ({
           id: catId,
-          name: categoryNames[catId] || catId
+          name: categoryMap.get(catId) || categoryNames[catId] || catId
         }))
     ];
     

@@ -89,20 +89,27 @@ class MenuScraper {
    */
   transformMenuData(scrapedData, branchId) {
     // Transform the scraped data to match our menu item structure
-    return scrapedData.items?.map((item, index) => ({
-      id: item.id || `${branchId}-${index}`,
-      name: item.name || item.title,
-      description: item.description || '',
-      price: item.price || 0,
-      weight: item.weight || item.size || '',
-      category: this.mapCategory(item.category),
-      image: item.image || item.photo || '',
-      imageAlt: item.imageAlt || `${item.name} from Benedict ${branchId}`,
-      isNew: item.isNew || false,
-      branch: branchId,
-      modifiers: item.modifiers || [],
-      nutritionalInfo: item.nutritionalInfo || null
-    })) || [];
+    return scrapedData.items?.map((item, index) => {
+      // Preserve original category name from backend, but also store normalized ID for filtering
+      const originalCategory = item.category || item.category_name || '';
+      const normalizedCategory = this.mapCategory(originalCategory);
+      
+      return {
+        id: item.id || `${branchId}-${index}`,
+        name: item.name || item.title,
+        description: item.description || '',
+        price: item.price || 0,
+        weight: item.weight || item.size || '',
+        category: normalizedCategory, // Use normalized for filtering
+        categoryName: originalCategory, // Preserve original name for display
+        image: item.image || item.photo || item.image_url || '',
+        imageAlt: item.imageAlt || `${item.name} from Benedict ${branchId}`,
+        isNew: item.isNew || false,
+        branch: branchId,
+        modifiers: item.modifiers || [],
+        nutritionalInfo: item.nutritionalInfo || null
+      };
+    }) || [];
   }
 
   /**
