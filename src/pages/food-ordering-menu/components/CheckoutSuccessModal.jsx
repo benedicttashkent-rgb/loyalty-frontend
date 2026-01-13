@@ -18,13 +18,9 @@ const CheckoutSuccessModal = ({ isOpen, onClose, orderNumber, estimatedTime }) =
         </div>
 
         <div className="bg-muted rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Номер заказа</span>
             <span className="text-base font-bold text-foreground">#{orderNumber}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Время готовности</span>
-            <span className="text-base font-semibold text-foreground">{estimatedTime}</span>
           </div>
         </div>
 
@@ -34,7 +30,7 @@ const CheckoutSuccessModal = ({ isOpen, onClose, orderNumber, estimatedTime }) =
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-1">Кешбэк</h3>
               <p className="text-xs text-muted-foreground">
-                За этот заказ вы получите кешбэк на вашу карту лояльности
+                Чтобы получить кешбэк, подойдите к кассе
               </p>
             </div>
           </div>
