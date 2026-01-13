@@ -524,13 +524,15 @@ const MenuItemsEditor = () => {
                   onClick={() => setCurrentPage(1)}
                   disabled={currentPage === 1}
                   className="p-2 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Первая страница"
                 >
-                  <Icon name="ChevronsLeft" size={16} />
+                  <span className="text-sm">««</span>
                 </button>
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
                   className="p-2 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Предыдущая страница"
                 >
                   <Icon name="ChevronLeft" size={16} />
                 </button>
@@ -538,6 +540,7 @@ const MenuItemsEditor = () => {
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
                   className="p-2 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Следующая страница"
                 >
                   <Icon name="ChevronRight" size={16} />
                 </button>
@@ -545,8 +548,9 @@ const MenuItemsEditor = () => {
                   onClick={() => setCurrentPage(totalPages)}
                   disabled={currentPage === totalPages}
                   className="p-2 rounded hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Последняя страница"
                 >
-                  <Icon name="ChevronsRight" size={16} />
+                  <span className="text-sm">»»</span>
                 </button>
               </div>
             </div>
