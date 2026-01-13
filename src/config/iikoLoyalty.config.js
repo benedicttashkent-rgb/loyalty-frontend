@@ -22,6 +22,7 @@ export const iikoLoyaltyConfig = {
       getCustomer: '/api/1/loyalty/iiko/customer',
       createCustomer: '/api/1/loyalty/iiko/customer/create',
       updateCustomer: '/api/1/loyalty/iiko/customer/update',
+      addCard: '/api/1/loyalty/iiko/customer/card/add',
       getPrograms: '/api/1/loyalty/iiko/customer/programs',
       calculateTransaction: '/api/1/loyalty/iiko/customer/transaction/calculate',
       processTransaction: '/api/1/loyalty/iiko/customer/transaction/process',

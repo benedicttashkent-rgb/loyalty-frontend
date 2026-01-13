@@ -173,6 +173,23 @@ class IikoLoyaltyAPI {
   }
 
   /**
+   * Add card to customer
+   * @param {string} customerId - Customer UUID
+   * @param {string} cardTrack - Card track (can be null)
+   * @param {string} cardNumber - Card number (can be null)
+   * @param {string} organizationId - Organization UUID (optional, uses config default)
+   * @returns {Promise<{}>} Empty object on success
+   */
+  async addCard(customerId, cardTrack, cardNumber, organizationId = null) {
+    return await this.request('POST', this.config?.endpoints?.loyalty?.addCard, {
+      organizationId: organizationId || this.config?.organizationId,
+      customerId,
+      cardTrack: cardTrack || null,
+      cardNumber: cardNumber || null,
+    });
+  }
+
+  /**
    * Get available loyalty programs
    */
   async getLoyaltyPrograms(customerId) {
