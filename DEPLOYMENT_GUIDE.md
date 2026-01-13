@@ -154,10 +154,15 @@ TELEGRAM_TAKEAWAY_CHAT_ID=ваш_chat_id
 VITE_API_BASE_URL=https://ваш-railway-domain.up.railway.app/api
 ```
 
-**⚠️ ВАЖНО:** 
+**⚠️ КРИТИЧЕСКИ ВАЖНО:** 
+- URL **ОБЯЗАТЕЛЬНО** должен начинаться с `https://`
 - URL должен заканчиваться на `/api`
 - Используйте **Public Domain** из Railway API Service
-- Пример: `https://web-production-9dbea.up.railway.app/api`
+- Пример правильного значения: `https://chic-blessing-production-3203.up.railway.app/api`
+- ❌ **НЕПРАВИЛЬНО**: `chic-blessing-production-3203.up.railway.app/api` (без https://)
+- ✅ **ПРАВИЛЬНО**: `https://chic-blessing-production-3203.up.railway.app/api`
+
+**Примечание:** Код автоматически добавит `https://` если его нет, но лучше указать полный URL сразу.
 
 ### Шаг 2.4: Деплой Frontend
 
@@ -235,10 +240,23 @@ curl https://ваш-railway-domain.up.railway.app/health
 
 ### Проблема: Frontend не может подключиться к Backend
 
+**Симптомы:**
+- Ошибка 404: `The page could not be found`
+- URL выглядит как: `https://frontend.vercel.app/railway-domain.up.railway.app/api/...`
+- Запросы идут на Vercel вместо Railway
+
 **Решение:**
-1. Проверьте `VITE_API_BASE_URL` в Vercel - должен быть полный URL с `/api`
-2. Проверьте CORS в Railway - убедитесь, что `FRONTEND_URL` добавлен в переменные
-3. Проверьте логи Railway API Service - должны быть запросы от Frontend
+1. **Проверьте `VITE_API_BASE_URL` в Vercel:**
+   - Должен начинаться с `https://`
+   - Должен заканчиваться на `/api`
+   - Пример: `https://chic-blessing-production-3203.up.railway.app/api`
+   - ❌ Неправильно: `chic-blessing-production-3203.up.railway.app/api` (без https://)
+2. **После изменения переменной:**
+   - Перейдите в **Deployments** → **"..."** → **"Redeploy"**
+   - Или сделайте новый коммит для автоматического редеплоя
+3. Проверьте CORS в Railway - убедитесь, что `FRONTEND_URL` добавлен в переменные
+4. Проверьте логи Railway API Service - должны быть запросы от Frontend
+5. Откройте F12 → Console в браузере и проверьте логи - там будет видно какой URL используется
 
 ### Проблема: Telegram Bot не отвечает
 

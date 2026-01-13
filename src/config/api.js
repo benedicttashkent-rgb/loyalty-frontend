@@ -6,7 +6,15 @@
 const getApiBaseUrl = () => {
   // Priority 1: Use VITE_API_BASE_URL if set (for production deployments)
   if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL;
+    let url = import.meta.env.VITE_API_BASE_URL.trim();
+    
+    // Fix: If URL doesn't start with http:// or https://, add https://
+    if (url && !url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/')) {
+      console.warn('⚠️  VITE_API_BASE_URL missing protocol, adding https://');
+      url = `https://${url}`;
+    }
+    
+    return url;
   }
   
   // Priority 2: In development, use Vite proxy (relative path)
@@ -15,7 +23,8 @@ const getApiBaseUrl = () => {
   }
   
   // Priority 3: Production fallback - use Railway URL
-  return 'https://web-production-9dbea.up.railway.app/api';
+  // Update this with your actual Railway domain
+  return 'https://chic-blessing-production-3203.up.railway.app/api';
 };
 
 export const API_BASE_URL = getApiBaseUrl();
