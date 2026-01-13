@@ -15,6 +15,7 @@ const MenuItemsEditor = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [deletingAll, setDeletingAll] = useState(false);
   const [formData, setFormData] = useState({
     iikoProductId: '',
     branchId: 'mirabad',
@@ -238,6 +239,52 @@ const MenuItemsEditor = () => {
     }
   };
 
+  const handleDeleteAll = async () => {
+    const count = filteredItems.length;
+    if (!confirm(`Вы уверены? Это удалит ВСЕ ${count} блюд для филиала ${selectedBranch === 'mirabad' ? 'Мирабад' : 'Нукус'}. Это действие нельзя отменить!`)) {
+      return;
+    }
+
+    // Double confirmation
+    if (!confirm(`ФИНАЛЬНОЕ ПОДТВЕРЖДЕНИЕ: Удалить ${count} блюд? Введите "УДАЛИТЬ" в следующем окне для подтверждения.`)) {
+      return;
+    }
+
+    const confirmation = prompt(`Введите "УДАЛИТЬ" для подтверждения удаления ${count} блюд:`);
+    if (confirmation !== 'УДАЛИТЬ') {
+      alert('Удаление отменено');
+      return;
+    }
+
+    setDeletingAll(true);
+    try {
+      const response = await adminApiRequest('admin/menu-items/bulk-delete', {
+        method: 'DELETE',
+        body: JSON.stringify({ branchId: selectedBranch }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`✅ Успешно удалено ${data.deletedCount || count} блюд`);
+        fetchMenuItems();
+        setSearchQuery('');
+        setSelectedCategory('all');
+        setCurrentPage(1);
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`❌ Ошибка: ${errorData.error || 'Не удалось удалить блюда'}`);
+      }
+    } catch (error) {
+      console.error('Delete all error:', error);
+      alert('❌ Ошибка при удалении: ' + error.message);
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -357,6 +404,16 @@ const MenuItemsEditor = () => {
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
+          {filteredItems.length > 0 && (
+            <button
+              onClick={handleDeleteAll}
+              disabled={deletingAll}
+              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              <Icon name={deletingAll ? "Loader2" : "Trash2"} size={18} className={deletingAll ? "animate-spin" : ""} />
+              {deletingAll ? 'Удаление...' : `Удалить все (${filteredItems.length})`}
+            </button>
+          )}
         </div>
       </div>
 
