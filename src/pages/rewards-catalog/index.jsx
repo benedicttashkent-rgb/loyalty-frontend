@@ -7,6 +7,7 @@ import Icon from '../../components/AppIcon';
 import RewardCard from './components/RewardCard';
 import RedemptionModal from './components/RedemptionModal';
 import SuccessModal from './components/SuccessModal';
+import { getApiUrl } from '../../config/api';
 
 
 const RewardsCatalog = () => {
@@ -32,7 +33,7 @@ const RewardsCatalog = () => {
         }
 
         // Load customer data
-        const customerResponse = await fetch('/api/customers/me', {
+        const customerResponse = await fetch(getApiUrl('customers/me'), {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -51,7 +52,7 @@ const RewardsCatalog = () => {
         }
 
         // Load rewards from API
-        const rewardsResponse = await fetch('/api/content/rewards');
+        const rewardsResponse = await fetch(getApiUrl('content/rewards'));
         if (rewardsResponse.ok) {
           const rewardsData = await rewardsResponse.json();
           if (rewardsData.success && rewardsData.rewards) {

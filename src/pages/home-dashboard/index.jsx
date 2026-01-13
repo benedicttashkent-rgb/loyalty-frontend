@@ -11,6 +11,7 @@ import OrderSection from './components/OrderSection';
 import LoyaltyDetailsModal from './components/LoyaltyDetailsModal';
 import QRCodeModal from './components/QRCodeModal';
 import BookTableModal from './components/BookTableModal';
+import { getApiUrl } from '../../config/api';
 
 const HomeDashboard = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const HomeDashboard = () => {
           return;
         }
 
-        const response = await fetch('/api/customers/me', {
+        const response = await fetch(getApiUrl('customers/me'), {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

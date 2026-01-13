@@ -11,6 +11,7 @@ import BranchSelectionModal from './components/BranchSelectionModal';
 import Icon from '../../components/AppIcon';
 import { useLocation } from 'react-router-dom';
 import menuScraper from '../../services/menu/menuScraper';
+import { getApiUrl } from '../../config/api';
 
 
 const FoodOrderingMenu = () => {
@@ -314,7 +315,7 @@ const FoodOrderingMenu = () => {
         
         if (token) {
           try {
-            const response = await fetch('/api/customers/me', {
+            const response = await fetch(getApiUrl('customers/me'), {
               headers: {
                 'Authorization': `Bearer ${token}`,
               },

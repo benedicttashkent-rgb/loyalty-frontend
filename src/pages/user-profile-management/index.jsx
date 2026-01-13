@@ -7,6 +7,7 @@ import ProfileForm from './components/ProfileForm';
 import TransactionHistory from './components/TransactionHistory';
 import AccountPreferences from './components/AccountPreferences';
 import DangerZone from './components/DangerZone';
+import { getApiUrl } from '../../config/api';
 
 const UserProfileManagement = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const UserProfileManagement = () => {
           return;
         }
 
-        const response = await fetch('/api/customers/me', {
+        const response = await fetch(getApiUrl('customers/me'), {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
@@ -99,7 +100,7 @@ const UserProfileManagement = () => {
 
             // Load transactions from API
             try {
-              const transResponse = await fetch('/api/customers/me/transactions', {
+              const transResponse = await fetch(getApiUrl('customers/me/transactions'), {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                 },
@@ -176,7 +177,7 @@ const UserProfileManagement = () => {
         return;
       }
 
-      const response = await fetch('/api/customers/me', {
+      const response = await fetch(getApiUrl('customers/me'), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

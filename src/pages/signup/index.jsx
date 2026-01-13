@@ -338,18 +338,40 @@ const SignupPage = () => {
         }),
       });
 
+      console.log('🔍 Registration response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Registration failed:', response.status, errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          setErrors({ submit: errorData.error || `Ошибка регистрации: ${response.status}` });
+        } catch {
+          setErrors({ submit: `Ошибка регистрации: ${response.status} - ${errorText || 'Неизвестная ошибка'}` });
+        }
+        return;
+      }
+
       const data = await response.json();
+      console.log('✅ Registration response data:', data);
 
       if (data.success) {
         // Store customer data
-        localStorage.setItem('customerId', data.customer.id);
-        localStorage.setItem('customerPhone', formData.phone);
-        localStorage.setItem('customerName', `${formData.name} ${formData.surName}`);
-        localStorage.setItem('isNewCustomer', data.customer.isNewCustomer.toString());
-
-        // Navigate to home dashboard
-        navigate('/home-dashboard');
+        if (data.customer && data.customer.id) {
+          localStorage.setItem('customerId', data.customer.id);
+          localStorage.setItem('customerPhone', formData.phone);
+          localStorage.setItem('customerName', `${formData.name} ${formData.surName}`);
+          localStorage.setItem('isNewCustomer', (data.customer.isNewCustomer !== undefined ? data.customer.isNewCustomer : true).toString());
+          
+          console.log('✅ Customer data stored, navigating to dashboard...');
+          // Navigate to home dashboard
+          navigate('/home-dashboard');
+        } else {
+          console.error('❌ Registration response missing customer data:', data);
+          setErrors({ submit: 'Ошибка: данные клиента не получены' });
+        }
       } else {
+        console.error('❌ Registration failed:', data);
         setErrors({ submit: data.error || 'Ошибка регистрации' });
       }
     } catch (error) {
