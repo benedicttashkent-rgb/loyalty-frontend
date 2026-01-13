@@ -15,9 +15,13 @@ export const adminApiRequest = async (endpoint, options = {}) => {
   const adminToken = localStorage.getItem('adminToken');
   
   const headers = {
-    'Content-Type': 'application/json',
     ...options.headers,
   };
+  
+  // Only set Content-Type if not FormData (FormData sets its own Content-Type with boundary)
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
   
   // Add Authorization header if token exists
   if (adminToken) {

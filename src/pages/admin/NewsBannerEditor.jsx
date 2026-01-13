@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { getApiUrl } from '../../config/api';
+import { adminApiRequest } from '../../utils/adminApiClient';
 
 const NewsBannerEditor = () => {
   const navigate = useNavigate();
@@ -31,8 +32,8 @@ const NewsBannerEditor = () => {
 
   const fetchBanners = async () => {
     try {
-      const response = await fetch(getApiUrl('admin/news'), {
-        credentials: 'include',
+      const response = await adminApiRequest('admin/news', {
+        method: 'GET',
       });
 
       if (response.ok) {
@@ -52,9 +53,9 @@ const NewsBannerEditor = () => {
     e.preventDefault();
 
     try {
-      const url = editingBanner
-        ? getApiUrl(`admin/news/${editingBanner.id}`)
-        : getApiUrl('admin/news');
+      const endpoint = editingBanner
+        ? `admin/news/${editingBanner.id}`
+        : 'admin/news';
       
       const method = editingBanner ? 'PUT' : 'POST';
 
@@ -73,9 +74,8 @@ const NewsBannerEditor = () => {
         formDataToSend.append('iconImage', iconImageFile);
       }
 
-      const response = await fetch(url, {
+      const response = await adminApiRequest(endpoint, {
         method,
-        credentials: 'include',
         body: formDataToSend,
       });
 
@@ -110,9 +110,8 @@ const NewsBannerEditor = () => {
     if (!confirm('Are you sure you want to delete this banner?')) return;
 
     try {
-      const response = await fetch(getApiUrl(`admin/news/${id}`), {
+      const response = await adminApiRequest(`admin/news/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       if (response.ok) {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { getApiUrl } from '../../config/api';
+import { adminApiRequest } from '../../utils/adminApiClient';
 
 const MenuItemsEditor = () => {
   const navigate = useNavigate();
@@ -37,8 +38,8 @@ const MenuItemsEditor = () => {
     try {
       setLoading(true);
       console.log(`[MenuItemsEditor] Fetching menu items for branch: ${selectedBranch}`);
-      const response = await fetch(`${getApiUrl('admin/menu-items')}?branchId=${selectedBranch}`, {
-        credentials: 'include',
+      const response = await adminApiRequest(`admin/menu-items?branchId=${selectedBranch}`, {
+        method: 'GET',
       });
 
       if (response.ok) {
@@ -69,9 +70,9 @@ const MenuItemsEditor = () => {
     e.preventDefault();
 
     try {
-      const url = editingItem
-        ? getApiUrl(`admin/menu-items/${editingItem.id}`)
-        : getApiUrl('admin/menu-items');
+      const endpoint = editingItem
+        ? `admin/menu-items/${editingItem.id}`
+        : 'admin/menu-items';
       
       const method = editingItem ? 'PUT' : 'POST';
 
@@ -100,9 +101,8 @@ const MenuItemsEditor = () => {
         formDataToSend.append('image', imageFile);
       }
 
-      const response = await fetch(url, {
+      const response = await adminApiRequest(endpoint, {
         method,
-        credentials: 'include',
         body: formDataToSend
       });
 
@@ -171,9 +171,8 @@ const MenuItemsEditor = () => {
     }
 
     try {
-      const response = await fetch(getApiUrl(`admin/menu-items/${id}`), {
+      const response = await adminApiRequest(`admin/menu-items/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
       });
 
       if (response.ok) {
