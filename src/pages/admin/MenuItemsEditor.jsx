@@ -15,7 +15,6 @@ const MenuItemsEditor = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [resettingMenu, setResettingMenu] = useState(false);
   const [formData, setFormData] = useState({
     iikoProductId: '',
     branchId: 'mirabad',
@@ -239,31 +238,6 @@ const MenuItemsEditor = () => {
     }
   };
 
-  const handleResetMenu = async () => {
-    if (!confirm('Вы уверены? Это удалит ВСЕ существующие блюда для филиала Мирабад и создаст новые из структуры меню. Это действие нельзя отменить!')) {
-      return;
-    }
-
-    setResettingMenu(true);
-    try {
-      const response = await adminApiRequest('admin/menu-items/reset-mirabad', {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        alert('✅ Меню успешно сброшено! Все новые блюда созданы.');
-        fetchMenuItems();
-      } else {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        alert(`❌ Ошибка: ${errorData.error || 'Не удалось сбросить меню'}`);
-      }
-    } catch (error) {
-      console.error('Reset menu error:', error);
-      alert('❌ Ошибка при сбросе меню: ' + error.message);
-    } finally {
-      setResettingMenu(false);
-    }
-  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -307,16 +281,6 @@ const MenuItemsEditor = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {selectedBranch === 'mirabad' && (
-            <button
-              onClick={handleResetMenu}
-              disabled={resettingMenu}
-              className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors flex items-center gap-2 disabled:opacity-50"
-            >
-              <Icon name={resettingMenu ? "Loader2" : "RefreshCw"} size={20} className={resettingMenu ? "animate-spin" : ""} />
-              {resettingMenu ? 'Сброс...' : 'Сбросить меню'}
-            </button>
-          )}
           <button
             onClick={() => {
               resetForm();
@@ -427,17 +391,28 @@ const MenuItemsEditor = () => {
                     <tr key={item.id || item.iikoProductId} className="hover:bg-muted/50 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          {item.imageUrl ? (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                              <Icon name="Image" size={20} className="text-muted-foreground" />
-                            </div>
-                          )}
+                          {item.imageUrl ? (() => {
+                            // Convert relative URL to full URL
+                            let imageSrc = item.imageUrl;
+                            if (imageSrc && imageSrc.startsWith('/uploads/')) {
+                              const apiBase = getApiUrl('').replace('/api', '');
+                              imageSrc = `${apiBase}${imageSrc}`;
+                            }
+                            return (
+                              <img
+                                src={imageSrc}
+                                alt={item.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            );
+                          })() : null}
+                          <div className={`w-10 h-10 rounded-full bg-muted flex items-center justify-center ${item.imageUrl ? 'hidden' : ''}`}>
+                            <Icon name="Image" size={20} className="text-muted-foreground" />
+                          </div>
                           <span className="font-medium text-foreground">{item.name || '-'}</span>
                         </div>
                       </td>

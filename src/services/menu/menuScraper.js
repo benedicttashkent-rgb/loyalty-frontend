@@ -94,6 +94,15 @@ class MenuScraper {
       const originalCategory = item.category || item.category_name || '';
       const normalizedCategory = this.mapCategory(originalCategory);
       
+      // Convert relative image URL to full URL
+      let imageUrl = item.image || item.photo || item.image_url || '';
+      if (imageUrl && imageUrl.startsWith('/uploads/')) {
+        // Import getApiUrl dynamically to avoid circular dependency
+        const { getApiUrl } = require('../../config/api');
+        const apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
+        imageUrl = `${apiBase}${imageUrl}`;
+      }
+      
       return {
         id: item.id || `${branchId}-${index}`,
         name: item.name || item.title,
@@ -102,7 +111,7 @@ class MenuScraper {
         weight: item.weight || item.size || '',
         category: normalizedCategory, // Use normalized for filtering
         categoryName: originalCategory, // Preserve original name for display
-        image: item.image || item.photo || item.image_url || '',
+        image: imageUrl,
         imageAlt: item.imageAlt || `${item.name} from Benedict ${branchId}`,
         isNew: item.isNew || false,
         branch: branchId,
