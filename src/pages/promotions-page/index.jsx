@@ -100,17 +100,6 @@ const PromotionsPage = () => {
 
       {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Title Section with gradient and animation */}
-        <div className="text-center mb-10 animate-fade-in">
-          <div className="inline-block mb-4">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-2 text-foreground drop-shadow-md tracking-tight">
-              ДАЙДЖЕСТ СОБЫТИЙ
-            </h2>
-            <p className="text-lg md:text-xl text-muted-foreground">филиала Мирабад</p>
-            <div className="h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-60 mt-3 rounded-full"></div>
-          </div>
-        </div>
-
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12">
