@@ -344,34 +344,28 @@ const SignupPage = () => {
       console.log('   VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL || 'NOT SET (using fallback)');
       console.log('   Register URL:', registerUrl);
       
+      const registrationData = {
+        phone: getCleanPhone(formData.phone),
+        name: formData.name,
+        surName: formData.surName,
+        birthDate: formatDateForAPI(formData.birthDate),
+        email: telegramUser?.email || null,
+        telegramChatId: telegramChatId || null,
+      };
+      
+      console.log('📱 [signup] Sending registration data:', {
+        ...registrationData,
+        telegramChatId: telegramChatId ? `${telegramChatId} (type: ${typeof telegramChatId})` : 'null'
+      });
+      
       const response = await fetch(registerUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        const registrationData = {
-          phone: getCleanPhone(formData.phone),
-          name: formData.name,
-          surName: formData.surName,
-          birthDate: formatDateForAPI(formData.birthDate),
-          email: telegramUser?.email || null,
-          telegramChatId: telegramChatId || null,
-        };
-        
-        console.log('📱 [signup] Sending registration data:', {
-          ...registrationData,
-          telegramChatId: telegramChatId ? `${telegramChatId} (type: ${typeof telegramChatId})` : 'null'
-        });
-        
-        const response = await fetch(registerUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify(registrationData),
-        });
+        body: JSON.stringify(registrationData),
+      });
       });
 
       console.log('🔍 Registration response status:', response.status);
