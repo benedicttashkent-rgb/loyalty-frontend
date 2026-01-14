@@ -51,23 +51,10 @@ const LoyaltyPointsCard = ({ cashback, cashbackPercent, tier, progress, onDetail
     
     // Ensure amount is a number
     const numAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
-    
-    if (numAmount >= 1000000) {
-      const millions = numAmount / 1000000;
-      // If it's a whole number, show without decimal
-      if (millions % 1 === 0) {
-        return `${millions.toFixed(0)} млн`;
-      }
-      return `${millions.toFixed(1)} млн`;
-    } else if (numAmount >= 1000) {
-      const thousands = numAmount / 1000;
-      // If it's a whole number, show without decimal
-      if (thousands % 1 === 0) {
-        return `${thousands.toFixed(0)} тыс`;
-      }
-      return `${thousands.toFixed(1)} тыс`;
-    }
-    return numAmount.toLocaleString('ru-RU');
+
+    // IMPORTANT: For remaining amount, do NOT abbreviate/round (e.g. 9.978 млн -> 10.0 млн).
+    // Show exact sums instead: 9 978 000
+    return Math.round(numAmount).toLocaleString('ru-RU');
   };
 
   return (
