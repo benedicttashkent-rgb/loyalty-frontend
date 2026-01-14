@@ -366,7 +366,6 @@ const SignupPage = () => {
         },
         body: JSON.stringify(registrationData),
       });
-      });
 
       console.log('🔍 Registration response status:', response.status);
       
