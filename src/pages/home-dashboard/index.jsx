@@ -40,6 +40,7 @@ const HomeDashboard = () => {
         telegramChatId = tg.initDataUnsafe?.chat?.id || tg.initDataUnsafe?.user?.id || null;
         
         if (telegramChatId) {
+          console.log('📱 [home-dashboard] Detected Telegram Web App, chat_id:', telegramChatId);
           // Update telegram_chat_id in background (non-blocking)
           fetch(getApiUrl('customers/me/telegram-chat-id'), {
             method: 'PUT',
@@ -48,9 +49,27 @@ const HomeDashboard = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ telegramChatId: telegramChatId.toString() }),
-          }).catch(err => {
-            console.log('⚠️ Failed to update telegram_chat_id (non-blocking):', err);
+          })
+          .then(response => {
+            if (response.ok) {
+              console.log('✅ [home-dashboard] Successfully updated telegram_chat_id');
+            } else {
+              console.error('❌ [home-dashboard] Failed to update telegram_chat_id:', response.status);
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              console.log('✅ [home-dashboard] telegram_chat_id update confirmed:', data);
+            } else {
+              console.error('❌ [home-dashboard] telegram_chat_id update failed:', data);
+            }
+          })
+          .catch(err => {
+            console.error('❌ [home-dashboard] Error updating telegram_chat_id:', err);
           });
+        } else {
+          console.log('⚠️ [home-dashboard] No telegramChatId detected (not opened from Telegram Web App)');
         }
       }
 
