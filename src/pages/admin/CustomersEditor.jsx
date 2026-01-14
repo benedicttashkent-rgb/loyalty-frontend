@@ -3,8 +3,6 @@ import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
-import { bulkAddCardsToCustomers } from '../../utils/bulkAddCards';
-import { syncCardsToIiko } from '../../utils/syncCardsToIiko';
 
 const CustomersEditor = () => {
   const [loading, setLoading] = useState(false);
@@ -20,8 +18,6 @@ const CustomersEditor = () => {
   const [includeBalance, setIncludeBalance] = useState(true);
   const [showAll, setShowAll] = useState(true); // Show all customers by default
   const [limit, setLimit] = useState(1000); // Large limit to show all
-  const [bulkAddingCards, setBulkAddingCards] = useState(false);
-  const [syncingCards, setSyncingCards] = useState(false);
 
   useEffect(() => {
     fetchCustomers();
@@ -142,51 +138,6 @@ const CustomersEditor = () => {
     }
   };
 
-  const handleBulkAddCards = async () => {
-    if (!confirm('Вы уверены, что хотите добавить карты всем клиентам без карт? Это действие может занять некоторое время.')) {
-      return;
-    }
-
-    setBulkAddingCards(true);
-    try {
-      const result = await bulkAddCardsToCustomers();
-      if (result.success) {
-        alert(`✅ Успешно! ${result.message}\n${result.stats ? `Добавлено карт: ${result.stats.added || 0}\nОбработано клиентов: ${result.stats.processed || 0}` : ''}`);
-        fetchCustomers(); // Refresh the list
-        fetchStats(); // Refresh stats
-      } else {
-        alert(`❌ Ошибка: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Bulk add cards error:', error);
-      alert(`❌ Ошибка: ${error.message || 'Неизвестная ошибка'}`);
-    } finally {
-      setBulkAddingCards(false);
-    }
-  };
-
-  const handleSyncCardsToIiko = async () => {
-    if (!confirm('Вы уверены, что хотите синхронизировать карты клиентов с iiko? Это действие синхронизирует карты из нашей базы данных в iiko для клиентов, у которых есть карта в БД, но нет в iiko. Это может занять некоторое время.')) {
-      return;
-    }
-
-    setSyncingCards(true);
-    try {
-      const result = await syncCardsToIiko();
-      if (result.success) {
-        alert(`✅ Успешно! ${result.message}\n${result.stats ? `Синхронизировано карт: ${result.stats.synced || 0}\nОбработано клиентов: ${result.stats.processed || 0}\nОшибок: ${result.stats.failed || 0}` : ''}`);
-        fetchCustomers(); // Refresh the list
-        fetchStats(); // Refresh stats
-      } else {
-        alert(`❌ Ошибка: ${result.message}`);
-      }
-    } catch (error) {
-      console.error('Sync cards to iiko error:', error);
-      alert(`❌ Ошибка: ${error.message || 'Неизвестная ошибка'}`);
-    } finally {
-      setSyncingCards(false);
-    }
-  };
 
   if (loading && customers.length === 0) {
     return (
@@ -211,40 +162,6 @@ const CustomersEditor = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={handleSyncCardsToIiko}
-            disabled={syncingCards || bulkAddingCards}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {syncingCards ? (
-              <>
-                <Icon name="Loader2" size={18} className="animate-spin" />
-                Синхронизация с iiko...
-              </>
-            ) : (
-              <>
-                <Icon name="RefreshCw" size={18} />
-                Синхронизировать карты с iiko
-              </>
-            )}
-          </button>
-          <button
-            onClick={handleBulkAddCards}
-            disabled={bulkAddingCards || syncingCards}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {bulkAddingCards ? (
-              <>
-                <Icon name="Loader2" size={18} className="animate-spin" />
-                Добавление карт...
-              </>
-            ) : (
-              <>
-                <Icon name="CreditCard" size={18} />
-                Добавить карты клиентам без карт
-              </>
-            )}
-          </button>
           <button
             onClick={() => {
               setShowAll(!showAll);
