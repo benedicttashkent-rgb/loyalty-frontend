@@ -105,12 +105,18 @@ const HomeDashboard = () => {
           const hasMadePurchase = totalSpent > 0 || !!data.customer.lastProcessedOrderDate;
           setShowNewsBanner(!hasMadePurchase);
           
+          // CRITICAL: Ensure totalSpent is a number and not null/undefined
+          const safeTotalSpent = typeof totalSpent === 'number' && !isNaN(totalSpent) ? totalSpent : 0;
+          const safeRemaining = nextThreshold ? Math.max(0, nextThreshold - safeTotalSpent) : 0;
+          
           console.log('✅ Frontend progress calculation:', {
-            totalSpent,
+            totalSpent: safeTotalSpent,
             tier,
             nextThreshold,
-            remaining,
-            backendProgress: data.customer.progress
+            remaining: safeRemaining,
+            calculation: nextThreshold ? `${nextThreshold} - ${safeTotalSpent} = ${safeRemaining}` : 'N/A',
+            backendProgress: data.customer.progress,
+            backendTotalSpent: data.customer.totalSpent
           });
           
           setUserData({
@@ -123,10 +129,10 @@ const HomeDashboard = () => {
             points: data.customer.points || data.customer.cashback || 0, // Backward compatibility
             tier: tier,
             progress: {
-              current: totalSpent,
+              current: safeTotalSpent, // Use safe value
               next: nextThreshold,
-              remaining: remaining, // Always use recalculated value
-              percentage: nextThreshold ? Math.min(100, (totalSpent / nextThreshold) * 100) : 100
+              remaining: safeRemaining, // Always use recalculated value
+              percentage: nextThreshold ? Math.min(100, (safeTotalSpent / nextThreshold) * 100) : 100
             }
           });
           

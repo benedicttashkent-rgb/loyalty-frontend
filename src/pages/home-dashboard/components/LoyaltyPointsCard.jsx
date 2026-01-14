@@ -108,7 +108,7 @@ const LoyaltyPointsCard = ({ cashback, cashbackPercent, tier, progress, onDetail
               
               // Convert to numbers with strict validation
               const nextThreshold = typeof progress?.next === 'number' ? progress.next : (progress?.next ? parseFloat(progress.next) : null);
-              const currentSpent = typeof progress?.current === 'number' ? progress.current : (progress?.current ? parseFloat(progress.current) : 0);
+              const currentSpent = typeof progress?.current === 'number' && !isNaN(progress.current) ? progress.current : (progress?.current ? parseFloat(progress.current) || 0 : 0);
               
               // ALWAYS recalculate remaining from next - current
               let remaining = 0;
@@ -116,16 +116,17 @@ const LoyaltyPointsCard = ({ cashback, cashbackPercent, tier, progress, onDetail
               if (nextThreshold !== null && nextThreshold !== undefined && !isNaN(nextThreshold)) {
                 // Calculate: remaining = next threshold - current spent
                 remaining = Math.max(0, nextThreshold - currentSpent);
+                console.log(`🔍 LoyaltyPointsCard calculation: ${nextThreshold} - ${currentSpent} = ${remaining}`);
               } else {
                 // No next threshold - use defaults based on tier
                 if (tier === 'Bronze') {
-                  remaining = 10000000 - currentSpent;
+                  remaining = Math.max(0, 10000000 - currentSpent);
                 } else if (tier === 'Silver') {
-                  remaining = 30000000 - currentSpent;
+                  remaining = Math.max(0, 30000000 - currentSpent);
                 } else if (tier === 'Gold') {
-                  remaining = 60000000 - currentSpent;
+                  remaining = Math.max(0, 60000000 - currentSpent);
                 }
-                remaining = Math.max(0, remaining);
+                console.log(`🔍 LoyaltyPointsCard fallback calculation (${tier}): default - ${currentSpent} = ${remaining}`);
               }
               
               // Final validation: ensure remaining is a valid number
