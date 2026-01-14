@@ -28,14 +28,54 @@ class IikoLoyaltyAPI {
     );
 
     // Setup response interceptor for error handling
+    let isRefreshing = false;
+    let failedQueue = [];
+    
+    const processQueue = (error, token = null) => {
+      failedQueue.forEach(prom => {
+        if (error) {
+          prom.reject(error);
+        } else {
+          prom.resolve(token);
+        }
+      });
+      failedQueue = [];
+    };
+    
     this.axiosInstance?.interceptors?.response?.use(
       (response) => response,
       async (error) => {
-        if (error?.response?.status === 401) {
-          // Token expired, refresh and retry
-          await this.refreshToken();
-          return this.axiosInstance?.request(error?.config);
+        const originalRequest = error?.config;
+        
+        if (error?.response?.status === 401 && !originalRequest?._retry) {
+          if (isRefreshing) {
+            // If already refreshing, queue this request
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            }).then(token => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return this.axiosInstance(originalRequest);
+            }).catch(err => {
+              return Promise.reject(err);
+            });
+          }
+          
+          originalRequest._retry = true;
+          isRefreshing = true;
+          
+          try {
+            const newToken = await this.refreshToken();
+            processQueue(null, newToken);
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            return this.axiosInstance(originalRequest);
+          } catch (refreshError) {
+            processQueue(refreshError, null);
+            return Promise.reject(refreshError);
+          } finally {
+            isRefreshing = false;
+          }
         }
+        
         return Promise.reject(error);
       }
     );

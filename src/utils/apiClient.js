@@ -30,13 +30,31 @@ export const apiRequest = async (endpoint, options = {}) => {
     
     // Handle non-JSON responses
     const contentType = response.headers.get('content-type');
+    let data;
+    
     if (contentType && contentType.includes('application/json')) {
-      const data = await response.json();
-      return { response, data };
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('Failed to parse JSON response:', parseError);
+        const text = await response.text();
+        return { 
+          response, 
+          data: { success: false, error: `Invalid JSON response: ${text}` } 
+        };
+      }
     } else {
       const text = await response.text();
-      return { response, data: { success: false, error: text } };
+      data = { success: false, error: text };
     }
+    
+    // Check if response is ok, but still return data for caller to handle
+    if (!response.ok && !data.error) {
+      data.error = `HTTP ${response.status}: ${response.statusText}`;
+      data.success = false;
+    }
+    
+    return { response, data };
   } catch (error) {
     console.error('API Request Error:', error);
     throw error;
