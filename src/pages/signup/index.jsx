@@ -51,12 +51,21 @@ const SignupPage = () => {
       if (user) {
         setTelegramUser(user);
         if (chatId) {
-          setTelegramChatId(chatId.toString());
-          console.log('📱 Telegram chat_id detected:', chatId);
+          const chatIdStr = chatId.toString();
+          setTelegramChatId(chatIdStr);
+          console.log('📱 Telegram chat_id detected:', chatIdStr);
           console.log('   User ID:', user.id);
-          console.log('   Chat ID:', tg.initDataUnsafe?.chat?.id);
+          console.log('   Chat ID from chat:', tg.initDataUnsafe?.chat?.id);
+          console.log('   Chat ID from user:', tg.initDataUnsafe?.user?.id);
+          console.log('   Using chat_id:', chatIdStr);
         } else {
           console.warn('⚠️ Telegram chat_id not found in initDataUnsafe');
+          console.warn('   Available data:', {
+            hasUser: !!user,
+            hasChat: !!tg.initDataUnsafe?.chat,
+            userId: user?.id,
+            chatId: tg.initDataUnsafe?.chat?.id
+          });
         }
         // Pre-fill phone if available
         if (user.phone_number) {
@@ -341,14 +350,28 @@ const SignupPage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
+        const registrationData = {
           phone: getCleanPhone(formData.phone),
           name: formData.name,
           surName: formData.surName,
           birthDate: formatDateForAPI(formData.birthDate),
           email: telegramUser?.email || null,
           telegramChatId: telegramChatId || null,
-        }),
+        };
+        
+        console.log('📱 [signup] Sending registration data:', {
+          ...registrationData,
+          telegramChatId: telegramChatId ? `${telegramChatId} (type: ${typeof telegramChatId})` : 'null'
+        });
+        
+        const response = await fetch(registerUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(registrationData),
+        });
       });
 
       console.log('🔍 Registration response status:', response.status);
