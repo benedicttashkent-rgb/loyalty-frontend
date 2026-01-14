@@ -6,16 +6,19 @@ const LoyaltyPointsCard = ({ cashback, cashbackPercent, tier, progress, onDetail
   const displayCashback = cashback !== undefined ? cashback : 0;
   const displayPercent = cashbackPercent !== undefined ? cashbackPercent : 2;
   
-  // Debug: log progress values
-  console.log('🔍 LoyaltyPointsCard Debug:', {
-    cashback: displayCashback,
-    cashbackPercent: displayPercent,
-    tier: tier,
-    progress: progress,
-    remaining: progress?.remaining,
-    current: progress?.current,
-    next: progress?.next
-  });
+  // Debug: log progress values (only log when values change to reduce spam)
+  React.useEffect(() => {
+    console.log('🔍 LoyaltyPointsCard Debug:', {
+      cashback: displayCashback,
+      cashbackPercent: displayPercent,
+      tier: tier,
+      progress: progress,
+      remaining: progress?.remaining,
+      current: progress?.current,
+      next: progress?.next,
+      calculation: progress?.next && progress?.current ? `${progress.next} - ${progress.current} = ${progress.next - progress.current}` : 'N/A'
+    });
+  }, [displayCashback, displayPercent, tier, progress?.remaining, progress?.current, progress?.next]);
   
   const getTierColor = (tierName) => {
     switch (tierName) {
