@@ -131,17 +131,37 @@ const HomeDashboard = () => {
               }
             });
             
-            // For new customers, show welcome message as first transaction
-            if ((data.customer.cashback || data.customer.points || 0) === 0) {
-              setTransactions([{
-                id: 'welcome',
-                type: 'bonus',
-                description: 'Добро пожаловать в программу лояльности!',
-                points: 0,
-                date: new Date().toLocaleDateString('ru-RU')
-              }]);
-            } else {
-              // TODO: Load real transactions from API when available
+            // Load transactions from API
+            try {
+              const transResponse = await fetch(getApiUrl('customers/me/transactions'), {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+              
+              if (transResponse.ok) {
+                const transData = await transResponse.json();
+                if (transData.success && transData.transactions && transData.transactions.length > 0) {
+                  setTransactions(transData.transactions);
+                } else {
+                  // If no transactions, show welcome message for new customers
+                  if ((data.customer.cashback || data.customer.points || 0) === 0) {
+                    setTransactions([{
+                      id: 'welcome',
+                      type: 'bonus',
+                      description: 'Добро пожаловать в программу лояльности!',
+                      points: 0,
+                      date: new Date().toISOString()
+                    }]);
+                  } else {
+                    setTransactions([]);
+                  }
+                }
+              } else {
+                setTransactions([]);
+              }
+            } catch (transError) {
+              console.error('Error loading transactions:', transError);
               setTransactions([]);
             }
           } else {

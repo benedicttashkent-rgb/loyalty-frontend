@@ -5,7 +5,6 @@ import Button from '../../../components/ui/Button';
 const ProfileForm = ({ user, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: user?.name,
-    email: user?.email,
     phone: user?.phone,
     birthDate: user?.birthDate,
   });
@@ -20,14 +19,9 @@ const ProfileForm = ({ user, onSave, onCancel }) => {
       newErrors.name = 'Имя обязательно';
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex?.test(formData?.email)) {
-      newErrors.email = 'Неверный формат email';
-    }
-
-    const phoneRegex = /^\+7\s?\d{3}\s?\d{3}\s?\d{2}\s?\d{2}$/;
+    const phoneRegex = /^\+998\s?\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$/;
     if (!phoneRegex?.test(formData?.phone)) {
-      newErrors.phone = 'Формат: +7 XXX XXX XX XX';
+      newErrors.phone = 'Формат: +998 XX XXX XX XX';
     }
 
     if (!formData?.birthDate) {
@@ -63,7 +57,6 @@ const ProfileForm = ({ user, onSave, onCancel }) => {
   const handleCancel = () => {
     setFormData({
       name: user?.name,
-      email: user?.email,
       phone: user?.phone,
       birthDate: user?.birthDate,
     });
@@ -102,18 +95,6 @@ const ProfileForm = ({ user, onSave, onCancel }) => {
         />
 
         <Input
-          label="Email Адрес"
-          type="email"
-          name="email"
-          value={formData?.email}
-          onChange={handleChange}
-          error={errors?.email}
-          disabled={!isEditing}
-          required
-          placeholder="example@email.com"
-        />
-
-        <Input
           label="Номер Телефона"
           type="tel"
           name="phone"
@@ -122,19 +103,32 @@ const ProfileForm = ({ user, onSave, onCancel }) => {
           error={errors?.phone}
           disabled={!isEditing}
           required
-          placeholder="+7 XXX XXX XX XX"
+          placeholder="+998 XX XXX XX XX"
         />
 
-        <Input
-          label="Дата Рождения"
-          type="date"
-          name="birthDate"
-          value={formData?.birthDate}
-          onChange={handleChange}
-          error={errors?.birthDate}
-          disabled={!isEditing}
-          required
-        />
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            Дата Рождения
+          </label>
+          <Input
+            type="date"
+            name="birthDate"
+            value={formData?.birthDate || ''}
+            onChange={handleChange}
+            error={errors?.birthDate}
+            disabled={!isEditing}
+            required
+          />
+          {formData?.birthDate && !isEditing && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {new Date(formData.birthDate).toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              })}
+            </p>
+          )}
+        </div>
 
         {isEditing && (
           <div className="flex gap-3 pt-2">

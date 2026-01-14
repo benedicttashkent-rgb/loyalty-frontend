@@ -104,59 +104,29 @@ const LoyaltyPointsCard = ({ cashback, cashbackPercent, tier, progress, onDetail
               }
               
               // Convert to numbers with strict validation
-              const nextThreshold = typeof progress?.next === 'number' ? progress.next : parseFloat(progress?.next) || null;
-              const currentSpent = typeof progress?.current === 'number' ? progress.current : parseFloat(progress?.current) || 0;
-              
-              console.log('🔍 Progress values (raw):', {
-                next: progress?.next,
-                current: progress?.current,
-                remaining: progress?.remaining,
-                tier: tier
-              });
-              
-              console.log('🔍 Progress values (converted):', {
-                nextThreshold,
-                currentSpent,
-                tier: tier
-              });
+              const nextThreshold = typeof progress?.next === 'number' ? progress.next : (progress?.next ? parseFloat(progress.next) : null);
+              const currentSpent = typeof progress?.current === 'number' ? progress.current : (progress?.current ? parseFloat(progress.current) : 0);
               
               // ALWAYS recalculate remaining from next - current
               let remaining = 0;
               
-              if (nextThreshold !== null && nextThreshold !== undefined) {
+              if (nextThreshold !== null && nextThreshold !== undefined && !isNaN(nextThreshold)) {
                 // Calculate: remaining = next threshold - current spent
                 remaining = Math.max(0, nextThreshold - currentSpent);
-                console.log('✅ Calculated remaining:', `${nextThreshold} - ${currentSpent} = ${remaining}`);
-                
-                // CRITICAL CHECK: If remaining is suspiciously small (< 10000) but next is large (>= 1M), 
-                // something is wrong - force recalculation
-                if (remaining > 0 && remaining < 10000 && nextThreshold >= 1000000) {
-                  console.error('🚨 ERROR: Remaining is too small!', {
-                    remaining,
-                    nextThreshold,
-                    currentSpent,
-                    calculation: `${nextThreshold} - ${currentSpent}`
-                  });
-                  // Force recalculation - maybe currentSpent is wrong
-                  remaining = nextThreshold; // Assume no purchases yet
-                  console.log('🔧 Forced remaining to nextThreshold:', remaining);
-                }
               } else {
                 // No next threshold - use defaults based on tier
                 if (tier === 'Bronze') {
-                  remaining = 10000000;
+                  remaining = 10000000 - currentSpent;
                 } else if (tier === 'Silver') {
-                  remaining = 30000000;
+                  remaining = 30000000 - currentSpent;
                 } else if (tier === 'Gold') {
-                  remaining = 60000000;
+                  remaining = 60000000 - currentSpent;
                 }
-                console.log('⚠️ No nextThreshold, using default for tier:', tier, remaining);
+                remaining = Math.max(0, remaining);
               }
               
               // Final validation: ensure remaining is a valid number
               remaining = typeof remaining === 'number' && !isNaN(remaining) && remaining >= 0 ? remaining : 0;
-              
-              console.log('💰 Final remaining value:', remaining, 'formatAmount result:', formatAmount(remaining));
               
               // If remaining is valid and > 0, show it
               if (remaining > 0) {

@@ -17,7 +17,7 @@ import { getApiUrl } from '../../config/api';
 
 const FoodOrderingMenu = () => {
   const location = useLocation();
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isCheckoutSuccessOpen, setIsCheckoutSuccessOpen] = useState(false);
@@ -65,7 +65,6 @@ const FoodOrderingMenu = () => {
 
   // Category names mapping
   const categoryNames = {
-    'all': 'Все',
     'breakfast': 'Завтраки',
     'special-breakfast': 'Особые Завтраки',
     'bruschettas-sandwiches': 'Брускетты',
@@ -98,7 +97,6 @@ const FoodOrderingMenu = () => {
 
   // Category display order
   const categoryOrder = [
-    'all',
     'breakfast',
     'special-breakfast',
     'additions',
@@ -154,7 +152,7 @@ const FoodOrderingMenu = () => {
   const categories = useMemo(() => {
     const currentMenu = getCurrentMenu();
     if (!currentMenu || !Array.isArray(currentMenu)) {
-      return [{ id: 'all', name: 'Все' }];
+      return [];
     }
     
     // Build a map of category ID -> category name from actual menu items
@@ -169,21 +167,18 @@ const FoodOrderingMenu = () => {
     
     const uniqueCategories = Array.from(categoryMap.keys());
     
-    // Create category list with "Все" first, then sorted by custom order
-    const categoryList = [
-      { id: 'all', name: 'Все' },
-      ...uniqueCategories
-        .filter(catId => categoryOrder.includes(catId)) // Only include categories in our order
-        .sort((a, b) => {
-          const indexA = categoryOrder.indexOf(a);
-          const indexB = categoryOrder.indexOf(b);
-          return indexA - indexB;
-        })
-        .map(catId => ({
-          id: catId,
-          name: categoryMap.get(catId) || categoryNames[catId] || catId
-        }))
-    ];
+    // Create category list (removed "Все" category) sorted by custom order
+    const categoryList = uniqueCategories
+      .filter(catId => categoryOrder.includes(catId)) // Only include categories in our order
+      .sort((a, b) => {
+        const indexA = categoryOrder.indexOf(a);
+        const indexB = categoryOrder.indexOf(b);
+        return indexA - indexB;
+      })
+      .map(catId => ({
+        id: catId,
+        name: categoryMap.get(catId) || categoryNames[catId] || catId
+      }));
     
     return categoryList;
   }, [selectedBranch, menuData]);
@@ -193,7 +188,7 @@ const FoodOrderingMenu = () => {
     if (!currentMenu || !Array.isArray(currentMenu)) {
       return [];
     }
-    if (activeCategory === 'all') {
+    if (!activeCategory) {
       return currentMenu;
     }
     return currentMenu?.filter((item) => item?.category === activeCategory);

@@ -85,6 +85,11 @@ const LoyaltyDetailsModal = ({ isOpen, onClose, userData, transactions }) => {
         </button>
       </div>
       <div className="space-y-6">
+        <div className="bg-muted/30 rounded-lg p-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            💰 <span className="font-semibold text-foreground">1 балл = 1 сум</span>
+          </p>
+        </div>
         <div>
           <h3 className="text-base font-semibold text-foreground mb-3">Уровни программы</h3>
           <div className="space-y-3">
@@ -130,7 +135,7 @@ const LoyaltyDetailsModal = ({ isOpen, onClose, userData, transactions }) => {
         <div>
           <h3 className="text-base font-semibold text-foreground mb-3">История транзакций</h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {transactions?.map((transaction) => (
+            {transactions && transactions.length > 0 ? transactions.map((transaction) => (
               <div
                 key={transaction?.id}
                 className="flex items-center justify-between p-3 bg-card rounded-lg border border-border"
@@ -148,7 +153,12 @@ const LoyaltyDetailsModal = ({ isOpen, onClose, userData, transactions }) => {
                   {transaction?.type === 'redeemed' ? '-' : '+'}{(transaction?.amount || transaction?.cashback || transaction?.points || 0).toLocaleString('ru-RU')} сум
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">История транзакций пуста</p>
+                <p className="text-xs mt-1">Транзакции появятся после покупок</p>
+              </div>
+            )}
           </div>
         </div>
 
