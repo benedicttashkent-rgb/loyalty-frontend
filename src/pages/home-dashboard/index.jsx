@@ -24,8 +24,7 @@ const HomeDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Load real customer data
-  useEffect(() => {
-    const loadCustomerData = async () => {
+  const loadCustomerData = async () => {
       try {
         const token = localStorage.getItem('authToken');
         if (!token) {
@@ -192,6 +191,29 @@ const HomeDashboard = () => {
     };
 
     loadCustomerData();
+
+    // Refresh data when page becomes visible (user returns to app)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔄 Page visible - refreshing customer data...');
+        loadCustomerData();
+      }
+    };
+
+    // Refresh data periodically (every 30 seconds) to catch purchase updates
+    const refreshInterval = setInterval(() => {
+      if (!document.hidden) {
+        console.log('🔄 Periodic refresh - updating customer data...');
+        loadCustomerData();
+      }
+    }, 30000); // 30 seconds
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(refreshInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [navigate]);
 
   // Featured rewards removed - will be loaded from API when available
