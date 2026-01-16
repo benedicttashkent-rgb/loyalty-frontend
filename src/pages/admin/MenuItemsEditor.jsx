@@ -221,7 +221,15 @@ const MenuItemsEditor = () => {
 
   const handleToggleStatus = async (item) => {
     try {
-      const updates = { isAvailable: !item.isAvailable };
+      const newStatus = !item.isAvailable;
+      console.log('[MenuItemsEditor] Toggling status:', {
+        itemId: item.id,
+        itemName: item.name,
+        currentStatus: item.isAvailable,
+        newStatus: newStatus
+      });
+      
+      const updates = { isAvailable: newStatus };
       const response = await adminApiRequest(`admin/menu-items/${item.id}`, {
         method: 'PUT',
         body: JSON.stringify(updates),
@@ -231,7 +239,13 @@ const MenuItemsEditor = () => {
       });
 
       if (response.ok) {
-        fetchMenuItems();
+        const data = await response.json();
+        console.log('[MenuItemsEditor] Toggle response:', data);
+        fetchMenuItems(); // Refresh list
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[MenuItemsEditor] Toggle failed:', errorData);
+        alert('Ошибка при изменении статуса: ' + (errorData.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Toggle status error:', error);
