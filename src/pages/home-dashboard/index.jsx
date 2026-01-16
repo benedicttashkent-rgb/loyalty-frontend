@@ -45,13 +45,15 @@ const HomeDashboard = () => {
           console.log('   Chat ID from user:', tg.initDataUnsafe?.user?.id);
           console.log('   Using chat_id:', telegramChatId);
           
-          // Update telegram_chat_id - wait for it to complete
+          // Update telegram_chat_id - send initData for validation
           try {
             const apiUrl = getApiUrl('customers/me/telegram-chat-id');
+            const initData = tg.initData; // Get raw initData string for validation
+            
             console.log('📱 [home-dashboard] Calling API to update telegram_chat_id');
             console.log('   API URL:', apiUrl);
             console.log('   Chat ID:', telegramChatId.toString());
-            console.log('   Token exists:', !!token);
+            console.log('   Has initData:', !!initData);
             
             const updateResponse = await fetch(apiUrl, {
               method: 'PUT',
@@ -59,18 +61,19 @@ const HomeDashboard = () => {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ telegramChatId: telegramChatId.toString() }),
+              body: JSON.stringify({ 
+                initData: initData || null, // Send initData for validation
+                telegramChatId: telegramChatId.toString() // Fallback if initData not available
+              }),
             });
             
             console.log('📱 [home-dashboard] API Response status:', updateResponse.status);
-            console.log('📱 [home-dashboard] API Response headers:', Object.fromEntries(updateResponse.headers.entries()));
             
             const updateData = await updateResponse.json();
             console.log('📱 [home-dashboard] API Response data:', updateData);
             
             if (updateResponse.ok && updateData.success) {
               console.log('✅ [home-dashboard] Successfully updated telegram_chat_id:', telegramChatId);
-              console.log('   Response:', updateData);
             } else {
               console.error('❌ [home-dashboard] Failed to update telegram_chat_id');
               console.error('   Status:', updateResponse.status);
@@ -79,7 +82,6 @@ const HomeDashboard = () => {
           } catch (updateErr) {
             console.error('❌ [home-dashboard] Error updating telegram_chat_id:', updateErr);
             console.error('   Error details:', updateErr.message);
-            console.error('   Error stack:', updateErr.stack);
           }
         } else {
           console.log('⚠️ [home-dashboard] No telegramChatId detected');
