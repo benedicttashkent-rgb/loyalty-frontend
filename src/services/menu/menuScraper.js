@@ -94,26 +94,27 @@ class MenuScraper {
       const originalCategory = item.category || item.category_name || '';
       const normalizedCategory = this.mapCategory(originalCategory);
       
-      // Convert relative image URL to full URL
+      // Backend already returns full URLs in /api/menu/:branchId
+      // So we should use them as-is without modification
       let imageUrl = item.image || item.photo || item.image_url || '';
       if (imageUrl) {
-        // Remove double slashes and normalize path
-        imageUrl = imageUrl.replace(/\/+/g, '/');
-        
-        // If it's already a full URL, use as is
+        // If backend already returned a full URL (starts with http/https), use it as is
         if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-          // Already full URL, use as is
+          // Backend already converted to full URL, just normalize any double slashes
+          // Replace double slashes but preserve http:// or https://
+          imageUrl = imageUrl.replace(/([^:]\/)\/+/g, '$1');
         } else if (imageUrl.startsWith('/uploads/')) {
+          // Backend didn't convert (shouldn't happen, but handle it as fallback)
           // Import getApiUrl dynamically to avoid circular dependency
           const { getApiUrl } = require('../../config/api');
           let apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
-          // Remove trailing slash from apiBase
+          // Remove ALL trailing slashes
           apiBase = apiBase.replace(/\/+$/, '');
           // Ensure imageUrl has single leading slash
           const cleanImagePath = imageUrl.replace(/^\/+/, '/');
           // Combine: base + path (no double slashes)
           imageUrl = `${apiBase}${cleanImagePath}`;
-          console.log(`[menuScraper] Image URL transformed: ${item.image || item.image_url} → ${imageUrl}`);
+          console.warn(`[menuScraper] Backend didn't provide full URL, converted: ${item.image || item.image_url} → ${imageUrl}`);
         }
       }
       
