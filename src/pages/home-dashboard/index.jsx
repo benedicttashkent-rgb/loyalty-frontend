@@ -11,7 +11,7 @@ import OrderSection from './components/OrderSection';
 import LoyaltyDetailsModal from './components/LoyaltyDetailsModal';
 import QRCodeModal from './components/QRCodeModal';
 import BookTableModal from './components/BookTableModal';
-import DebugPanel from '../../components/DebugPanel';
+import DebugPanel from '../../components/DebugPanel.jsx';
 import { getApiUrl } from '../../config/api';
 
 const HomeDashboard = () => {
