@@ -40,37 +40,54 @@ const HomeDashboard = () => {
         telegramChatId = tg.initDataUnsafe?.chat?.id || tg.initDataUnsafe?.user?.id || null;
         
         if (telegramChatId) {
-          console.log('📱 [home-dashboard] Detected Telegram Web App, chat_id:', telegramChatId);
-          // Update telegram_chat_id in background (non-blocking)
-          fetch(getApiUrl('customers/me/telegram-chat-id'), {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ telegramChatId: telegramChatId.toString() }),
-          })
-          .then(response => {
-            if (response.ok) {
-              console.log('✅ [home-dashboard] Successfully updated telegram_chat_id');
+          console.log('📱 [home-dashboard] Detected Telegram Web App');
+          console.log('   Chat ID from chat:', tg.initDataUnsafe?.chat?.id);
+          console.log('   Chat ID from user:', tg.initDataUnsafe?.user?.id);
+          console.log('   Using chat_id:', telegramChatId);
+          
+          // Update telegram_chat_id - wait for it to complete
+          try {
+            const apiUrl = getApiUrl('customers/me/telegram-chat-id');
+            console.log('📱 [home-dashboard] Calling API to update telegram_chat_id');
+            console.log('   API URL:', apiUrl);
+            console.log('   Chat ID:', telegramChatId.toString());
+            console.log('   Token exists:', !!token);
+            
+            const updateResponse = await fetch(apiUrl, {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ telegramChatId: telegramChatId.toString() }),
+            });
+            
+            console.log('📱 [home-dashboard] API Response status:', updateResponse.status);
+            console.log('📱 [home-dashboard] API Response headers:', Object.fromEntries(updateResponse.headers.entries()));
+            
+            const updateData = await updateResponse.json();
+            console.log('📱 [home-dashboard] API Response data:', updateData);
+            
+            if (updateResponse.ok && updateData.success) {
+              console.log('✅ [home-dashboard] Successfully updated telegram_chat_id:', telegramChatId);
+              console.log('   Response:', updateData);
             } else {
-              console.error('❌ [home-dashboard] Failed to update telegram_chat_id:', response.status);
+              console.error('❌ [home-dashboard] Failed to update telegram_chat_id');
+              console.error('   Status:', updateResponse.status);
+              console.error('   Response:', updateData);
             }
-            return response.json();
-          })
-          .then(data => {
-            if (data.success) {
-              console.log('✅ [home-dashboard] telegram_chat_id update confirmed:', data);
-            } else {
-              console.error('❌ [home-dashboard] telegram_chat_id update failed:', data);
-            }
-          })
-          .catch(err => {
-            console.error('❌ [home-dashboard] Error updating telegram_chat_id:', err);
-          });
+          } catch (updateErr) {
+            console.error('❌ [home-dashboard] Error updating telegram_chat_id:', updateErr);
+            console.error('   Error details:', updateErr.message);
+            console.error('   Error stack:', updateErr.stack);
+          }
         } else {
-          console.log('⚠️ [home-dashboard] No telegramChatId detected (not opened from Telegram Web App)');
+          console.log('⚠️ [home-dashboard] No telegramChatId detected');
+          console.log('   window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
+          console.log('   initDataUnsafe:', tg?.initDataUnsafe);
         }
+      } else {
+        console.log('⚠️ [home-dashboard] Not opened from Telegram Web App');
       }
 
       const response = await fetch(getApiUrl('customers/me'), {
@@ -157,17 +174,28 @@ const HomeDashboard = () => {
           
           // Load transactions from API
           try {
+            console.log('📊 [home-dashboard] Fetching transaction history...');
             const transResponse = await fetch(getApiUrl('customers/me/transactions'), {
               headers: {
                 'Authorization': `Bearer ${token}`,
               },
             });
             
+            console.log('📊 [home-dashboard] Transaction history response status:', transResponse.status);
+            
             if (transResponse.ok) {
               const transData = await transResponse.json();
+              console.log('📊 [home-dashboard] Transaction history response:', transData);
+              
               if (transData.success && transData.transactions && transData.transactions.length > 0) {
+                console.log(`✅ [home-dashboard] Loaded ${transData.transactions.length} transactions`);
                 setTransactions(transData.transactions);
               } else {
+                console.log('📊 [home-dashboard] No transactions found');
+                console.log('   Response success:', transData.success);
+                console.log('   Transactions array:', transData.transactions);
+                console.log('   Transactions length:', transData.transactions?.length);
+                
                 // If no transactions, show welcome message for new customers
                 if ((data.customer.cashback || data.customer.points || 0) === 0) {
                   setTransactions([{
@@ -182,10 +210,15 @@ const HomeDashboard = () => {
                 }
               }
             } else {
+              const errorData = await transResponse.json().catch(() => ({}));
+              console.error('❌ [home-dashboard] Failed to load transaction history');
+              console.error('   Status:', transResponse.status);
+              console.error('   Response:', errorData);
               setTransactions([]);
             }
           } catch (transError) {
-            console.error('Error loading transactions:', transError);
+            console.error('❌ [home-dashboard] Error loading transactions:', transError);
+            console.error('   Error message:', transError.message);
             setTransactions([]);
           }
         } else {
