@@ -100,17 +100,42 @@ const UserProfileManagement = () => {
 
             // Load transactions from API
             try {
+              console.log('📊 [profile-management] Fetching transaction history...');
               const transResponse = await fetch(getApiUrl('customers/me/transactions'), {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                 },
               });
               
+              console.log('📊 [profile-management] Transaction history response status:', transResponse.status);
+              
               if (transResponse.ok) {
                 const transData = await transResponse.json();
+                console.log('📊 [profile-management] Transaction history response:', transData);
+                
                 if (transData.success && transData.transactions) {
-                  setTransactions(transData.transactions);
+                  if (transData.transactions.length > 0) {
+                    console.log(`✅ [profile-management] Loaded ${transData.transactions.length} transactions`);
+                    setTransactions(transData.transactions);
+                  } else {
+                    console.log('📊 [profile-management] No transactions found (empty array)');
+                    // If no transactions, show welcome message for new customers
+                    if (cashback === 0) {
+                      setTransactions([{
+                        id: 'welcome',
+                        type: 'bonus',
+                        description: 'Добро пожаловать в программу лояльности!',
+                        amount: 0,
+                        date: new Date().toISOString()
+                      }]);
+                    } else {
+                      setTransactions([]);
+                    }
+                  }
                 } else {
+                  console.log('📊 [profile-management] Invalid transaction data format');
+                  console.log('   Response success:', transData.success);
+                  console.log('   Transactions:', transData.transactions);
                   // If no transactions, show welcome message for new customers
                   if (cashback === 0) {
                     setTransactions([{
@@ -125,11 +150,15 @@ const UserProfileManagement = () => {
                   }
                 }
               } else {
-                // Error loading transactions - show empty array
+                const errorData = await transResponse.json().catch(() => ({}));
+                console.error('❌ [profile-management] Failed to load transaction history');
+                console.error('   Status:', transResponse.status);
+                console.error('   Response:', errorData);
                 setTransactions([]);
               }
             } catch (transError) {
-              console.error('Error loading transactions:', transError);
+              console.error('❌ [profile-management] Error loading transactions:', transError);
+              console.error('   Error message:', transError.message);
               setTransactions([]);
             }
           }
@@ -238,7 +267,8 @@ const UserProfileManagement = () => {
           <DangerZone onDeleteAccount={handleDeleteAccount} />
         </div>
       </div>
-    </ModalOverlay>);
+    </ModalOverlay>
+    );
 
 };
 

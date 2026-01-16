@@ -287,6 +287,53 @@ const TelegramBroadcastEditor = () => {
         </div>
       )}
 
+      {/* Info: Why customers don't have telegram_chat_id */}
+      {stats?.botConfigured && stats?.withoutTelegram > 0 && (
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <Icon name="Info" size={24} className="text-blue-500 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground mb-2">Почему у клиентов нет Telegram Chat ID?</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Клиенты получают <code className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">telegram_chat_id</code> только когда они открывают приложение через Telegram бот. 
+                Если клиент зарегистрировался через обычный браузер, у него не будет Chat ID до тех пор, пока он не откроет приложение через бот.
+              </p>
+              <div className="bg-muted/50 rounded-lg p-3 space-y-2">
+                <p className="text-sm font-medium text-foreground">Как клиенты могут подключить Telegram:</p>
+                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                  <li>Открыть Telegram бот: {stats.botInfo?.username ? (
+                    <a 
+                      href={`https://t.me/${stats.botInfo.username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline font-mono"
+                    >
+                      @{stats.botInfo.username}
+                    </a>
+                  ) : 'бот не найден'}</li>
+                  <li>Нажать кнопку "Открыть приложение" или перейти по ссылке бота</li>
+                  <li>Войти в приложение через Telegram Web App</li>
+                  <li>Chat ID будет автоматически сохранен при первом открытии</li>
+                </ol>
+              </div>
+              {stats.botInfo?.username && (
+                <div className="mt-3">
+                  <a
+                    href={`https://t.me/${stats.botInfo.username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                  >
+                    <Icon name="ExternalLink" size={16} />
+                    Открыть бота в Telegram
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Last Result */}
       {lastResult && (
         <div className="bg-card border border-border rounded-lg p-4">
