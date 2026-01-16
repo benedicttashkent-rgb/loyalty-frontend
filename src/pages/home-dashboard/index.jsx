@@ -53,7 +53,23 @@ const HomeDashboard = () => {
             console.log('📱 [home-dashboard] Calling API to update telegram_chat_id');
             console.log('   API URL:', apiUrl);
             console.log('   Chat ID:', telegramChatId.toString());
+            console.log('   initData type:', typeof initData);
+            console.log('   initData length:', initData?.length || 0);
+            console.log('   initData preview:', initData ? initData.substring(0, 100) + '...' : 'null/undefined');
             console.log('   Has initData:', !!initData);
+            console.log('   initDataUnsafe keys:', Object.keys(tg.initDataUnsafe || {}));
+            
+            const requestBody = {
+              telegramChatId: telegramChatId.toString() // Always send this as fallback
+            };
+            
+            // Only add initData if it exists and is not empty
+            if (initData && typeof initData === 'string' && initData.trim().length > 0) {
+              requestBody.initData = initData;
+              console.log('   ✅ Sending initData for validation');
+            } else {
+              console.log('   ⚠️ initData not available, using telegramChatId directly');
+            }
             
             const updateResponse = await fetch(apiUrl, {
               method: 'PUT',
@@ -61,27 +77,35 @@ const HomeDashboard = () => {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ 
-                initData: initData || null, // Send initData for validation
-                telegramChatId: telegramChatId.toString() // Fallback if initData not available
-              }),
+              body: JSON.stringify(requestBody),
             });
             
             console.log('📱 [home-dashboard] API Response status:', updateResponse.status);
             
-            const updateData = await updateResponse.json();
-            console.log('📱 [home-dashboard] API Response data:', updateData);
-            
-            if (updateResponse.ok && updateData.success) {
-              console.log('✅ [home-dashboard] Successfully updated telegram_chat_id:', telegramChatId);
+            if (!updateResponse.ok) {
+              const errorText = await updateResponse.text();
+              console.error('❌ [home-dashboard] API Error Response:', errorText);
+              try {
+                const errorData = JSON.parse(errorText);
+                console.error('   Parsed error:', errorData);
+              } catch (e) {
+                console.error('   Could not parse error as JSON');
+              }
             } else {
-              console.error('❌ [home-dashboard] Failed to update telegram_chat_id');
-              console.error('   Status:', updateResponse.status);
-              console.error('   Response:', updateData);
+              const updateData = await updateResponse.json();
+              console.log('📱 [home-dashboard] API Response data:', updateData);
+              
+              if (updateData.success) {
+                console.log('✅ [home-dashboard] Successfully updated telegram_chat_id:', telegramChatId);
+              } else {
+                console.error('❌ [home-dashboard] Update returned success: false');
+                console.error('   Response:', updateData);
+              }
             }
           } catch (updateErr) {
             console.error('❌ [home-dashboard] Error updating telegram_chat_id:', updateErr);
             console.error('   Error details:', updateErr.message);
+            console.error('   Error stack:', updateErr.stack);
           }
         } else {
           console.log('⚠️ [home-dashboard] No telegramChatId detected');
