@@ -96,11 +96,17 @@ class MenuScraper {
       
       // Convert relative image URL to full URL
       let imageUrl = item.image || item.photo || item.image_url || '';
-      if (imageUrl && imageUrl.startsWith('/uploads/')) {
-        // Import getApiUrl dynamically to avoid circular dependency
-        const { getApiUrl } = require('../../config/api');
-        const apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
-        imageUrl = `${apiBase}${imageUrl}`;
+      if (imageUrl) {
+        // Remove double slashes
+        imageUrl = imageUrl.replace(/\/+/g, '/');
+        if (imageUrl.startsWith('/uploads/')) {
+          // Import getApiUrl dynamically to avoid circular dependency
+          const { getApiUrl } = require('../../config/api');
+          const apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
+          // Remove trailing slash from apiBase if present
+          const cleanBase = apiBase.replace(/\/$/, '');
+          imageUrl = `${cleanBase}${imageUrl}`;
+        }
       }
       
       return {
