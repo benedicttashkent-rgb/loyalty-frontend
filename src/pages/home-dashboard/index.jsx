@@ -42,34 +42,18 @@ const HomeDashboard = () => {
         if (telegramChatId) {
           console.log('📱 [home-dashboard] Detected Telegram Web App');
           console.log('   Chat ID from chat:', tg.initDataUnsafe?.chat?.id);
-          console.log('   Chat ID from user:', tg.initDataUnsafe?.user?.id);
+          console.log('   Chat ID from user (this IS the chat_id for private chats):', tg.initDataUnsafe?.user?.id);
           console.log('   Using chat_id:', telegramChatId);
           
-          // Update telegram_chat_id - send initData for validation
+          // Update telegram_chat_id
+          // For private chats: user.id IS the chat_id
+          // For group chats: chat.id is the chat_id
           try {
             const apiUrl = getApiUrl('customers/me/telegram-chat-id');
-            const initData = tg.initData; // Get raw initData string for validation
             
             console.log('📱 [home-dashboard] Calling API to update telegram_chat_id');
             console.log('   API URL:', apiUrl);
-            console.log('   Chat ID:', telegramChatId.toString());
-            console.log('   initData type:', typeof initData);
-            console.log('   initData length:', initData?.length || 0);
-            console.log('   initData preview:', initData ? initData.substring(0, 100) + '...' : 'null/undefined');
-            console.log('   Has initData:', !!initData);
-            console.log('   initDataUnsafe keys:', Object.keys(tg.initDataUnsafe || {}));
-            
-            const requestBody = {
-              telegramChatId: telegramChatId.toString() // Always send this as fallback
-            };
-            
-            // Only add initData if it exists and is not empty
-            if (initData && typeof initData === 'string' && initData.trim().length > 0) {
-              requestBody.initData = initData;
-              console.log('   ✅ Sending initData for validation');
-            } else {
-              console.log('   ⚠️ initData not available, using telegramChatId directly');
-            }
+            console.log('   Chat ID to save:', telegramChatId.toString());
             
             const updateResponse = await fetch(apiUrl, {
               method: 'PUT',
@@ -77,7 +61,9 @@ const HomeDashboard = () => {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify(requestBody),
+              body: JSON.stringify({ 
+                telegramChatId: telegramChatId.toString()
+              }),
             });
             
             console.log('📱 [home-dashboard] API Response status:', updateResponse.status);
