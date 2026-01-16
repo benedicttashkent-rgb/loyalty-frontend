@@ -11,6 +11,7 @@ import OrderSection from './components/OrderSection';
 import LoyaltyDetailsModal from './components/LoyaltyDetailsModal';
 import QRCodeModal from './components/QRCodeModal';
 import BookTableModal from './components/BookTableModal';
+import DebugPanel from '../../components/DebugPanel';
 import { getApiUrl } from '../../config/api';
 
 const HomeDashboard = () => {
@@ -33,57 +34,70 @@ const HomeDashboard = () => {
         return;
       }
 
-      // Check if opened from Telegram and update telegram_chat_id if needed
+      // ============================================
+      // GET TELEGRAM CHAT ID AND UPDATE DATABASE
+      // ============================================
       let telegramChatId = null;
       
-      // METHOD: Get Telegram Chat ID from Web App
-      // For private chats: user.id IS the chat_id
-      // For group chats: chat.id is the chat_id
+      // Wait a bit for Telegram Web App to initialize (if needed)
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Check if running in Telegram Web App
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
         
-        // IMPORTANT: Initialize Web App first
-        tg.ready();
-        tg.expand(); // Expand to show full init data
+        // CRITICAL: Initialize Web App first
+        try {
+          tg.ready();
+          tg.expand(); // This expands the Web App and makes initData available
+        } catch (e) {
+          console.error('❌ [home-dashboard] Error initializing Telegram Web App:', e);
+        }
         
-        console.log('📱 [home-dashboard] Telegram Web App detected');
+        console.log('📱 [home-dashboard] ===== TELEGRAM WEB APP DETECTED =====');
         console.log('   Version:', tg.version);
         console.log('   Platform:', tg.platform);
+        console.log('   initDataUnsafe exists:', !!tg.initDataUnsafe);
+        console.log('   initDataUnsafe keys:', tg.initDataUnsafe ? Object.keys(tg.initDataUnsafe) : 'N/A');
         
-        // Get user data
+        // Get user data (THIS IS THE CHAT ID FOR PRIVATE MESSAGES)
         const user = tg.initDataUnsafe?.user;
         const chat = tg.initDataUnsafe?.chat;
         
-        console.log('   User data:', user ? {
-          id: user.id,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          username: user.username
-        } : 'Not available');
-        console.log('   Chat data:', chat ? { id: chat.id, type: chat.type } : 'Not available');
+        console.log('   User object:', user);
+        console.log('   Chat object:', chat);
         
-        // For private chats: user.id IS the chat_id (most common)
-        // For group chats: use chat.id
+        // For PRIVATE chats: user.id IS the chat_id (this is what we need!)
+        // For GROUP chats: chat.id is the chat_id
         if (user?.id) {
-          telegramChatId = user.id; // This IS the chat_id for private messages
-          console.log('✅ [home-dashboard] Got Telegram Chat ID from user.id:', telegramChatId);
+          telegramChatId = user.id;
+          console.log('✅ [home-dashboard] FOUND CHAT ID from user.id:', telegramChatId);
+          console.log('   User:', user.first_name, user.last_name);
+          console.log('   Username:', user.username);
         } else if (chat?.id) {
-          telegramChatId = chat.id; // For group chats
-          console.log('✅ [home-dashboard] Got Telegram Chat ID from chat.id:', telegramChatId);
+          telegramChatId = chat.id;
+          console.log('✅ [home-dashboard] FOUND CHAT ID from chat.id:', telegramChatId);
         } else {
-          console.error('❌ [home-dashboard] No user.id or chat.id found in initDataUnsafe');
-          console.error('   Full initDataUnsafe:', tg.initDataUnsafe);
+          console.error('❌ [home-dashboard] NO CHAT ID FOUND!');
+          console.error('   user:', user);
+          console.error('   chat:', chat);
+          console.error('   Full initDataUnsafe:', JSON.stringify(tg.initDataUnsafe, null, 2));
         }
         
         // Update telegram_chat_id in database
-        if (telegramChatId) {
+        if (telegramChatId && token) {
+          console.log('📱 [home-dashboard] ===== UPDATING TELEGRAM CHAT ID =====');
+          console.log('   Chat ID to save:', telegramChatId);
+          console.log('   Token exists:', !!token);
+          
           try {
             const apiUrl = getApiUrl('customers/me/telegram-chat-id');
-            
-            console.log('📱 [home-dashboard] Sending chat_id to backend');
             console.log('   API URL:', apiUrl);
-            console.log('   Chat ID:', telegramChatId);
-            console.log('   Token exists:', !!token);
+            
+            const requestBody = { 
+              telegramChatId: String(telegramChatId)
+            };
+            console.log('   Request body:', JSON.stringify(requestBody));
             
             const updateResponse = await fetch(apiUrl, {
               method: 'PUT',
@@ -91,40 +105,50 @@ const HomeDashboard = () => {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ 
-                telegramChatId: String(telegramChatId) // Convert to string
-              }),
+              body: JSON.stringify(requestBody),
             });
             
             console.log('📱 [home-dashboard] API Response status:', updateResponse.status);
+            console.log('📱 [home-dashboard] API Response ok:', updateResponse.ok);
             
             if (!updateResponse.ok) {
               const errorText = await updateResponse.text();
-              console.error('❌ [home-dashboard] API Error:', errorText);
+              console.error('❌ [home-dashboard] API ERROR:', errorText);
               try {
                 const errorData = JSON.parse(errorText);
-                console.error('   Error details:', errorData);
+                console.error('   Parsed error:', errorData);
               } catch (e) {
-                console.error('   Could not parse error');
+                console.error('   Raw error text:', errorText);
               }
             } else {
               const updateData = await updateResponse.json();
-              console.log('📱 [home-dashboard] API Response:', updateData);
+              console.log('📱 [home-dashboard] API SUCCESS:', updateData);
               
               if (updateData.success) {
-                console.log('✅ [home-dashboard] Successfully saved telegram_chat_id:', telegramChatId);
+                console.log('✅✅✅ [home-dashboard] TELEGRAM CHAT ID SAVED:', telegramChatId);
               } else {
-                console.error('❌ [home-dashboard] Update failed:', updateData);
+                console.error('❌ [home-dashboard] Update returned success: false');
+                console.error('   Response:', updateData);
               }
             }
           } catch (updateErr) {
-            console.error('❌ [home-dashboard] Error updating telegram_chat_id:', updateErr);
-            console.error('   Error:', updateErr.message);
+            console.error('❌ [home-dashboard] FETCH ERROR:', updateErr);
+            console.error('   Error message:', updateErr.message);
+            console.error('   Error stack:', updateErr.stack);
+          }
+        } else {
+          if (!telegramChatId) {
+            console.error('❌ [home-dashboard] No telegramChatId to save');
+          }
+          if (!token) {
+            console.error('❌ [home-dashboard] No auth token available');
           }
         }
       } else {
-        console.log('⚠️ [home-dashboard] Not opened in Telegram Web App');
-        console.log('   window.Telegram?.WebApp:', window.Telegram?.WebApp);
+        console.log('⚠️⚠️⚠️ [home-dashboard] NOT IN TELEGRAM WEB APP');
+        console.log('   window.Telegram exists:', !!window.Telegram);
+        console.log('   window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
+        console.log('   User must open app through Telegram bot to capture chat_id');
       }
 
       const response = await fetch(getApiUrl('customers/me'), {
@@ -368,6 +392,7 @@ const HomeDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <DebugPanel />
       <div className="main-content max-w-md mx-auto">
         <div className="flex items-center justify-between mb-6">
           <BrandLogo />
