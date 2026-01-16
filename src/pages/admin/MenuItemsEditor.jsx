@@ -463,11 +463,16 @@ const MenuItemsEditor = () => {
                               
                               // If already full URL, use as is
                               if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
-                                // Already full URL
+                                // Already full URL, use as is
                               } else if (imageSrc.startsWith('/uploads/')) {
-                                const apiBase = getApiUrl('').replace('/api', '').replace(/\/$/, '');
+                                let apiBase = getApiUrl('').replace('/api', '');
+                                // Remove ALL trailing slashes
+                                apiBase = apiBase.replace(/\/+$/, '');
+                                // Ensure path has single leading slash
                                 const cleanPath = imageSrc.replace(/^\/+/, '/');
+                                // Combine without double slashes
                                 imageSrc = `${apiBase}${cleanPath}`;
+                                console.log('[MenuItemsEditor] Image URL:', item.imageUrl, '→', imageSrc);
                               }
                             }
                             return (

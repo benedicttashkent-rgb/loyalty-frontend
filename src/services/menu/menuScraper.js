@@ -106,11 +106,14 @@ class MenuScraper {
         } else if (imageUrl.startsWith('/uploads/')) {
           // Import getApiUrl dynamically to avoid circular dependency
           const { getApiUrl } = require('../../config/api');
-          const apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
-          // Remove trailing slash from apiBase if present, and leading slash from imageUrl
-          const cleanBase = apiBase.replace(/\/$/, '');
-          const cleanImagePath = imageUrl.replace(/^\/+/, '/'); // Ensure single leading slash
-          imageUrl = `${cleanBase}${cleanImagePath}`;
+          let apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
+          // Remove trailing slash from apiBase
+          apiBase = apiBase.replace(/\/+$/, '');
+          // Ensure imageUrl has single leading slash
+          const cleanImagePath = imageUrl.replace(/^\/+/, '/');
+          // Combine: base + path (no double slashes)
+          imageUrl = `${apiBase}${cleanImagePath}`;
+          console.log(`[menuScraper] Image URL transformed: ${item.image || item.image_url} → ${imageUrl}`);
         }
       }
       
