@@ -97,15 +97,20 @@ class MenuScraper {
       // Convert relative image URL to full URL
       let imageUrl = item.image || item.photo || item.image_url || '';
       if (imageUrl) {
-        // Remove double slashes
+        // Remove double slashes and normalize path
         imageUrl = imageUrl.replace(/\/+/g, '/');
-        if (imageUrl.startsWith('/uploads/')) {
+        
+        // If it's already a full URL, use as is
+        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+          // Already full URL, use as is
+        } else if (imageUrl.startsWith('/uploads/')) {
           // Import getApiUrl dynamically to avoid circular dependency
           const { getApiUrl } = require('../../config/api');
           const apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
-          // Remove trailing slash from apiBase if present
+          // Remove trailing slash from apiBase if present, and leading slash from imageUrl
           const cleanBase = apiBase.replace(/\/$/, '');
-          imageUrl = `${cleanBase}${imageUrl}`;
+          const cleanImagePath = imageUrl.replace(/^\/+/, '/'); // Ensure single leading slash
+          imageUrl = `${cleanBase}${cleanImagePath}`;
         }
       }
       

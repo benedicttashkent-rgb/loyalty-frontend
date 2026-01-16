@@ -457,9 +457,18 @@ const MenuItemsEditor = () => {
                           {item.imageUrl ? (() => {
                             // Convert relative URL to full URL
                             let imageSrc = item.imageUrl;
-                            if (imageSrc && imageSrc.startsWith('/uploads/')) {
-                              const apiBase = getApiUrl('').replace('/api', '');
-                              imageSrc = `${apiBase}${imageSrc}`;
+                            if (imageSrc) {
+                              // Remove double slashes
+                              imageSrc = imageSrc.replace(/\/+/g, '/');
+                              
+                              // If already full URL, use as is
+                              if (imageSrc.startsWith('http://') || imageSrc.startsWith('https://')) {
+                                // Already full URL
+                              } else if (imageSrc.startsWith('/uploads/')) {
+                                const apiBase = getApiUrl('').replace('/api', '').replace(/\/$/, '');
+                                const cleanPath = imageSrc.replace(/^\/+/, '/');
+                                imageSrc = `${apiBase}${cleanPath}`;
+                              }
                             }
                             return (
                               <img
@@ -467,6 +476,7 @@ const MenuItemsEditor = () => {
                                 alt={item.name}
                                 className="w-10 h-10 rounded-full object-cover"
                                 onError={(e) => {
+                                  console.error('Admin panel image failed to load:', imageSrc);
                                   e.target.style.display = 'none';
                                   e.target.nextSibling.style.display = 'flex';
                                 }}
