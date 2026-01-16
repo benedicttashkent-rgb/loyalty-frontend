@@ -46,31 +46,6 @@ const LoyaltyDetailsModal = ({ isOpen, onClose, userData }) => {
     }
   ];
 
-  const getTransactionIcon = (type) => {
-    switch (type) {
-      case 'earned':
-        return 'Plus';
-      case 'redeemed':
-        return 'Minus';
-      case 'bonus':
-        return 'Gift';
-      default:
-        return 'Circle';
-    }
-  };
-
-  const getTransactionColor = (type) => {
-    switch (type) {
-      case 'earned':
-        return 'text-success';
-      case 'redeemed':
-        return 'text-error';
-      case 'bonus':
-        return 'text-accent';
-      default:
-        return 'text-muted-foreground';
-    }
-  };
 
   return (
     <div className="p-6">
