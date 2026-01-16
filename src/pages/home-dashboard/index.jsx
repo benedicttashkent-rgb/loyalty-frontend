@@ -232,55 +232,6 @@ const HomeDashboard = () => {
             }
           });
           
-          // Load transactions from API
-          try {
-            console.log('📊 [home-dashboard] Fetching transaction history...');
-            const transResponse = await fetch(getApiUrl('customers/me/transactions'), {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-            
-            console.log('📊 [home-dashboard] Transaction history response status:', transResponse.status);
-            
-            if (transResponse.ok) {
-              const transData = await transResponse.json();
-              console.log('📊 [home-dashboard] Transaction history response:', transData);
-              
-              if (transData.success && transData.transactions && transData.transactions.length > 0) {
-                console.log(`✅ [home-dashboard] Loaded ${transData.transactions.length} transactions`);
-                setTransactions(transData.transactions);
-              } else {
-                console.log('📊 [home-dashboard] No transactions found');
-                console.log('   Response success:', transData.success);
-                console.log('   Transactions array:', transData.transactions);
-                console.log('   Transactions length:', transData.transactions?.length);
-                
-                // If no transactions, show welcome message for new customers
-                if ((data.customer.cashback || data.customer.points || 0) === 0) {
-                  setTransactions([{
-                    id: 'welcome',
-                    type: 'bonus',
-                    description: 'Добро пожаловать в программу лояльности!',
-                    points: 0,
-                    date: new Date().toISOString()
-                  }]);
-                } else {
-                  setTransactions([]);
-                }
-              }
-            } else {
-              const errorData = await transResponse.json().catch(() => ({}));
-              console.error('❌ [home-dashboard] Failed to load transaction history');
-              console.error('   Status:', transResponse.status);
-              console.error('   Response:', errorData);
-              setTransactions([]);
-            }
-          } catch (transError) {
-            console.error('❌ [home-dashboard] Error loading transactions:', transError);
-            console.error('   Error message:', transError.message);
-            setTransactions([]);
-          }
         } else {
           // No customer data in response
           console.error('No customer data in response:', data);
@@ -339,7 +290,6 @@ const HomeDashboard = () => {
   // const featuredRewards = [];
 
 
-  const [transactions, setTransactions] = useState([]);
 
 
   useEffect(() => {
@@ -420,7 +370,7 @@ const HomeDashboard = () => {
           isOpen={showLoyaltyDetails}
           onClose={() => setShowLoyaltyDetails(false)}
           userData={userData}
-          transactions={transactions} />
+          />
 
       </ModalOverlay>
       <ModalOverlay isOpen={showQRCode} onClose={() => setShowQRCode(false)}>

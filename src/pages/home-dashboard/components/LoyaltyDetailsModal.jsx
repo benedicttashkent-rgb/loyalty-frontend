@@ -2,7 +2,7 @@ import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const LoyaltyDetailsModal = ({ isOpen, onClose, userData, transactions }) => {
+const LoyaltyDetailsModal = ({ isOpen, onClose, userData }) => {
   if (!isOpen) return null;
 
   const formatAmount = (amount) => {
@@ -132,35 +132,6 @@ const LoyaltyDetailsModal = ({ isOpen, onClose, userData, transactions }) => {
           </div>
         </div>
 
-        <div>
-          <h3 className="text-base font-semibold text-foreground mb-3">История транзакций</h3>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {transactions && transactions.length > 0 ? transactions.map((transaction) => (
-              <div
-                key={transaction?.id}
-                className="flex items-center justify-between p-3 bg-card rounded-lg border border-border"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-full bg-muted flex items-center justify-center ${getTransactionColor(transaction?.type)}`}>
-                    <Icon name={getTransactionIcon(transaction?.type)} size={16} />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{transaction?.description}</div>
-                    <div className="text-xs text-muted-foreground">{transaction?.date}</div>
-                  </div>
-                </div>
-                <div className={`text-sm font-semibold ${getTransactionColor(transaction?.type)}`}>
-                  {transaction?.type === 'redeemed' ? '-' : '+'}{(transaction?.amount || transaction?.cashback || transaction?.points || 0).toLocaleString('ru-RU')} сум
-                </div>
-              </div>
-            )) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">История транзакций пуста</p>
-                <p className="text-xs mt-1">Транзакции появятся после покупок</p>
-              </div>
-            )}
-          </div>
-        </div>
 
         <Button variant="outline" fullWidth onClick={onClose}>
           Закрыть
