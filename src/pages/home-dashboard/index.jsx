@@ -11,7 +11,7 @@ import OrderSection from './components/OrderSection';
 import LoyaltyDetailsModal from './components/LoyaltyDetailsModal';
 import QRCodeModal from './components/QRCodeModal';
 import BookTableModal from './components/BookTableModal';
-import DebugPanel from '../../components/DebugPanel.jsx';
+// import DebugPanel from '../../components/DebugPanel.jsx'; // Temporarily disabled for build
 import { getApiUrl } from '../../config/api';
 
 const HomeDashboard = () => {
@@ -392,7 +392,7 @@ const HomeDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <DebugPanel />
+      {/* <DebugPanel /> */}
       <div className="main-content max-w-md mx-auto">
         <div className="flex items-center justify-between mb-6">
           <BrandLogo />
