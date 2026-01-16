@@ -35,15 +35,27 @@ const HomeDashboard = () => {
 
       // Check if opened from Telegram and update telegram_chat_id if needed
       let telegramChatId = null;
+      
+      // Debug: Check Telegram Web App availability
+      console.log('🔍 [home-dashboard] Checking Telegram Web App availability...');
+      console.log('   window.Telegram exists:', !!window.Telegram);
+      console.log('   window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
+      
       if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
+        console.log('   Telegram.WebApp.version:', tg.version);
+        console.log('   Telegram.WebApp.platform:', tg.platform);
+        console.log('   Telegram.WebApp.initDataUnsafe exists:', !!tg.initDataUnsafe);
+        console.log('   Telegram.WebApp.initDataUnsafe keys:', tg.initDataUnsafe ? Object.keys(tg.initDataUnsafe) : 'N/A');
+        
         telegramChatId = tg.initDataUnsafe?.chat?.id || tg.initDataUnsafe?.user?.id || null;
         
         if (telegramChatId) {
-          console.log('📱 [home-dashboard] Detected Telegram Web App');
+          console.log('📱 [home-dashboard] ✅ Detected Telegram Web App');
           console.log('   Chat ID from chat:', tg.initDataUnsafe?.chat?.id);
           console.log('   Chat ID from user (this IS the chat_id for private chats):', tg.initDataUnsafe?.user?.id);
           console.log('   Using chat_id:', telegramChatId);
+          console.log('   Chat ID type:', typeof telegramChatId);
           
           // Update telegram_chat_id
           // For private chats: user.id IS the chat_id
@@ -54,6 +66,13 @@ const HomeDashboard = () => {
             console.log('📱 [home-dashboard] Calling API to update telegram_chat_id');
             console.log('   API URL:', apiUrl);
             console.log('   Chat ID to save:', telegramChatId.toString());
+            console.log('   Token exists:', !!token);
+            console.log('   Token preview:', token ? token.substring(0, 20) + '...' : 'N/A');
+            
+            const requestBody = { 
+              telegramChatId: telegramChatId.toString()
+            };
+            console.log('   Request body:', JSON.stringify(requestBody));
             
             const updateResponse = await fetch(apiUrl, {
               method: 'PUT',
@@ -61,12 +80,11 @@ const HomeDashboard = () => {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ 
-                telegramChatId: telegramChatId.toString()
-              }),
+              body: JSON.stringify(requestBody),
             });
             
             console.log('📱 [home-dashboard] API Response status:', updateResponse.status);
+            console.log('📱 [home-dashboard] API Response ok:', updateResponse.ok);
             
             if (!updateResponse.ok) {
               const errorText = await updateResponse.text();
@@ -97,9 +115,13 @@ const HomeDashboard = () => {
           console.log('⚠️ [home-dashboard] No telegramChatId detected');
           console.log('   window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
           console.log('   initDataUnsafe:', tg?.initDataUnsafe);
+          console.log('   initDataUnsafe.chat:', tg?.initDataUnsafe?.chat);
+          console.log('   initDataUnsafe.user:', tg?.initDataUnsafe?.user);
         }
       } else {
-        console.log('⚠️ [home-dashboard] Not opened from Telegram Web App');
+        console.log('⚠️ [home-dashboard] ❌ Not opened from Telegram Web App');
+        console.log('   This means telegram_chat_id will NOT be updated');
+        console.log('   User must open app through Telegram bot to capture chat_id');
       }
 
       const response = await fetch(getApiUrl('customers/me'), {
