@@ -24,18 +24,11 @@ const PurchaseHistory = () => {
         return;
       }
 
-      // Use AbortController for request cancellation
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
       const response = await fetch(getApiUrl('orders/purchase-history'), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
-        signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();

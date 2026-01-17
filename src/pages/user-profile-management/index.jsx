@@ -46,13 +46,10 @@ const UserProfileManagement = () => {
           return;
         }
 
-        // Use AbortController for request cancellation
-        const controller = new AbortController();
         const response = await fetch(getApiUrl('customers/me'), {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
-          signal: controller.signal,
         });
 
         if (response.ok) {
