@@ -6,6 +6,7 @@ import LoyaltySummary from './components/LoyaltySummary';
 import ProfileForm from './components/ProfileForm';
 import AccountPreferences from './components/AccountPreferences';
 import DangerZone from './components/DangerZone';
+import PurchaseHistory from './components/PurchaseHistory';
 import { getApiUrl } from '../../config/api';
 
 const UserProfileManagement = () => {
@@ -198,6 +199,12 @@ const UserProfileManagement = () => {
 
 
           <AccountPreferences />
+
+          {/* Purchase History */}
+          <div className="bg-card rounded-lg p-6 border border-border">
+            <h3 className="text-lg font-semibold text-foreground mb-4">История покупок</h3>
+            <PurchaseHistory />
+          </div>
 
           <DangerZone onDeleteAccount={handleDeleteAccount} />
         </div>
