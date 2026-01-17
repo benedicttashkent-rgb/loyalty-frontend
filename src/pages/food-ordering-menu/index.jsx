@@ -22,11 +22,27 @@ const FoodOrderingMenu = () => {
   const [cartItems, setCartItems] = useState([]);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isCheckoutSuccessOpen, setIsCheckoutSuccessOpen] = useState(false);
-  const [orderDetails, setOrderDetails] = useState({ orderNumber: '', estimatedTime: '' });
+  // Load order details from localStorage on mount
+  const [orderDetails, setOrderDetails] = useState(() => {
+    try {
+      const saved = localStorage.getItem('benedictOrderDetails');
+      return saved ? JSON.parse(saved) : { orderNumber: '', estimatedTime: '', branch: null, comments: {} };
+    } catch {
+      return { orderNumber: '', estimatedTime: '', branch: null, comments: {} };
+    }
+  });
   // Force takeaway only for MVP - delivery removed
   const [orderType, setOrderType] = useState('takeaway');
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
-  const [selectedBranch, setSelectedBranch] = useState(null);
+  // Load selected branch from localStorage on mount
+  const [selectedBranch, setSelectedBranch] = useState(() => {
+    try {
+      const saved = localStorage.getItem('benedictSelectedBranch');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [itemComments, setItemComments] = useState({});
   const [menuData, setMenuData] = useState({ nukus: null, mirabad: null });
   const [isLoadingMenu, setIsLoadingMenu] = useState(false);
@@ -37,6 +53,15 @@ const FoodOrderingMenu = () => {
   useEffect(() => {
     setOrderType('takeaway');
   }, []);
+
+  // Save selected branch to localStorage when it changes
+  useEffect(() => {
+    if (selectedBranch) {
+      localStorage.setItem('benedictSelectedBranch', JSON.stringify(selectedBranch));
+    } else {
+      localStorage.removeItem('benedictSelectedBranch');
+    }
+  }, [selectedBranch]);
 
   // Fetch menu when branch is selected (same menu for both takeaway and delivery)
   useEffect(() => {
@@ -232,12 +257,16 @@ const FoodOrderingMenu = () => {
     
     // Include comments in order details
     const orderComments = comments || itemComments;
-    setOrderDetails({ 
+    const newOrderDetails = { 
       orderNumber, 
       estimatedTime,
       branch: selectedBranch,
       comments: orderComments
-    });
+    };
+    
+    // Save order details to localStorage immediately so it persists across pages
+    setOrderDetails(newOrderDetails);
+    localStorage.setItem('benedictOrderDetails', JSON.stringify(newOrderDetails));
     
     // Send order notification to Telegram (for takeaway orders)
     if (orderType === 'takeaway' && selectedBranch) {
@@ -317,6 +346,7 @@ const FoodOrderingMenu = () => {
 
   const handleBranchSelect = (branch) => {
     setSelectedBranch(branch);
+    // Save to localStorage is handled by useEffect
     setIsBranchModalOpen(false);
   };
 
@@ -450,7 +480,11 @@ const FoodOrderingMenu = () => {
           orderNumber={orderDetails.orderNumber}
           estimatedTime={orderDetails.estimatedTime}
           branch={orderDetails.branch}
-          onClose={() => setOrderDetails({ orderNumber: '', estimatedTime: '', branch: null, comments: {} })}
+          onClose={() => {
+            const emptyOrder = { orderNumber: '', estimatedTime: '', branch: null, comments: {} };
+            setOrderDetails(emptyOrder);
+            localStorage.removeItem('benedictOrderDetails');
+          }}
         />
       )}
 
