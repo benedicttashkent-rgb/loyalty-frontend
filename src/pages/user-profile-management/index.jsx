@@ -113,7 +113,15 @@ const UserProfileManagement = () => {
             }
             
             // Use progress.current if available, otherwise use totalSpent
-            const currentPoints = progress.current || totalSpent || 0;
+            // Ensure we use the actual totalSpent value, not 0
+            const currentPoints = totalSpent > 0 ? totalSpent : (progress.current || 0);
+            
+            console.log('🔍 Debug loyalty data:', {
+              totalSpent,
+              progressCurrent: progress.current,
+              currentPoints,
+              progressObject: progress
+            });
             
             // Calculate memberSince (months since registration)
             let memberSince = 0;
@@ -130,8 +138,43 @@ const UserProfileManagement = () => {
             }
             
             // Calculate earnedThisMonth from purchase_history
-            // This will be calculated from purchase_history table if available
-            const earnedThisMonth = 0; // TODO: Calculate from purchase_history for current month
+            let earnedThisMonth = 0;
+            try {
+              const historyResponse = await fetch(getApiUrl('orders/purchase-history'), {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+              if (historyResponse.ok) {
+                const historyData = await historyResponse.json();
+                if (historyData.success && historyData.purchases) {
+                  const now = new Date();
+                  const currentMonth = now.getMonth();
+                  const currentYear = now.getFullYear();
+                  
+                  earnedThisMonth = historyData.purchases
+                    .filter(purchase => {
+                      if (!purchase.order_date) return false;
+                      const orderDate = new Date(purchase.order_date);
+                      return orderDate.getMonth() === currentMonth && 
+                             orderDate.getFullYear() === currentYear &&
+                             purchase.status === 'CLOSED';
+                    })
+                    .reduce((sum, purchase) => sum + (parseFloat(purchase.total_amount) || 0), 0);
+                }
+              }
+            } catch (historyError) {
+              console.error('Error loading purchase history for earnedThisMonth:', historyError);
+            }
+            
+            console.log('📊 Loyalty Data:', {
+              currentPoints,
+              totalSpent,
+              progress: progress.current,
+              earnedThisMonth,
+              memberSince,
+              nextTierPoints
+            });
             
             setLoyaltyData({
               totalCashback: cashback,
