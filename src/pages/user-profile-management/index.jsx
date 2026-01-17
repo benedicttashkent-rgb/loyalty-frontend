@@ -155,12 +155,22 @@ const UserProfileManagement = () => {
                   earnedThisMonth = historyData.purchases
                     .filter(purchase => {
                       if (!purchase.order_date) return false;
-                      const orderDate = new Date(purchase.order_date);
-                      return orderDate.getMonth() === currentMonth && 
-                             orderDate.getFullYear() === currentYear &&
-                             purchase.status === 'CLOSED';
+                      try {
+                        const orderDate = new Date(purchase.order_date);
+                        return orderDate.getMonth() === currentMonth && 
+                               orderDate.getFullYear() === currentYear &&
+                               purchase.status === 'CLOSED';
+                      } catch (e) {
+                        console.error('Error parsing order_date:', purchase.order_date, e);
+                        return false;
+                      }
                     })
-                    .reduce((sum, purchase) => sum + (parseFloat(purchase.total_amount) || 0), 0);
+                    .reduce((sum, purchase) => {
+                      const amount = parseFloat(purchase.total_amount) || 0;
+                      return sum + amount;
+                    }, 0);
+                  
+                  console.log('📊 earnedThisMonth calculated:', earnedThisMonth);
                 }
               }
             } catch (historyError) {
