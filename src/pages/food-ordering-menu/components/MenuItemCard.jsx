@@ -54,7 +54,9 @@ const MenuItemCard = ({ item, onAddToCart, cartQuantity, onItemClick }) => {
       </div>
       <div className="p-4">
         <h3 className="text-base font-semibold text-foreground mb-1">{item?.name}</h3>
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{item?.description}</p>
+        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+          {item?.description?.replace(/Ingredients?:?\s*/i, '').replace(/Ingridients?:?\s*/i, '').replace(/Ингредиенты?:?\s*/i, '').replace(/Состав:?\s*/i, '').trim()}
+        </p>
 
         <div className="flex items-center justify-between mb-3">
           <span className="text-lg font-bold text-foreground">{formatPrice(item?.price)}</span>

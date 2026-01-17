@@ -9,6 +9,7 @@ import MenuItemDetailModal from './components/MenuItemDetailModal';
 import CartModal from './components/CartModal';
 import CheckoutSuccessModal from './components/CheckoutSuccessModal';
 import BranchSelectionModal from './components/BranchSelectionModal';
+import OrderStatusButton from './components/OrderStatusButton';
 import Icon from '../../components/AppIcon';
 import { useLocation } from 'react-router-dom';
 import menuScraper from '../../services/menu/menuScraper';
@@ -51,6 +52,8 @@ const FoodOrderingMenu = () => {
           ...prev,
           [branchId]: transformedMenu
         }));
+        // Set default category to 'breakfast' when branch is selected
+        setActiveCategory('breakfast');
       } catch (error) {
         console.error(`Error loading menu for ${branchId}:`, error);
       } finally {
@@ -440,6 +443,16 @@ const FoodOrderingMenu = () => {
         onClose={() => setIsCheckoutSuccessOpen(false)}
         orderNumber={orderDetails?.orderNumber}
         estimatedTime={orderDetails?.estimatedTime} />
+
+      {/* Floating Order Status Button - shows after order is placed */}
+      {orderDetails?.orderNumber && (
+        <OrderStatusButton
+          orderNumber={orderDetails.orderNumber}
+          estimatedTime={orderDetails.estimatedTime}
+          branch={orderDetails.branch}
+          onClose={() => setOrderDetails({ orderNumber: '', estimatedTime: '', branch: null, comments: {} })}
+        />
+      )}
 
       <BranchSelectionModal
         isOpen={isBranchModalOpen}

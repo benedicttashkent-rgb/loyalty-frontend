@@ -10,25 +10,25 @@ const BranchSelectionModal = ({ isOpen, onClose, onBranchSelect }) => {
   const branches = [
   {
     id: 'nukus',
-    name: 'Benedict Nukus',
-    address: 'г. Ташкент, ул. Нукус 31/2',
+    name: 'Benedict Нукус',
+    address: 'ул. Нукус 31/2',
     phone: '+998 33 8888807',
     menuUrl: 'https://benedictnuk.myresto.online',
     image: "/IMG_2272.JPG",
-    imageAlt: 'Benedict Nukus branch exterior',
-    workingHours: '08:00 - 22:00',
-    features: ['Wi-Fi', 'Парковка', 'Терраса']
+    imageAlt: 'Benedict Нукус branch exterior',
+    workingHours: 'Ежедневно: 08:00 - 00:00',
+    features: ['Бесплатный Wi-Fi', 'Места для работы с ноутбуком', 'Терраса на 20 мест', 'Детская площадка']
   },
   {
     id: 'mirabad',
-    name: 'Benedict Mirabad',
-    address: 'г. Ташкент, ул. Мирабад 60B',
+    name: 'Benedict Мирабад',
+    address: 'ул. Мирабад 60B',
     phone: '+998 33 5556601',
     menuUrl: 'https://benedictmir.myresto.online',
     image: "/IMG_3311.JPG",
-    imageAlt: 'Benedict Mirabad branch exterior',
-    workingHours: '07:00 - 23:00',
-    features: ['Wi-Fi', 'Детская зона', 'Банкетный зал']
+    imageAlt: 'Benedict Мирабад branch exterior',
+    workingHours: 'Ежедневно: 08:00 - 00:00',
+    features: ['Живая музыка по выходным', 'Винная карта', 'Камерная атмосфера', 'Банкетный зал']
   }];
 
 

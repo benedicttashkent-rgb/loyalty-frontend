@@ -88,7 +88,7 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
             <div>
               <h3 className="text-sm font-semibold text-foreground mb-2">Описание</h3>
               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {item.description}
+                {item.description.replace(/Ingredients?:?\s*/i, '').replace(/Ingridients?:?\s*/i, '').replace(/Ингредиенты?:?\s*/i, '').replace(/Состав:?\s*/i, '').trim()}
               </p>
             </div>
           )}
