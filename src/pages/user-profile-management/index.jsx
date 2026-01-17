@@ -39,16 +39,20 @@ const UserProfileManagement = () => {
   useEffect(() => {
     const loadCustomerData = async () => {
       try {
+        setIsLoading(true);
         const token = localStorage.getItem('authToken');
         if (!token) {
           navigate('/signup');
           return;
         }
 
+        // Use AbortController for request cancellation
+        const controller = new AbortController();
         const response = await fetch(getApiUrl('customers/me'), {
           headers: {
             'Authorization': `Bearer ${token}`,
           },
+          signal: controller.signal,
         });
 
         if (response.ok) {
