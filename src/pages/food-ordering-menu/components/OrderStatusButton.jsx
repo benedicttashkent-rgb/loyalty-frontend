@@ -156,7 +156,7 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
             <div className="bg-muted rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Номер заказа</span>
-                <span className="text-base font-bold text-foreground">#{orderNumber}</span>
+                <span className="text-base font-bold text-foreground">#{orderNumber || 'N/A'}</span>
               </div>
             </div>
 

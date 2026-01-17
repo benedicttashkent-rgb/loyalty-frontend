@@ -24,20 +24,27 @@ function App() {
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.order) {
-          const status = data.order.status;
+          const order = data.order;
+          const status = order.status;
+          
+          // Use order_number from API to ensure consistency
+          const actualOrderNumber = order.order_number || order.orderNumber || orderNumber;
+          
           // Update order status in state AND localStorage
           const updatedOrderDetails = {
             ...orderDetails,
+            orderNumber: actualOrderNumber, // Use order_number from API
             status: status
           };
           setOrderDetails(updatedOrderDetails);
           
-          // Update localStorage with new status
+          // Update localStorage with new status and correct order number
           const savedOrder = localStorage.getItem('benedictOrderDetails');
           if (savedOrder) {
             try {
               const parsed = JSON.parse(savedOrder);
               parsed.status = status;
+              parsed.orderNumber = actualOrderNumber; // Update with correct order number
               localStorage.setItem('benedictOrderDetails', JSON.stringify(parsed));
             } catch (e) {
               console.error('Error updating localStorage:', e);
