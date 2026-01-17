@@ -4,13 +4,24 @@ import Button from '../../../components/ui/Button';
 
 const ProfileForm = ({ user, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: user?.name,
-    phone: user?.phone,
-    birthDate: user?.birthDate,
+    name: user?.name || '',
+    phone: user?.phone || '',
+    birthDate: user?.birthDate || '',
   });
 
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
+
+  // Update formData when user prop changes
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || '',
+        phone: user.phone || '',
+        birthDate: user.birthDate || '',
+      });
+    }
+  }, [user]);
 
   const validateForm = () => {
     const newErrors = {};

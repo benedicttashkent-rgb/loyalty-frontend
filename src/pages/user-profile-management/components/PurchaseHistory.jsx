@@ -85,13 +85,24 @@ const PurchaseHistory = () => {
   return (
     <div className="space-y-4">
       {purchases.map((purchase) => {
-        const items = typeof purchase.items === 'string' 
-          ? JSON.parse(purchase.items) 
-          : purchase.items || [];
+        // Safely parse items
+        let items = [];
+        try {
+          if (typeof purchase.items === 'string') {
+            items = JSON.parse(purchase.items);
+          } else if (Array.isArray(purchase.items)) {
+            items = purchase.items;
+          } else if (purchase.items && typeof purchase.items === 'object') {
+            items = [purchase.items];
+          }
+        } catch (parseError) {
+          console.error('Error parsing purchase items:', parseError);
+          items = [];
+        }
 
         return (
           <div
-            key={purchase.id}
+            key={purchase.id || purchase.order_number}
             className="bg-card rounded-lg p-4 border border-border"
           >
             <div className="flex items-start justify-between mb-3">
@@ -99,45 +110,47 @@ const PurchaseHistory = () => {
                 <div className="flex items-center gap-2 mb-1">
                   <Icon name="Package" size={18} className="text-muted-foreground" />
                   <span className="font-semibold text-foreground">
-                    Заказ #{purchase.order_number}
+                    Заказ #{purchase.order_number || 'N/A'}
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {purchase.branch_name || 'Филиал не указан'}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {formatDate(purchase.order_date)}
+                  {purchase.order_date ? formatDate(purchase.order_date) : 'Дата не указана'}
                 </p>
               </div>
               <div className="text-right">
                 <p className="font-bold text-foreground">
-                  {formatPrice(purchase.total_amount)}
+                  {formatPrice(purchase.total_amount || 0)}
                 </p>
                 <span className={`text-xs px-2 py-1 rounded ${
                   purchase.status === 'CLOSED' 
                     ? 'bg-green-100 text-green-700' 
                     : 'bg-yellow-100 text-yellow-700'
                 }`}>
-                  {purchase.status === 'CLOSED' ? 'Завершен' : purchase.status}
+                  {purchase.status === 'CLOSED' ? 'Завершен' : (purchase.status || 'Неизвестно')}
                 </span>
               </div>
             </div>
 
-            <div className="border-t border-border pt-3 mt-3">
-              <p className="text-sm font-medium text-foreground mb-2">Блюда:</p>
-              <div className="space-y-1">
-                {items.map((item, index) => (
-                  <div key={index} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {item.name || 'Блюдо'} × {item.quantity || 1}
-                    </span>
-                    <span className="text-foreground">
-                      {formatPrice((item.price || 0) * (item.quantity || 1))}
-                    </span>
-                  </div>
-                ))}
+            {items.length > 0 && (
+              <div className="border-t border-border pt-3 mt-3">
+                <p className="text-sm font-medium text-foreground mb-2">Блюда:</p>
+                <div className="space-y-1">
+                  {items.map((item, index) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {item.name || 'Блюдо'} × {item.quantity || 1}
+                      </span>
+                      <span className="text-foreground">
+                        {formatPrice((item.price || 0) * (item.quantity || 1))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         );
       })}

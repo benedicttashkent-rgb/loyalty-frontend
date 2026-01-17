@@ -2,7 +2,12 @@ import React from 'react';
 import Icon from '../../../components/AppIcon';
 
 const LoyaltySummary = ({ loyaltyData }) => {
-  const progressPercentage = (loyaltyData?.currentPoints / loyaltyData?.nextTierPoints) * 100;
+  // Fix progress bar calculation - ensure we don't divide by zero and clamp to 0-100%
+  const currentPoints = loyaltyData?.currentPoints || 0;
+  const nextTierPoints = loyaltyData?.nextTierPoints || 10000000;
+  const progressPercentage = nextTierPoints > 0 
+    ? Math.min(100, Math.max(0, (currentPoints / nextTierPoints) * 100))
+    : 0;
 
   return (
     <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-4">
@@ -47,7 +52,7 @@ const LoyaltySummary = ({ loyaltyData }) => {
           </span>
           <span className="font-medium text-foreground">
             {loyaltyData?.nextTier 
-              ? `${(loyaltyData?.currentPoints / 1000000).toFixed(1)} / ${(loyaltyData?.nextTierPoints / 1000000).toFixed(1)} млн сум`
+              ? `${((loyaltyData?.currentPoints || 0) / 1000000).toFixed(1)} / ${((loyaltyData?.nextTierPoints || 10000000) / 1000000).toFixed(1)} млн сум`
               : '—'}
           </span>
         </div>

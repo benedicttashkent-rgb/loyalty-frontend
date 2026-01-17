@@ -29,12 +29,6 @@ const AccountPreferences = () => {
           </h4>
           <div className="space-y-3 pl-6">
             <Checkbox
-              label="Email уведомления"
-              description="Получать новости и обновления на email"
-              checked={notifications?.email}
-              onChange={() => handleNotificationChange('email')}
-            />
-            <Checkbox
               label="Push уведомления"
               description="Мгновенные уведомления в приложении"
               checked={notifications?.push}
@@ -51,28 +45,6 @@ const AccountPreferences = () => {
               description="Специальные акции и скидки"
               checked={notifications?.promotions}
               onChange={() => handleNotificationChange('promotions')}
-            />
-          </div>
-        </div>
-
-
-        <div className="border-t border-border pt-6">
-          <h4 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
-            <Icon name="Shield" size={16} />
-            Конфиденциальность
-          </h4>
-          <div className="space-y-3 pl-6">
-            <Checkbox
-              label="Показывать профиль в поиске"
-              description="Другие пользователи смогут найти ваш профиль"
-              checked
-              onChange={() => {}}
-            />
-            <Checkbox
-              label="Делиться статистикой"
-              description="Анонимные данные для улучшения сервиса"
-              checked
-              onChange={() => {}}
             />
           </div>
         </div>

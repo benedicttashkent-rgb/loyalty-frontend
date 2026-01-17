@@ -62,37 +62,81 @@ const UserProfileManagement = () => {
               formattedPhone = `+998 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7)}`;
             }
 
+            // Format birthDate from database (YYYY-MM-DD) to input format
+            let formattedBirthDate = '';
+            if (data.customer.birthDate || data.customer.birth_date) {
+              const birthDate = data.customer.birthDate || data.customer.birth_date;
+              // If already in YYYY-MM-DD format, use as is
+              if (birthDate && birthDate.includes('-')) {
+                formattedBirthDate = birthDate;
+              } else if (birthDate) {
+                // Try to parse other formats
+                try {
+                  const date = new Date(birthDate);
+                  if (!isNaN(date.getTime())) {
+                    formattedBirthDate = date.toISOString().split('T')[0];
+                  }
+                } catch (e) {
+                  console.error('Error parsing birthDate:', e);
+                }
+              }
+            }
+
             setUserData({
               name: `${data.customer.name || ''} ${data.customer.surName || ''}`.trim() || 'Гость',
               email: data.customer.email || '',
               phone: formattedPhone,
-              birthDate: data.customer.birthDate || '',
+              birthDate: formattedBirthDate,
               tier: data.customer.tier || 'Bronze'
             });
 
             const cashback = data.customer.cashback || data.customer.points || 0;
             const progress = data.customer.progress || { current: 0, next: 10000000, remaining: 10000000 };
+            const totalSpent = data.customer.totalSpent || 0;
             
-            // Determine next tier
+            // Determine next tier and threshold
             let nextTier = 'Silver';
-            if (data.customer.tier === 'Bronze') nextTier = 'Silver';
-            else if (data.customer.tier === 'Silver') nextTier = 'Gold';
-            else if (data.customer.tier === 'Gold') nextTier = 'Platinum';
-            else if (data.customer.tier === 'Platinum') nextTier = null;
+            let nextTierPoints = 10000000; // 10 million for Bronze -> Silver
+            if (data.customer.tier === 'Bronze') {
+              nextTier = 'Silver';
+              nextTierPoints = 10000000;
+            } else if (data.customer.tier === 'Silver') {
+              nextTier = 'Gold';
+              nextTierPoints = 30000000;
+            } else if (data.customer.tier === 'Gold') {
+              nextTier = 'Platinum';
+              nextTierPoints = 60000000;
+            } else if (data.customer.tier === 'Platinum') {
+              nextTier = null;
+              nextTierPoints = null;
+            }
+            
+            // Use progress.current if available, otherwise use totalSpent
+            const currentPoints = progress.current || totalSpent || 0;
             
             // Calculate memberSince (months since registration)
-            // Assuming we have whenRegistered from iiko or can calculate from customer creation
-            const memberSince = 0; // Will be calculated when we have registration date
+            let memberSince = 0;
+            if (data.customer.created_at || data.customer.whenRegistered) {
+              try {
+                const regDate = new Date(data.customer.created_at || data.customer.whenRegistered);
+                const now = new Date();
+                const monthsDiff = (now.getFullYear() - regDate.getFullYear()) * 12 + 
+                                  (now.getMonth() - regDate.getMonth());
+                memberSince = Math.max(0, monthsDiff);
+              } catch (e) {
+                console.error('Error calculating memberSince:', e);
+              }
+            }
             
-            // Calculate earnedThisMonth from transactions (if available)
-            // For now, use 0 if no transactions available
-            const earnedThisMonth = 0; // Will be calculated from transactions when available
+            // Calculate earnedThisMonth from purchase_history
+            // This will be calculated from purchase_history table if available
+            const earnedThisMonth = 0; // TODO: Calculate from purchase_history for current month
             
             setLoyaltyData({
               totalCashback: cashback,
               totalPoints: cashback, // Backward compatibility
-              currentPoints: progress.current || 0,
-              nextTierPoints: progress.next || 10000000,
+              currentPoints: currentPoints,
+              nextTierPoints: nextTierPoints,
               nextTier: nextTier,
               earnedThisMonth: earnedThisMonth,
               memberSince: memberSince
@@ -126,8 +170,58 @@ const UserProfileManagement = () => {
     setIsOpen(false);
   };
 
-  const handleSaveProfile = (formData) => {
-    console.log('Profile saved:', formData);
+  const handleSaveProfile = async (formData) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('Требуется авторизация');
+        return;
+      }
+
+      // Parse name into name and surName
+      const nameParts = (formData.name || '').trim().split(' ');
+      const name = nameParts[0] || '';
+      const surName = nameParts.slice(1).join(' ') || '';
+
+      // Format phone back to 998XXXXXXXXX format
+      let phone = formData.phone || '';
+      phone = phone.replace(/\s+/g, '').replace('+', '');
+      if (phone.startsWith('998')) {
+        phone = phone;
+      } else {
+        phone = '998' + phone;
+      }
+
+      const response = await fetch(getApiUrl('customers/me'), {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          surName,
+          birthDate: formData.birthDate,
+          phone: phone
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Reload customer data to reflect changes
+          window.location.reload(); // Simple reload for now
+        } else {
+          alert(data.error || 'Ошибка при сохранении профиля');
+        }
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Ошибка при сохранении профиля');
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Ошибка при сохранении профиля');
+    }
   };
 
   const handleDeleteAccount = async () => {
