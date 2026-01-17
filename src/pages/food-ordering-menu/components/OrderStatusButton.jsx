@@ -2,10 +2,32 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import ModalOverlay from '../../../components/navigation/ModalOverlay';
 
-const OrderStatusButton = ({ orderNumber, estimatedTime, branch, onClose }) => {
+const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!orderNumber) return null;
+
+  // Status mapping to display text and icons
+  const getStatusInfo = (status) => {
+    switch (status) {
+      case 'NEW':
+        return { text: 'Новый заказ', icon: 'Package', color: 'text-yellow-500', bg: 'bg-yellow-50', border: 'border-yellow-200' };
+      case 'ACCEPTED':
+        return { text: 'Заказ принят', icon: 'CheckCircle', color: 'text-green-500', bg: 'bg-green-50', border: 'border-green-200' };
+      case 'IN_PROGRESS':
+        return { text: 'Готовится', icon: 'Clock', color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-200' };
+      case 'READY':
+        return { text: 'Готов к выдаче', icon: 'CheckCircle2', color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-200' };
+      case 'CLOSED':
+        return { text: 'Выполнен', icon: 'Check', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-300' };
+      case 'CANCELLED':
+        return { text: 'Отменен', icon: 'X', color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-200' };
+      default:
+        return { text: 'Готовится', icon: 'Clock', color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/20' };
+    }
+  };
+
+  const statusInfo = getStatusInfo(status);
 
   return (
     <>
@@ -27,7 +49,6 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, onClose }) => {
             <button
               onClick={() => {
                 setIsOpen(false);
-                if (onClose) onClose();
               }}
               className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
               aria-label="Закрыть"
@@ -46,13 +67,17 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, onClose }) => {
             </div>
 
             {/* Status */}
-            <div className="bg-accent/10 rounded-lg p-4 border border-accent/20">
+            <div className={`${statusInfo.bg} rounded-lg p-4 border ${statusInfo.border}`}>
               <div className="flex items-center gap-3 mb-2">
-                <Icon name="Clock" size={20} className="text-accent" />
-                <span className="text-sm font-semibold text-foreground">Готовится</span>
+                <Icon name={statusInfo.icon} size={20} className={statusInfo.color} />
+                <span className={`text-sm font-semibold ${statusInfo.color}`}>{statusInfo.text}</span>
               </div>
               <p className="text-xs text-muted-foreground ml-7">
-                Ваш заказ принят на кухню. Приблизительное время готовности: {estimatedTime || '15-20 мин'}
+                {status === 'NEW' && 'Ожидание принятия заказа кассиром'}
+                {status === 'ACCEPTED' && 'Заказ принят. Создание заказа в iiko...'}
+                {status === 'IN_PROGRESS' && `Кухня готовит ваш заказ. Приблизительное время готовности: ${estimatedTime || '15-20 мин'}`}
+                {status === 'READY' && 'Заказ готов! Заберите в филиале.'}
+                {!status && 'Приблизительное время готовности: ' + (estimatedTime || '15-20 мин')}
               </p>
             </div>
 
