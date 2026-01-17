@@ -41,30 +41,42 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
 
   // Load order items when status becomes CLOSED
   useEffect(() => {
-    if (status === 'CLOSED' && orderNumber && !ratingSubmitted) {
+    if (status === 'CLOSED' && orderNumber && !ratingSubmitted && orderItems.length === 0) {
       const loadOrderItems = async () => {
         try {
+          console.log(`📦 Loading order items for rating: ${orderNumber}`);
           const response = await fetch(getApiUrl(`orders/status/${orderNumber}`));
           if (response.ok) {
             const data = await response.json();
-            if (data.success && data.order && data.order.items) {
-              const items = typeof data.order.items === 'string' 
-                ? JSON.parse(data.order.items) 
-                : data.order.items;
+            console.log('📦 Order data received:', data);
+            if (data.success && data.order) {
+              // Use order_number from response to ensure consistency
+              const order = data.order;
+              const items = order.items 
+                ? (typeof order.items === 'string' ? JSON.parse(order.items) : order.items)
+                : [];
+              
+              console.log('📦 Order items loaded:', items);
               setOrderItems(items);
+              
               // Show rating modal after a short delay
-              setTimeout(() => {
-                setShowRatingModal(true);
-              }, 1000);
+              if (items.length > 0) {
+                setTimeout(() => {
+                  console.log('⭐ Showing rating modal');
+                  setShowRatingModal(true);
+                }, 1000);
+              }
             }
+          } else {
+            console.error('❌ Failed to load order:', response.status);
           }
         } catch (error) {
-          console.error('Error loading order items:', error);
+          console.error('❌ Error loading order items:', error);
         }
       };
       loadOrderItems();
     }
-  }, [status, orderNumber, ratingSubmitted]);
+  }, [status, orderNumber, ratingSubmitted, orderItems.length]);
 
   const handleRatingSubmitted = () => {
     setRatingSubmitted(true);

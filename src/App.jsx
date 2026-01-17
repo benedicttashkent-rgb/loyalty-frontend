@@ -25,11 +25,24 @@ function App() {
         const data = await response.json();
         if (data.success && data.order) {
           const status = data.order.status;
-          // Update order status in state
-          setOrderDetails(prev => ({
-            ...prev,
+          // Update order status in state AND localStorage
+          const updatedOrderDetails = {
+            ...orderDetails,
             status: status
-          }));
+          };
+          setOrderDetails(updatedOrderDetails);
+          
+          // Update localStorage with new status
+          const savedOrder = localStorage.getItem('benedictOrderDetails');
+          if (savedOrder) {
+            try {
+              const parsed = JSON.parse(savedOrder);
+              parsed.status = status;
+              localStorage.setItem('benedictOrderDetails', JSON.stringify(parsed));
+            } catch (e) {
+              console.error('Error updating localStorage:', e);
+            }
+          }
           
           // If order is CLOSED, show rating modal (don't remove immediately)
           if (status === 'CLOSED') {
@@ -114,9 +127,9 @@ function App() {
     };
   }, [orderDetails.orderNumber]);
 
-  // Only show button if order exists and status is NOT CLOSED or CANCELLED
+  // Show button if order exists and status is NOT CANCELLED
+  // Keep showing for CLOSED until rating is submitted
   const shouldShowButton = orderDetails?.orderNumber && 
-    orderDetails.status !== 'CLOSED' && 
     orderDetails.status !== 'CANCELLED';
 
   return (
