@@ -31,8 +31,15 @@ function App() {
             status: status
           }));
           
-          // If order is CLOSED or CANCELLED, remove from localStorage
-          if (status === 'CLOSED' || status === 'CANCELLED') {
+          // If order is CLOSED, show rating modal (don't remove immediately)
+          if (status === 'CLOSED') {
+            // Keep order details for rating modal
+            // Will be removed after rating is submitted or modal is closed
+            return;
+          }
+          
+          // If order is CANCELLED, remove from localStorage
+          if (status === 'CANCELLED') {
             localStorage.removeItem('benedictOrderDetails');
             setOrderDetails({ orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null });
             return;

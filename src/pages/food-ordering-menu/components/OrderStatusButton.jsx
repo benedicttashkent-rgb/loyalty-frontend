@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 import ModalOverlay from '../../../components/navigation/ModalOverlay';
+import RatingModal from './RatingModal';
 import { getApiUrl } from '../../../config/api';
 
 const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [orderItems, setOrderItems] = useState([]);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
 
   if (!orderNumber) return null;
 
@@ -34,6 +38,42 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
 
   // Check if order can be cancelled (only NEW or ACCEPTED)
   const canCancel = status === 'NEW' || status === 'ACCEPTED';
+
+  // Load order items when status becomes CLOSED
+  useEffect(() => {
+    if (status === 'CLOSED' && orderNumber && !ratingSubmitted) {
+      const loadOrderItems = async () => {
+        try {
+          const response = await fetch(getApiUrl(`orders/status/${orderNumber}`));
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.order && data.order.items) {
+              const items = typeof data.order.items === 'string' 
+                ? JSON.parse(data.order.items) 
+                : data.order.items;
+              setOrderItems(items);
+              // Show rating modal after a short delay
+              setTimeout(() => {
+                setShowRatingModal(true);
+              }, 1000);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading order items:', error);
+        }
+      };
+      loadOrderItems();
+    }
+  }, [status, orderNumber, ratingSubmitted]);
+
+  const handleRatingSubmitted = () => {
+    setRatingSubmitted(true);
+    // Remove order details after rating is submitted
+    localStorage.removeItem('benedictOrderDetails');
+    if (onClose) {
+      onClose();
+    }
+  };
 
   const handleCancelOrder = async () => {
     if (!orderNumber) return;
@@ -212,6 +252,24 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
           </div>
         </div>
       </ModalOverlay>
+
+      {/* Rating Modal - shown when order is CLOSED */}
+      {status === 'CLOSED' && orderItems.length > 0 && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={() => {
+            setShowRatingModal(false);
+            // Remove order details if user closes without rating
+            localStorage.removeItem('benedictOrderDetails');
+            if (onClose) {
+              onClose();
+            }
+          }}
+          orderNumber={orderNumber}
+          items={orderItems}
+          onRatingSubmitted={handleRatingSubmitted}
+        />
+      )}
     </>
   );
 };
