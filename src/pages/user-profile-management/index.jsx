@@ -183,7 +183,14 @@ const UserProfileManagement = () => {
               nextTierPoints: nextTierPoints,
               nextTier: nextTier,
               earnedThisMonth: earnedThisMonth,
-              memberSince: memberSince
+              memberSince: memberSince,
+              // Include progress object like in LoyaltyPointsCard
+              progress: {
+                current: currentPoints,
+                next: nextTierPoints,
+                remaining: nextTierPoints ? Math.max(0, nextTierPoints - currentPoints) : 0,
+                percentage: nextTierPoints ? Math.min(100, (currentPoints / nextTierPoints) * 100) : 100
+              }
             });
 
           }

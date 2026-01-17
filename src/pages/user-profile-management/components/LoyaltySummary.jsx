@@ -2,12 +2,17 @@ import React from 'react';
 import Icon from '../../../components/AppIcon';
 
 const LoyaltySummary = ({ loyaltyData }) => {
-  // Fix progress bar calculation - ensure we don't divide by zero and clamp to 0-100%
-  const currentPoints = loyaltyData?.currentPoints || 0;
-  const nextTierPoints = loyaltyData?.nextTierPoints || 10000000;
-  const progressPercentage = nextTierPoints > 0 
-    ? Math.min(100, Math.max(0, (currentPoints / nextTierPoints) * 100))
-    : 0;
+  // Use the same logic as LoyaltyPointsCard - use percentage from progress object if available
+  // Otherwise calculate from currentPoints and nextTierPoints
+  const progressPercentage = loyaltyData?.progress?.percentage !== undefined
+    ? Math.min(100, Math.max(0, loyaltyData.progress.percentage))
+    : (() => {
+        const currentPoints = loyaltyData?.currentPoints || 0;
+        const nextTierPoints = loyaltyData?.nextTierPoints || 10000000;
+        return nextTierPoints > 0 
+          ? Math.min(100, Math.max(0, (currentPoints / nextTierPoints) * 100))
+          : 0;
+      })();
 
   return (
     <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-4">
