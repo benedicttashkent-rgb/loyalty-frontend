@@ -130,6 +130,11 @@ const PurchaseHistory = () => {
                 <p className="font-bold text-foreground">
                   {formatPrice(purchase.total_amount || 0)}
                 </p>
+                {purchase.cashback_amount > 0 && (
+                  <p className="text-sm text-primary font-medium mt-1">
+                    +{formatPrice(purchase.cashback_amount)} кешбэк
+                  </p>
+                )}
                 <span className={`text-xs px-2 py-1 rounded ${
                   purchase.status === 'CLOSED' 
                     ? 'bg-green-100 text-green-700' 
