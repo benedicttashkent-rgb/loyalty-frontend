@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import ModalOverlay from '../../../components/navigation/ModalOverlay';
+import { getApiUrl } from '../../../config/api';
 
 const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   if (!orderNumber) return null;
 
@@ -28,6 +31,45 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
   };
 
   const statusInfo = getStatusInfo(status);
+
+  // Check if order can be cancelled (only NEW or ACCEPTED)
+  const canCancel = status === 'NEW' || status === 'ACCEPTED';
+
+  const handleCancelOrder = async () => {
+    if (!orderNumber) return;
+    
+    setIsCancelling(true);
+    try {
+      const response = await fetch(getApiUrl(`orders/${orderNumber}/cancel`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Order cancelled successfully
+        setShowCancelConfirm(false);
+        setIsOpen(false);
+        // Clear order from localStorage
+        localStorage.removeItem('benedictOrderDetails');
+        if (onClose) {
+          onClose();
+        }
+        // Show success message (optional)
+        alert('Заказ успешно отменен');
+      } else {
+        alert(data.error || 'Ошибка при отмене заказа');
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert('Ошибка при отмене заказа. Попробуйте позже.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   return (
     <>
@@ -100,6 +142,72 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
               <p className="text-xs text-muted-foreground text-center">
                 Когда заказ будет готов, мы уведомим вас. Заберите заказ в филиале.
               </p>
+            </div>
+
+            {/* Cancel Order Button - only show for NEW or ACCEPTED orders */}
+            {canCancel && (
+              <div className="pt-4 border-t border-border">
+                <button
+                  onClick={() => setShowCancelConfirm(true)}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white rounded-lg py-3 px-4 font-medium transition-colors flex items-center justify-center gap-2"
+                  disabled={isCancelling}
+                >
+                  <Icon name="X" size={18} />
+                  <span>{isCancelling ? 'Отмена...' : 'Отменить заказ'}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </ModalOverlay>
+
+      {/* Cancel Confirmation Modal */}
+      <ModalOverlay isOpen={showCancelConfirm} onClose={() => setShowCancelConfirm(false)}>
+        <div className="p-6 max-w-md">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-foreground">Отменить заказ?</h2>
+            <button
+              onClick={() => setShowCancelConfirm(false)}
+              className="w-8 h-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors"
+              aria-label="Закрыть"
+            >
+              <Icon name="X" size={20} />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Вы уверены, что хотите отменить заказ #{orderNumber?.slice(-4)}?
+            </p>
+            <p className="text-xs text-muted-foreground">
+              После отмены заказ нельзя будет восстановить.
+            </p>
+
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 bg-muted hover:bg-muted/80 text-foreground rounded-lg py-2 px-4 font-medium transition-colors"
+                disabled={isCancelling}
+              >
+                Нет, оставить
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-lg py-2 px-4 font-medium transition-colors flex items-center justify-center gap-2"
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <>
+                    <Icon name="Loader2" size={16} className="animate-spin" />
+                    <span>Отмена...</span>
+                  </>
+                ) : (
+                  <>
+                    <Icon name="X" size={16} />
+                    <span>Да, отменить</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
