@@ -4,15 +4,26 @@ import Icon from '../../../components/AppIcon';
 const LoyaltySummary = ({ loyaltyData }) => {
   // Use the same logic as LoyaltyPointsCard - use percentage from progress object if available
   // Otherwise calculate from currentPoints and nextTierPoints
-  const progressPercentage = loyaltyData?.progress?.percentage !== undefined
-    ? Math.min(100, Math.max(0, loyaltyData.progress.percentage))
-    : (() => {
-        const currentPoints = loyaltyData?.currentPoints || 0;
-        const nextTierPoints = loyaltyData?.nextTierPoints || 10000000;
-        return nextTierPoints > 0 
-          ? Math.min(100, Math.max(0, (currentPoints / nextTierPoints) * 100))
-          : 0;
-      })();
+  let progressPercentage = 0;
+  
+  if (loyaltyData?.progress?.percentage !== undefined) {
+    // Use percentage directly from API (like LoyaltyPointsCard)
+    progressPercentage = Math.min(100, Math.max(0, loyaltyData.progress.percentage));
+  } else {
+    // Fallback calculation
+    const currentPoints = loyaltyData?.currentPoints || 0;
+    const nextTierPoints = loyaltyData?.nextTierPoints || 10000000;
+    if (nextTierPoints > 0) {
+      progressPercentage = Math.min(100, Math.max(0, (currentPoints / nextTierPoints) * 100));
+    }
+  }
+  
+  console.log('📊 LoyaltySummary progress:', {
+    percentage: progressPercentage,
+    progressObject: loyaltyData?.progress,
+    currentPoints: loyaltyData?.currentPoints,
+    nextTierPoints: loyaltyData?.nextTierPoints
+  });
 
   return (
     <div className="bg-card rounded-xl p-6 shadow-sm border border-border mb-4">

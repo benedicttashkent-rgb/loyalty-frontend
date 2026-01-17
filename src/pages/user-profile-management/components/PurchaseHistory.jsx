@@ -32,15 +32,21 @@ const PurchaseHistory = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('📦 Purchase history response:', data);
         if (data.success) {
-          setPurchases(data.purchases || []);
+          const purchases = data.purchases || [];
+          console.log('📦 Purchases loaded:', purchases.length);
+          setPurchases(purchases);
         } else {
+          console.error('❌ Purchase history error:', data.error);
           setError(data.error || 'Ошибка загрузки истории');
         }
       } else if (response.status === 401) {
         setError('Требуется авторизация');
       } else {
-        setError('Ошибка загрузки истории покупок');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Purchase history HTTP error:', response.status, errorData);
+        setError(errorData.error || 'Ошибка загрузки истории покупок');
       }
     } catch (err) {
       console.error('Error loading purchase history:', err);

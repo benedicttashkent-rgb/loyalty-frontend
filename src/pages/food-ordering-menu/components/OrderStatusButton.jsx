@@ -80,6 +80,17 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
 
   const handleRatingSubmitted = () => {
     setRatingSubmitted(true);
+    // Mark that rating was submitted in localStorage
+    try {
+      const saved = localStorage.getItem('benedictOrderDetails');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        parsed.ratingSubmitted = true;
+        localStorage.setItem('benedictOrderDetails', JSON.stringify(parsed));
+      }
+    } catch (e) {
+      console.error('Error saving ratingSubmitted flag:', e);
+    }
     // Remove order details after rating is submitted
     localStorage.removeItem('benedictOrderDetails');
     if (onClose) {

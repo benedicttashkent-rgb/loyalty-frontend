@@ -30,6 +30,25 @@ function App() {
           // Use order_number from API to ensure consistency
           const actualOrderNumber = order.order_number || order.orderNumber || orderNumber;
           
+          // Check if rating was already submitted
+          const savedOrder = localStorage.getItem('benedictOrderDetails');
+          let ratingSubmitted = false;
+          if (savedOrder) {
+            try {
+              const parsed = JSON.parse(savedOrder);
+              ratingSubmitted = parsed.ratingSubmitted === true;
+            } catch (e) {
+              // Ignore parsing errors
+            }
+          }
+          
+          // If rating was submitted, don't update status and hide button
+          if (ratingSubmitted) {
+            localStorage.removeItem('benedictOrderDetails');
+            setOrderDetails({ orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null, ratingSubmitted: true });
+            return;
+          }
+          
           // Update order status in state AND localStorage
           const updatedOrderDetails = {
             ...orderDetails,
@@ -39,7 +58,6 @@ function App() {
           setOrderDetails(updatedOrderDetails);
           
           // Update localStorage with new status and correct order number
-          const savedOrder = localStorage.getItem('benedictOrderDetails');
           if (savedOrder) {
             try {
               const parsed = JSON.parse(savedOrder);
@@ -135,9 +153,11 @@ function App() {
   }, [orderDetails.orderNumber]);
 
   // Show button if order exists and status is NOT CANCELLED
+  // Hide if rating was submitted (ratingSubmitted flag)
   // Keep showing for CLOSED until rating is submitted
   const shouldShowButton = orderDetails?.orderNumber && 
-    orderDetails.status !== 'CANCELLED';
+    orderDetails.status !== 'CANCELLED' &&
+    !orderDetails.ratingSubmitted;
 
   return (
     <>

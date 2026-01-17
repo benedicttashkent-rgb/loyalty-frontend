@@ -176,6 +176,11 @@ const UserProfileManagement = () => {
               nextTierPoints
             });
             
+            // Use progress object from API if available, otherwise calculate
+            const progressPercentage = progress.percentage !== undefined
+              ? progress.percentage
+              : (nextTierPoints ? Math.min(100, (currentPoints / nextTierPoints) * 100) : 100);
+            
             setLoyaltyData({
               totalCashback: cashback,
               totalPoints: cashback, // Backward compatibility
@@ -184,12 +189,12 @@ const UserProfileManagement = () => {
               nextTier: nextTier,
               earnedThisMonth: earnedThisMonth,
               memberSince: memberSince,
-              // Include progress object like in LoyaltyPointsCard
+              // Include progress object like in LoyaltyPointsCard - use API data if available
               progress: {
-                current: currentPoints,
-                next: nextTierPoints,
-                remaining: nextTierPoints ? Math.max(0, nextTierPoints - currentPoints) : 0,
-                percentage: nextTierPoints ? Math.min(100, (currentPoints / nextTierPoints) * 100) : 100
+                current: progress.current || currentPoints,
+                next: progress.next || nextTierPoints,
+                remaining: progress.remaining !== undefined ? progress.remaining : (nextTierPoints ? Math.max(0, nextTierPoints - currentPoints) : 0),
+                percentage: progressPercentage
               }
             });
 
