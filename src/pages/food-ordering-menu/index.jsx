@@ -223,32 +223,59 @@ const FoodOrderingMenu = () => {
   }, [activeCategory, selectedBranch, menuData]);
 
   const cartCount = cartItems?.reduce((sum, item) => sum + item?.quantity, 0);
-  const cartTotal = cartItems?.reduce((sum, item) => sum + item?.price * item?.quantity, 0);
+  const cartTotal = cartItems?.reduce((sum, item) => {
+    const basePrice = item?.price || 0;
+    const modifierPrice = item?.selectedModifier?.price || 0;
+    return sum + ((basePrice + modifierPrice) * item?.quantity);
+  }, 0);
 
-  const handleAddToCart = (item, quantity) => {
+  const handleAddToCart = (item, quantity, selectedModifier = null) => {
     setCartItems((prevItems) => {
-      const existingItem = prevItems?.find((cartItem) => cartItem?.id === item?.id);
+      // Create a unique cart item ID that includes modifier if present
+      const cartItemId = selectedModifier 
+        ? `${item?.id}-mod-${selectedModifier.id}`
+        : item?.id;
+      
+      // Check if exact same item with same modifier already exists
+      const existingItem = prevItems?.find((cartItem) => {
+        const existingId = cartItem?.cartItemId || cartItem?.id;
+        return existingId === cartItemId;
+      });
+
       if (existingItem) {
-        return prevItems?.map((cartItem) =>
-        cartItem?.id === item?.id ?
-        { ...cartItem, quantity: cartItem?.quantity + quantity } :
-        cartItem
-        );
+        // Increment quantity of existing item
+        return prevItems?.map((cartItem) => {
+          const existingId = cartItem?.cartItemId || cartItem?.id;
+          return existingId === cartItemId
+            ? { ...cartItem, quantity: cartItem?.quantity + quantity }
+            : cartItem;
+        });
       }
-      return [...prevItems, { ...item, quantity }];
+      
+      // Add new item with modifier and unique cart ID
+      return [...prevItems, { 
+        ...item, 
+        quantity,
+        selectedModifier: selectedModifier || null,
+        cartItemId: cartItemId // Store unique ID for easy lookup
+      }];
     });
   };
 
-  const handleUpdateQuantity = (itemId, newQuantity) => {
+  const handleUpdateQuantity = (cartItemId, newQuantity) => {
     setCartItems((prevItems) =>
-    prevItems?.map((item) =>
-    item?.id === itemId ? { ...item, quantity: newQuantity } : item
-    )
+    prevItems?.map((item) => {
+      const itemId = item?.cartItemId || item?.id;
+      return itemId === cartItemId ? { ...item, quantity: newQuantity } : item;
+    })
     );
   };
 
-  const handleRemoveItem = (itemId) => {
-    setCartItems((prevItems) => prevItems?.filter((item) => item?.id !== itemId));
+  const handleRemoveItem = (cartItemId) => {
+    setCartItems((prevItems) => prevItems?.filter((item) => {
+      const itemId = item?.cartItemId || item?.id;
+      return itemId !== cartItemId;
+    }));
   };
 
   const handleCheckout = async (comments) => {
@@ -271,7 +298,11 @@ const FoodOrderingMenu = () => {
     // Send order notification to Telegram (for takeaway orders)
     if (orderType === 'takeaway' && selectedBranch) {
       try {
-        const totalAmount = cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+        const totalAmount = cartItems.reduce((sum, item) => {
+          const basePrice = item?.price || 0;
+          const modifierPrice = item?.selectedModifier?.price || 0;
+          return sum + ((basePrice + modifierPrice) * (item?.quantity || 1));
+        }, 0);
         
         // Get customer info from localStorage/auth if available
         const token = localStorage.getItem('authToken');
@@ -304,7 +335,12 @@ const FoodOrderingMenu = () => {
             id: item.id,
             name: item.name,
             quantity: item.quantity,
-            price: item.price
+            price: item.price,
+            modifier: item.selectedModifier ? {
+              id: item.selectedModifier.id,
+              name: item.selectedModifier.name,
+              price: item.selectedModifier.price || 0
+            } : null
           })),
           totalAmount,
           comments: orderComments,
@@ -362,8 +398,10 @@ const FoodOrderingMenu = () => {
   };
 
   const getCartQuantity = (itemId) => {
-    const cartItem = cartItems?.find((item) => item?.id === itemId);
-    return cartItem ? cartItem?.quantity : 0;
+    // Sum quantities for all cart items with this base item ID (including different modifiers)
+    return cartItems
+      ?.filter((item) => item?.id === itemId)
+      ?.reduce((sum, item) => sum + (item?.quantity || 0), 0) || 0;
   };
 
   const handleMenuItemClick = (item) => {

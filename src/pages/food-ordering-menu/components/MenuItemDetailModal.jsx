@@ -6,8 +6,22 @@ import { formatPrice } from '../../../utils/formatPrice';
 
 const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
   const [quantity, setQuantity] = useState(1);
+  const [selectedModifierId, setSelectedModifierId] = useState(null);
+  const [modifierError, setModifierError] = useState('');
+
+  // Reset state when modal opens/closes or item changes
+  React.useEffect(() => {
+    if (isOpen && item) {
+      setQuantity(1);
+      setSelectedModifierId(null);
+      setModifierError('');
+    }
+  }, [isOpen, item]);
 
   if (!isOpen || !item) return null;
+
+  const modifiers = item?.modifiers || [];
+  const hasModifiers = modifiers.length > 0;
 
   const handleIncrement = () => {
     setQuantity(prev => prev + 1);
@@ -20,8 +34,20 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
   };
 
   const handleAddToCart = () => {
-    onAddToCart(item, quantity);
+    // Validate modifier selection if required
+    if (hasModifiers && !selectedModifierId) {
+      setModifierError('Выберите необходимые модификаторы');
+      return;
+    }
+
+    const selectedModifier = selectedModifierId 
+      ? modifiers.find(m => m.id === selectedModifierId)
+      : null;
+
+    onAddToCart(item, quantity, selectedModifier);
     setQuantity(1);
+    setSelectedModifierId(null);
+    setModifierError('');
     onClose();
   };
 
@@ -127,6 +153,44 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Modifiers Selection */}
+          {hasModifiers && (
+            <div className="border-t border-border pt-4 space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Выберите вариант</h3>
+              <div className="space-y-2">
+                {modifiers.map((modifier) => (
+                  <label
+                    key={modifier.id}
+                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <input
+                        type="radio"
+                        name={`modifier-${item.id}`}
+                        value={modifier.id}
+                        checked={selectedModifierId === modifier.id}
+                        onChange={() => {
+                          setSelectedModifierId(modifier.id);
+                          setModifierError('');
+                        }}
+                        className="w-5 h-5 text-accent focus:ring-accent focus:ring-2"
+                      />
+                      <span className="text-sm font-medium text-foreground">{modifier.name}</span>
+                    </div>
+                    {modifier.price > 0 && (
+                      <span className="text-sm font-semibold text-foreground">
+                        {formatPrice(modifier.price)}
+                      </span>
+                    )}
+                  </label>
+                ))}
+              </div>
+              {modifierError && (
+                <p className="text-sm text-destructive">{modifierError}</p>
+              )}
             </div>
           )}
 

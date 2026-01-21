@@ -66,8 +66,11 @@ const UserProfileManagement = () => {
             // Format birthDate from database (YYYY-MM-DD) to input format
             let formattedBirthDate = '';
             if (data.customer.birthDate || data.customer.birth_date) {
-              const birthDate = data.customer.birthDate || data.customer.birth_date;
-              // If already in YYYY-MM-DD format, use as is
+              let birthDate = data.customer.birthDate || data.customer.birth_date;
+              // If includes time (e.g. 2006-12-09T00:00:00.000Z) trim to YYYY-MM-DD
+              if (typeof birthDate === 'string' && birthDate.includes('T')) {
+                birthDate = birthDate.split('T')[0];
+              }
               if (birthDate && birthDate.includes('-')) {
                 formattedBirthDate = birthDate;
               } else if (birthDate) {

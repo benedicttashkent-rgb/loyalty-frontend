@@ -19,7 +19,7 @@ const MenuItemCard = ({ item, onAddToCart, cartQuantity, onItemClick }) => {
 
   const handleAddToCart = (e) => {
     e.stopPropagation(); // Prevent card click when adding to cart
-    onAddToCart(item, quantity);
+    onAddToCart(item, quantity, null); // Cards add without modifiers; modal handles modifiers
     setQuantity(1);
   };
 

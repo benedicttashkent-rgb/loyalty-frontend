@@ -9,7 +9,11 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
   const [itemComments, setItemComments] = useState({});
   const [editingCommentId, setEditingCommentId] = useState(null);
 
-  const totalAmount = cartItems?.reduce((sum, item) => sum + (item?.price * item?.quantity), 0);
+  const totalAmount = cartItems?.reduce((sum, item) => {
+    const basePrice = item?.price || 0;
+    const modifierPrice = item?.selectedModifier?.price || 0;
+    return sum + ((basePrice + modifierPrice) * item?.quantity);
+  }, 0);
   const totalItems = cartItems?.reduce((sum, item) => sum + item?.quantity, 0);
 
   const handleQuantityChange = (itemId, newQuantity) => {
@@ -79,9 +83,22 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between mb-2">
-                          <h3 className="text-sm font-semibold text-foreground">{item?.name}</h3>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-semibold text-foreground">{item?.name}</h3>
+                            {item?.selectedModifier && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {item.selectedModifier.name}
+                                {item.selectedModifier.price > 0 && (
+                                  <span className="ml-1">(+{formatPrice(item.selectedModifier.price)})</span>
+                                )}
+                              </p>
+                            )}
+                          </div>
                           <button
-                            onClick={() => onRemoveItem(item?.id)}
+                            onClick={() => {
+                              const itemId = item?.cartItemId || item?.id;
+                              onRemoveItem(itemId);
+                            }}
                             className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-destructive/10 transition-smooth flex-shrink-0 ml-2"
                             aria-label="Удалить из корзины"
                           >
@@ -92,7 +109,11 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
                         <div className="flex items-center justify-between">
                           <div className="flex items-center border border-border rounded-lg overflow-hidden">
                             <button
-                              onClick={() => handleQuantityChange(item?.id, item?.quantity - 1)}
+                              onClick={() => {
+                                const itemId = item?.cartItemId || item?.id;
+                                const modifierPrice = item?.selectedModifier?.price || 0;
+                                handleQuantityChange(itemId, item?.quantity - 1);
+                              }}
                               className="w-8 h-8 flex items-center justify-center hover:bg-card transition-smooth"
                               aria-label="Уменьшить количество"
                             >
@@ -102,7 +123,10 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
                               {item?.quantity}
                             </span>
                             <button
-                              onClick={() => handleQuantityChange(item?.id, item?.quantity + 1)}
+                              onClick={() => {
+                                const itemId = item?.cartItemId || item?.id;
+                                handleQuantityChange(itemId, item?.quantity + 1);
+                              }}
                               className="w-8 h-8 flex items-center justify-center hover:bg-card transition-smooth"
                               aria-label="Увеличить количество"
                             >
@@ -111,7 +135,7 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
                           </div>
 
                           <span className="text-base font-bold text-foreground">
-                            {formatPrice(item?.price * item?.quantity)}
+                            {formatPrice((item?.price + (item?.selectedModifier?.price || 0)) * item?.quantity)}
                           </span>
                         </div>
 
