@@ -145,15 +145,6 @@ const ProfileForm = ({ user, onSave, onCancel }) => {
             disabled={!isEditing}
             required
           />
-          {formData?.birthDate && !isEditing && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {new Date(formData.birthDate).toLocaleDateString('ru-RU', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric'
-              })}
-            </p>
-          )}
         </div>
 
         {isEditing && (

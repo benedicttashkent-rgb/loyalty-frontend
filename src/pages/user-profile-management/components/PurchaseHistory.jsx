@@ -38,8 +38,9 @@ const PurchaseHistory = () => {
           console.log('📦 Purchases loaded:', purchases.length);
           setPurchases(purchases);
         } else {
-          console.error('❌ Purchase history error:', data.error);
-          setError(data.error || 'Ошибка загрузки истории');
+          console.error('❌ Purchase history error (treating as empty):', data.error);
+          setPurchases(data.purchases || []);
+          setError(null);
         }
       } else if (response.status === 401) {
         setError('Требуется авторизация');
