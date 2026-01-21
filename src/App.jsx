@@ -69,10 +69,10 @@ function App() {
             }
           }
           
-          // If order is CLOSED, show rating modal (don't remove immediately)
+          // If order is CLOSED, hide button immediately (cashier finished)
           if (status === 'CLOSED') {
-            // Keep order details for rating modal
-            // Will be removed after rating is submitted or modal is closed
+            localStorage.removeItem('benedictOrderDetails');
+            setOrderDetails({ orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null, ratingSubmitted: true });
             return;
           }
           
@@ -154,9 +154,9 @@ function App() {
 
   // Show button if order exists and status is NOT CANCELLED
   // Hide if rating was submitted (ratingSubmitted flag)
-  // Keep showing for CLOSED until rating is submitted
   const shouldShowButton = orderDetails?.orderNumber && 
     orderDetails.status !== 'CANCELLED' &&
+    orderDetails.status !== 'CLOSED' &&
     !orderDetails.ratingSubmitted;
 
   return (
