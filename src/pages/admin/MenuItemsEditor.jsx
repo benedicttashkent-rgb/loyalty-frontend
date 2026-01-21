@@ -30,7 +30,8 @@ const MenuItemsEditor = () => {
     fats: '',
     carbohydrates: '',
     isAvailable: true,
-    displayOrder: 0
+    displayOrder: 0,
+    modifiers: '[]'
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -122,6 +123,7 @@ const MenuItemsEditor = () => {
       if (formData.carbohydrates) formDataToSend.append('carbohydrates', formData.carbohydrates);
       formDataToSend.append('isAvailable', formData.isAvailable ? 'true' : 'false');
       if (formData.displayOrder) formDataToSend.append('displayOrder', formData.displayOrder);
+      if (formData.modifiers) formDataToSend.append('modifiers', formData.modifiers);
       if (formData.imageUrl && !imageFile) {
         formDataToSend.append('imageUrl', formData.imageUrl);
       }
@@ -168,7 +170,8 @@ const MenuItemsEditor = () => {
       fats: '',
       carbohydrates: '',
       isAvailable: true,
-      displayOrder: 0
+      displayOrder: 0,
+      modifiers: '[]'
     });
     setImageFile(null);
     setImagePreview(null);
@@ -190,7 +193,8 @@ const MenuItemsEditor = () => {
       fats: item.fats || '',
       carbohydrates: item.carbohydrates || '',
       isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
-      displayOrder: item.displayOrder || 0
+      displayOrder: item.displayOrder || 0,
+      modifiers: item.modifiers ? JSON.stringify(item.modifiers, null, 2) : '[]'
     });
     setImagePreview(item.imageUrl || null);
     setImageFile(null);
@@ -758,6 +762,19 @@ const MenuItemsEditor = () => {
                       <option value="шт">шт</option>
                     </select>
                   </div>
+                </div>
+
+                {/* Modifiers (JSON) */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Модификаторы (JSON массив)</label>
+                  <textarea
+                    value={formData.modifiers}
+                    onChange={(e) => setFormData({ ...formData, modifiers: e.target.value })}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-background font-mono text-xs"
+                    rows={4}
+                    placeholder='Например: [{"id":"coffee-large-330","name":"Большой (330 мл)","price":0},{"id":"coffee-small-230","name":"Маленький (230 мл)","price":0}]'
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Оставьте пустым чтобы использовать дефолтные (для кофе — 330/230 мл).</p>
                 </div>
 
                 {/* Nutritional Info */}
