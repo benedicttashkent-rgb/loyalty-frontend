@@ -2,11 +2,26 @@ import React, { useState } from 'react';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 
+const normalizeBirthDate = (value) => {
+  if (!value) return '';
+  try {
+    let dateStr = value;
+    if (typeof dateStr === 'string' && dateStr.includes('T')) {
+      dateStr = dateStr.split('T')[0];
+    }
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '';
+    return d.toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+};
+
 const ProfileForm = ({ user, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
-    birthDate: user?.birthDate || '',
+    birthDate: normalizeBirthDate(user?.birthDate),
   });
 
   const [errors, setErrors] = useState({});
@@ -18,7 +33,7 @@ const ProfileForm = ({ user, onSave, onCancel }) => {
       setFormData({
         name: user.name || '',
         phone: user.phone || '',
-        birthDate: user.birthDate || '',
+        birthDate: normalizeBirthDate(user.birthDate),
       });
     }
   }, [user]);
