@@ -48,6 +48,7 @@ const FoodOrderingMenu = () => {
   const [isLoadingMenu, setIsLoadingMenu] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Force takeaway only for MVP - delivery removed
   useEffect(() => {
@@ -216,11 +217,26 @@ const FoodOrderingMenu = () => {
     if (!currentMenu || !Array.isArray(currentMenu)) {
       return [];
     }
-    if (!activeCategory) {
-      return currentMenu;
+    
+    let filtered = currentMenu;
+    
+    // Filter by category
+    if (activeCategory) {
+      filtered = filtered.filter((item) => item?.category === activeCategory);
     }
-    return currentMenu?.filter((item) => item?.category === activeCategory);
-  }, [activeCategory, selectedBranch, menuData]);
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((item) => {
+        const name = (item?.name || '').toLowerCase();
+        const description = (item?.description || '').toLowerCase();
+        return name.includes(query) || description.includes(query);
+      });
+    }
+    
+    return filtered;
+  }, [activeCategory, selectedBranch, menuData, searchQuery]);
 
   const cartCount = cartItems?.reduce((sum, item) => sum + item?.quantity, 0);
   const cartTotal = cartItems?.reduce((sum, item) => {
@@ -446,11 +462,40 @@ const FoodOrderingMenu = () => {
         {/* Show menu only if branch is selected - works for both takeaway and delivery */}
         {selectedBranch ? (
           <>
+        {/* Search Bar */}
+        <div className="mb-4">
+          <div className="relative">
+            <Icon 
+              name="Search" 
+              size={20} 
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" 
+            />
+            <input
+              type="text"
+              placeholder="Поиск блюд..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <Icon name="X" size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="mb-6">
           <CategoryFilter
             categories={categories}
             activeCategory={activeCategory}
-            onCategoryChange={setActiveCategory} />
+            onCategoryChange={(cat) => {
+              setActiveCategory(cat);
+              setSearchQuery(''); // Clear search when changing category
+            }} />
         </div>
 
             {isLoadingMenu ? (

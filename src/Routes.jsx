@@ -19,6 +19,7 @@ import RewardsEditor from './pages/admin/RewardsEditor';
 import EventsEditor from './pages/admin/EventsEditor';
 import TelegramBroadcastEditor from './pages/admin/TelegramBroadcastEditor';
 import MenuItemsEditor from './pages/admin/MenuItemsEditor';
+import CategoriesEditor from './pages/admin/CategoriesEditor';
 import TelegramTest from './pages/telegram-test';
 
 const Routes = () => {
@@ -46,6 +47,7 @@ const Routes = () => {
           <Route path="customers" element={<CustomersEditor />} />
           <Route path="news" element={<NewsBannerEditor />} />
           <Route path="menu-items" element={<MenuItemsEditor />} />
+          <Route path="categories" element={<CategoriesEditor />} />
           <Route path="rewards" element={<RewardsEditor />} />
           <Route path="events" element={<EventsEditor />} />
           <Route path="broadcast" element={<TelegramBroadcastEditor />} />

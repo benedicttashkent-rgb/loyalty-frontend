@@ -95,6 +95,7 @@ const AdminLayout = () => {
     { path: '/admin/dashboard', label: 'Дашборд', icon: 'LayoutDashboard' },
     { path: '/admin/customers', label: 'Клиенты', icon: 'Users' },
     { path: '/admin/menu-items', label: 'Блюда', icon: 'Utensils' },
+    { path: '/admin/categories', label: 'Категории', icon: 'Folder' },
     { path: '/admin/news', label: 'Баннеры Новостей', icon: 'Newspaper' },
     { path: '/admin/rewards', label: 'Награды', icon: 'Gift' },
     { path: '/admin/events', label: 'События', icon: 'Calendar' },
