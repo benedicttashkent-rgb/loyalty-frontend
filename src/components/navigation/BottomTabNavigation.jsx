@@ -6,32 +6,34 @@ import AppImage from '../AppImage';
 const BottomTabNavigation = ({ cartCount = 0 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const isTestMode = location?.pathname?.startsWith('/test');
+  const basePath = isTestMode ? '/test' : '';
 
   const tabs = [
     {
       label: 'Главная',
-      path: '/home-dashboard',
+      path: basePath ? `${basePath}` : '/home-dashboard',
       icon: 'Home',
     },
     {
       label: 'Награды',
-      path: '/rewards-catalog',
+      path: basePath ? `${basePath}/rewards` : '/rewards-catalog',
       icon: 'Gift',
     },
     {
       label: 'center-promo',
-      path: '/promotions-page',
+      path: basePath ? `${basePath}/promotions` : '/promotions-page',
       isCenter: true,
     },
     {
       label: 'Заказ',
-      path: '/food-ordering-menu',
+      path: basePath ? `${basePath}/menu` : '/food-ordering-menu',
       icon: 'UtensilsCrossed',
       badge: cartCount > 0 ? cartCount : null,
     },
     {
       label: 'О нас',
-      path: '/about-branch-locations',
+      path: basePath ? `${basePath}/about` : '/about-branch-locations',
       icon: 'MapPin',
     },
   ];
@@ -41,7 +43,9 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
   };
 
   const isActive = (path) => {
-    return location?.pathname === path;
+    if (!location?.pathname) return false;
+    if (path === basePath || path === '/test') return location.pathname === '/test' || location.pathname === '/test/';
+    return location.pathname === path;
   };
 
   return (

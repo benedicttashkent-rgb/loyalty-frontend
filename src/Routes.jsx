@@ -21,6 +21,8 @@ import TelegramBroadcastEditor from './pages/admin/TelegramBroadcastEditor';
 import MenuItemsEditor from './pages/admin/MenuItemsEditor';
 import CategoriesEditor from './pages/admin/CategoriesEditor';
 import TelegramTest from './pages/telegram-test';
+import TestLayout from './pages/test/TestLayout';
+import TestHome from './pages/test/TestHome';
 
 const Routes = () => {
   return (
@@ -33,6 +35,14 @@ const Routes = () => {
         <Route path="/home-dashboard" element={<HomeDashboard />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/telegram-test" element={<TelegramTest />} />
+        {/* Test / Demo mode - no registration required */}
+        <Route path="/test" element={<TestLayout />}>
+          <Route index element={<TestHome />} />
+          <Route path="menu" element={<FoodOrderingMenu />} />
+          <Route path="rewards" element={<RewardsCatalog />} />
+          <Route path="about" element={<AboutBranchLocations />} />
+          <Route path="promotions" element={<PromotionsPage />} />
+        </Route>
         <Route path="/food-ordering-menu" element={<FoodOrderingMenu />} />
         <Route path="/about-branch-locations" element={<AboutBranchLocations />} />
         <Route path="/user-profile-management" element={<UserProfileManagement />} />

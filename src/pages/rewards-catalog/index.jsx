@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import BrandLogo from '../../components/navigation/BrandLogo';
 import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import PointsBalanceCard from './components/PointsBalanceCard';
@@ -12,8 +12,10 @@ import { getApiUrl } from '../../config/api';
 
 const RewardsCatalog = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isTestMode = location?.pathname?.startsWith('/test');
   const [isLoading, setIsLoading] = useState(true);
-  const [userPoints, setUserPoints] = useState(0);
+  const [userPoints, setUserPoints] = useState(isTestMode ? 1250 : 0);
   const [userTier, setUserTier] = useState('Bronze');
   const [favorites, setFavorites] = useState([]);
   const [redemptionModalOpen, setRedemptionModalOpen] = useState(false);
@@ -26,32 +28,38 @@ const RewardsCatalog = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          navigate('/signup');
-          return;
-        }
-
-        // Load customer data
-        const customerResponse = await fetch(getApiUrl('customers/me'), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (customerResponse.ok) {
-          const customerData = await customerResponse.json();
-          if (customerData.success && customerData.customer) {
-            setUserPoints(customerData.customer.points || 0);
-            setUserTier(customerData.customer.tier || 'Bronze');
+        if (isTestMode) {
+          // Demo mode: use mock points, only load public rewards
+          setUserPoints(1250);
+          setUserTier('Bronze');
+        } else {
+          const token = localStorage.getItem('authToken');
+          if (!token) {
+            navigate('/signup');
+            return;
           }
-        } else if (customerResponse.status === 401 || customerResponse.status === 404) {
-          localStorage.removeItem('authToken');
-          navigate('/signup');
-          return;
+
+          // Load customer data
+          const customerResponse = await fetch(getApiUrl('customers/me'), {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (customerResponse.ok) {
+            const customerData = await customerResponse.json();
+            if (customerData.success && customerData.customer) {
+              setUserPoints(customerData.customer.points || 0);
+              setUserTier(customerData.customer.tier || 'Bronze');
+            }
+          } else if (customerResponse.status === 401 || customerResponse.status === 404) {
+            localStorage.removeItem('authToken');
+            navigate('/signup');
+            return;
+          }
         }
 
-        // Load rewards from API
+        // Load rewards from API (public endpoint)
         const rewardsResponse = await fetch(getApiUrl('content/rewards'));
         if (rewardsResponse.ok) {
           const rewardsData = await rewardsResponse.json();
@@ -62,7 +70,7 @@ const RewardsCatalog = () => {
               let imageUrl = reward.image_url;
               if (imageUrl && imageUrl.startsWith('/uploads/')) {
                 // Prepend API base URL to relative upload paths
-                const apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
+                const apiBase = getApiUrl('').replace('/api', '');
                 imageUrl = `${apiBase}${imageUrl}`;
               }
               
@@ -92,7 +100,7 @@ const RewardsCatalog = () => {
     };
 
     loadData();
-  }, [navigate]);
+  }, [navigate, isTestMode]);
 
   const handleFavorite = (rewardId) => {
     setFavorites((prev) =>
