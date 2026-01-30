@@ -1,12 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AppImage from '../AppImage';
 
 const BrandLogo = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isTestMode = location?.pathname?.startsWith('/test');
 
   const handleClick = () => {
-    navigate('/home-dashboard');
+    navigate(isTestMode ? '/test' : '/home-dashboard');
   };
 
   const handleKeyDown = (e) => {
@@ -26,7 +28,7 @@ const BrandLogo = () => {
       aria-label="Benedict Café - Go to home"
     >
       <AppImage
-        src="assets/images/111-1765536227863.jpg"
+        src="/assets/images/111-1765536227863.jpg"
         alt="Benedict Café logo with circular brown background and white letter B, Benedict text below"
         className="h-16 w-auto object-contain"
       />
