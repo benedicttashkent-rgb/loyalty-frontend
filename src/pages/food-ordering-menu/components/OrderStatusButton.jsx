@@ -14,6 +14,13 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
 
   if (!orderNumber) return null;
 
+  // Normalize status (backend may send GIVEN, COMPLETED, or lowercase)
+  const normalizedStatus = (() => {
+    const s = (status || '').toString().toUpperCase();
+    if (s === 'GIVEN' || s === 'COMPLETED' || s === 'DELIVERED') return 'CLOSED';
+    return s || status;
+  })();
+
   // Status mapping to display text and icons
   const getStatusInfo = (status) => {
     switch (status) {
@@ -34,14 +41,14 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
     }
   };
 
-  const statusInfo = getStatusInfo(status);
+  const statusInfo = getStatusInfo(normalizedStatus);
 
   // Check if order can be cancelled (only NEW or ACCEPTED)
-  const canCancel = status === 'NEW' || status === 'ACCEPTED';
+  const canCancel = normalizedStatus === 'NEW' || normalizedStatus === 'ACCEPTED';
 
   // Load order items when status becomes CLOSED
   useEffect(() => {
-    if (status === 'CLOSED' && orderNumber && !ratingSubmitted && orderItems.length === 0) {
+    if (normalizedStatus === 'CLOSED' && orderNumber && !ratingSubmitted && orderItems.length === 0) {
       const loadOrderItems = async () => {
         try {
           console.log(`📦 Loading order items for rating: ${orderNumber}`);
@@ -76,7 +83,7 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
       };
       loadOrderItems();
     }
-  }, [status, orderNumber, ratingSubmitted, orderItems.length]);
+  }, [normalizedStatus, orderNumber, ratingSubmitted, orderItems.length]);
 
   const handleRatingSubmitted = () => {
     setRatingSubmitted(true);
@@ -178,11 +185,12 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
                 <span className={`text-sm font-semibold ${statusInfo.color}`}>{statusInfo.text}</span>
               </div>
               <p className="text-xs text-muted-foreground ml-7">
-                {status === 'NEW' && 'Ожидание принятия заказа кассиром'}
-                {status === 'ACCEPTED' && 'Заказ принят. Создание заказа в iiko...'}
-                {status === 'IN_PROGRESS' && `Кухня готовит ваш заказ. Приблизительное время готовности: ${estimatedTime || '15-20 мин'}`}
-                {status === 'READY' && 'Заказ готов! Заберите в филиале.'}
-                {!status && 'Приблизительное время готовности: ' + (estimatedTime || '15-20 мин')}
+                {normalizedStatus === 'NEW' && 'Ожидание принятия заказа кассиром'}
+                {normalizedStatus === 'ACCEPTED' && 'Заказ принят. Создание заказа в iiko...'}
+                {normalizedStatus === 'IN_PROGRESS' && `Кухня готовит ваш заказ. Приблизительное время готовности: ${estimatedTime || '15-20 мин'}`}
+                {normalizedStatus === 'READY' && 'Заказ готов! Заберите в филиале.'}
+                {normalizedStatus === 'CLOSED' && 'Спасибо! Оцените заказ ниже.'}
+                {!normalizedStatus && 'Приблизительное время готовности: ' + (estimatedTime || '15-20 мин')}
               </p>
             </div>
 
@@ -277,7 +285,7 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
       </ModalOverlay>
 
       {/* Rating Modal - shown when order is CLOSED */}
-      {status === 'CLOSED' && orderItems.length > 0 && (
+      {normalizedStatus === 'CLOSED' && orderItems.length > 0 && (
         <RatingModal
           isOpen={showRatingModal}
           onClose={() => {

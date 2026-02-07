@@ -42,12 +42,14 @@ const Routes = () => {
           <Route path="rewards" element={<RewardsCatalog />} />
           <Route path="about" element={<AboutBranchLocations />} />
           <Route path="promotions" element={<PromotionsPage />} />
+          <Route path="promotions/:newsId" element={<PromotionsPage />} />
         </Route>
         <Route path="/food-ordering-menu" element={<FoodOrderingMenu />} />
         <Route path="/about-branch-locations" element={<AboutBranchLocations />} />
         <Route path="/user-profile-management" element={<UserProfileManagement />} />
         <Route path="/rewards-catalog" element={<RewardsCatalog />} />
         <Route path="/promotions-page" element={<PromotionsPage />} />
+        <Route path="/promotions-page/:newsId" element={<PromotionsPage />} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />

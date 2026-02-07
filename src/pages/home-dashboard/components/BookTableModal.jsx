@@ -47,7 +47,7 @@ const BookTableModal = ({ isOpen, onClose }) => {
           {/* Header */}
           <div className="flex flex-col mb-6">
             <p className="text-xl font-bold text-foreground">
-              Выберите филиал и позвоните для бронирования стола
+              Выберите филиал и позвоните чтобы узнать доступность
             </p>
           </div>
 

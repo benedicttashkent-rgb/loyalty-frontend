@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
-import { formatDateDDMMYYYY, formatDateWithMonth } from '../../utils/formatDate';
+import { formatDateWithMonth } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
 
 const PromotionsPage = () => {
   const navigate = useNavigate();
+  const { newsId } = useParams();
+  const location = useLocation();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const isDetailView = Boolean(newsId);
+  const detailEvent = location.state?.event || (newsId && events.find(e => String(e.id) === String(newsId)));
 
   // Fetch events from API
   useEffect(() => {
@@ -32,6 +37,7 @@ const PromotionsPage = () => {
                 type: event.type || 'pianist',
                 highlighted: event.is_highlighted || false,
                 location: event.location || 'Мирабад',
+                description: event.description || event.details || '',
               };
             });
             setEvents(mappedEvents);
@@ -90,15 +96,74 @@ const PromotionsPage = () => {
               <Icon name="ArrowLeft" size={24} className="text-white" />
             </button>
             <div className="text-center flex-1">
-              <h1 className="text-2xl font-bold text-white drop-shadow-lg">Дайджест Событий</h1>
-              <p className="text-sm text-white/80">Актуальные выступления и специальные вечера</p>
+              <h1 className="text-2xl font-bold text-white drop-shadow-lg">Новости</h1>
+              <p className="text-sm text-white/80">{isDetailView ? 'Подробнее' : 'Актуальные новости и события'}</p>
             </div>
             <div className="w-10" />
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Detail view for one news item */}
+      {isDetailView && (
+        <>
+          {loading && !location.state?.event && (
+            <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+              <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Загрузка...</p>
+            </div>
+          )}
+          {!loading && !detailEvent && (
+            <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+              <p className="text-muted-foreground">Новость не найдена</p>
+              <button type="button" onClick={() => navigate(location.pathname.startsWith('/test') ? '/test/promotions' : '/promotions-page')} className="mt-4 text-primary font-medium">Вернуться к списку</button>
+            </div>
+          )}
+          {detailEvent && (
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <article className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+            <div className={`p-6 ${detailEvent.highlighted ? 'bg-gradient-to-r from-[#99836c] to-[#7a6857]' : 'bg-muted/30'}`}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-white/20">
+                  <Icon name={getPerformerIcon(detailEvent.type)} size={24} className="text-foreground" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground">{detailEvent.performer}</h2>
+                  <p className="text-sm text-muted-foreground">{getPerformerLabel(detailEvent.type)}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-3 text-sm">
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Icon name="Calendar" size={16} /> {detailEvent.date} {detailEvent.month && `· ${detailEvent.month}`}
+                </span>
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Icon name="Clock" size={16} /> {detailEvent.time}
+                </span>
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <Icon name="MapPin" size={16} /> {detailEvent.location}
+                </span>
+              </div>
+            </div>
+            {detailEvent.description && (
+              <div className="p-6 pt-0">
+                <p className="text-foreground whitespace-pre-wrap">{detailEvent.description}</p>
+              </div>
+            )}
+            {!detailEvent.description && (
+              <div className="p-6 pt-0 text-muted-foreground text-sm">
+                {detailEvent.time && <p>Время: {detailEvent.time}</p>}
+                <p>Филиал: {detailEvent.location}</p>
+              </div>
+            )}
+          </article>
+          <BottomTabNavigation />
+        </div>
+          )}
+        </>
+      )}
+
+      {/* List view */}
+      {!isDetailView && (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Loading State */}
         {loading && (
@@ -117,9 +182,14 @@ const PromotionsPage = () => {
                 const colorClass = getPerformerColor(event.type, isHighlighted);
                 
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={event.id || index}
-                    className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 hover:scale-[1.01] hover:shadow-lg animate-slide-up ${
+                    onClick={() => {
+                      const base = location.pathname.startsWith('/test') ? '/test/promotions' : '/promotions-page';
+                      navigate(`${base}/${event.id}`, { state: { event } });
+                    }}
+                    className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 hover:scale-[1.01] hover:shadow-lg animate-slide-up w-full text-left ${
                       isHighlighted
                         ? `bg-gradient-to-r ${colorClass} border-primary/40 shadow-md`
                         : `${colorClass} hover:border-primary/30`
@@ -220,7 +290,7 @@ const PromotionsPage = () => {
                     </span>
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })
             ) : (
@@ -233,8 +303,9 @@ const PromotionsPage = () => {
           </div>
         )}
       </div>
+      )}
 
-      <BottomTabNavigation />
+      {!isDetailView && <BottomTabNavigation />}
     </div>
   );
 };

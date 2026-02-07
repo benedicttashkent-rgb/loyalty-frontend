@@ -25,7 +25,8 @@ function App() {
         const data = await response.json();
         if (data.success && data.order) {
           const order = data.order;
-          const status = order.status;
+          let status = (order.status || '').toString().toUpperCase();
+          if (status === 'GIVEN' || status === 'COMPLETED' || status === 'DELIVERED') status = 'CLOSED';
           
           // Use order_number from API to ensure consistency
           const actualOrderNumber = order.order_number || order.orderNumber || orderNumber;
@@ -69,10 +70,28 @@ function App() {
             }
           }
           
-          // If order is CLOSED, hide button immediately (cashier finished)
+          // When order is CLOSED: keep showing button so OrderStatusButton can show rating modal.
+          // Only clear after user submits rating (handled in OrderStatusButton).
           if (status === 'CLOSED') {
-            localStorage.removeItem('benedictOrderDetails');
-            setOrderDetails({ orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null, ratingSubmitted: true });
+            // Update state with CLOSED so modal shows "Выполнен" and rating can appear
+            setOrderDetails(prev => ({
+              ...prev,
+              orderNumber: prev.orderNumber || actualOrderNumber,
+              status: 'CLOSED',
+              estimatedTime: prev.estimatedTime,
+              branch: prev.branch,
+              comments: prev.comments || {}
+            }));
+            if (savedOrder) {
+              try {
+                const parsed = JSON.parse(savedOrder);
+                parsed.status = 'CLOSED';
+                parsed.orderNumber = actualOrderNumber;
+                localStorage.setItem('benedictOrderDetails', JSON.stringify(parsed));
+              } catch (e) {
+                console.error('Error updating localStorage:', e);
+              }
+            }
             return;
           }
           
@@ -152,11 +171,10 @@ function App() {
     };
   }, [orderDetails.orderNumber]);
 
-  // Show button if order exists and status is NOT CANCELLED
-  // Hide if rating was submitted (ratingSubmitted flag)
+  // Show button if order exists, not CANCELLED, and rating not yet submitted.
+  // Keep showing when status is CLOSED so user can open and see rating modal.
   const shouldShowButton = orderDetails?.orderNumber && 
     orderDetails.status !== 'CANCELLED' &&
-    orderDetails.status !== 'CLOSED' &&
     !orderDetails.ratingSubmitted;
 
   return (

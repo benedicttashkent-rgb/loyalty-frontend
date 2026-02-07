@@ -59,7 +59,7 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
                 key={`center-${index}`}
                 className="center-promo-button"
                 onClick={() => handleTabClick(tab?.path)}
-                aria-label="Открыть акции и скидки"
+                aria-label="Новости"
               >
                 <div className="center-promo-button-inner">
                   <div className="center-promo-shine-layer" />
