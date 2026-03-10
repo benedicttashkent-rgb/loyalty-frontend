@@ -8,14 +8,14 @@ const sizeConfig = {
   lg: { logo: 'h-20 w-auto' },
 };
 
-const LogoLoader = ({ fullscreen = false, size = 'md', label, className = '' }) => {
+const LogoLoader = ({ fullscreen = false, size = 'md', label = 'Loading', className = '' }) => {
   const config = sizeConfig[size] || sizeConfig.md;
 
   const content = (
     <div
       className="relative flex flex-col items-center justify-center"
       role="status"
-      aria-label="Loading"
+      aria-label={label}
     >
       {/* Glow bloom behind logo */}
       <div className="logo-loader-bloom" />
