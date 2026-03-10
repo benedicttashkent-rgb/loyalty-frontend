@@ -67,10 +67,7 @@ const TestHome = () => {
 
   if (isInitialLoading) {
     return (
-      <LogoLoader
-        fullscreen
-        label="Brewing your Benedict experience..."
-      />
+      <LogoLoader fullscreen />
     );
   }
 
