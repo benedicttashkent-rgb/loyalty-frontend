@@ -4,16 +4,13 @@ import AppImage from './AppImage';
 
 const sizeConfig = {
   sm: {
-    logo: 'h-10 w-10',
-    ring: 'h-16 w-16',
+    logo: 'h-10 w-auto',
   },
   md: {
-    logo: 'h-16 w-16',
-    ring: 'h-24 w-24',
+    logo: 'h-14 w-auto',
   },
   lg: {
-    logo: 'h-24 w-24',
-    ring: 'h-32 w-32',
+    logo: 'h-18 w-auto',
   },
 };
 
@@ -34,25 +31,21 @@ const LogoLoader = ({
       role="status"
       aria-live="polite"
     >
-      <div className="relative flex items-center justify-center">
-        <div
-          className={clsx(
-            'logo-loader-ring',
-            'rounded-full border border-white/10',
-            'flex items-center justify-center',
-            config.ring
-          )}
-        >
-          <div className="logo-loader-ring-inner" />
+      <div className="relative flex flex-col items-center justify-center gap-3">
+        <div className="relative overflow-hidden">
+          <AppImage
+            src="/BENEDICT_CAFE_LOGOTYPE_page-0001-removebg-preview.png"
+            alt="Benedict Café loading"
+            className={clsx(
+              config.logo,
+              'object-contain logo-loader-logotype'
+            )}
+          />
+          <div className="logo-loader-shimmer" />
         </div>
-        <AppImage
-          src="/assets/images/111-1765536227863.jpg"
-          alt="Benedict Café logo loading"
-          className={clsx(
-            config.logo,
-            'object-contain logo-loader-logo-pulse absolute'
-          )}
-        />
+        <div className="logo-loader-bar-outer">
+          <div className="logo-loader-bar-inner" />
+        </div>
       </div>
       {label && (
         <p className="text-sm font-medium text-neutral-700">{label}</p>
