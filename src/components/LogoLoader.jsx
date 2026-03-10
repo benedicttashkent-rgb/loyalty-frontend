@@ -4,16 +4,16 @@ import AppImage from './AppImage';
 
 const sizeConfig = {
   sm: {
-    logo: 'h-10 w-auto',
-    steamHeight: 'h-8',
+    logo: 'h-10 w-10',
+    ring: 'h-16 w-16',
   },
   md: {
-    logo: 'h-16 w-auto',
-    steamHeight: 'h-10',
+    logo: 'h-16 w-16',
+    ring: 'h-24 w-24',
   },
   lg: {
-    logo: 'h-24 w-auto',
-    steamHeight: 'h-14',
+    logo: 'h-24 w-24',
+    ring: 'h-32 w-32',
   },
 };
 
@@ -37,20 +37,20 @@ const LogoLoader = ({
       <div className="relative flex items-center justify-center">
         <div
           className={clsx(
-            'pointer-events-none absolute -top-6 flex w-full items-center justify-center gap-2',
-            config.steamHeight
+            'logo-loader-ring',
+            'rounded-full border border-white/10',
+            'flex items-center justify-center',
+            config.ring
           )}
         >
-          <div className="logo-loader-steam-line logo-loader-steam-line-1" />
-          <div className="logo-loader-steam-line logo-loader-steam-line-2" />
-          <div className="logo-loader-steam-line logo-loader-steam-line-3" />
+          <div className="logo-loader-ring-inner" />
         </div>
         <AppImage
           src="/assets/images/111-1765536227863.jpg"
           alt="Benedict Café logo loading"
           className={clsx(
             config.logo,
-            'object-contain logo-loader-logo-breathe'
+            'object-contain logo-loader-logo-pulse absolute'
           )}
         />
       </div>
