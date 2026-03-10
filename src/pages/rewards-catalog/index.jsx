@@ -8,6 +8,7 @@ import RewardCard from './components/RewardCard';
 import RedemptionModal from './components/RedemptionModal';
 import SuccessModal from './components/SuccessModal';
 import { getApiUrl } from '../../config/api';
+import LogoLoader from '../../components/LogoLoader';
 
 
 const RewardsCatalog = () => {
@@ -123,13 +124,7 @@ const RewardsCatalog = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-muted-foreground">Загрузка...</div>
-        </div>
-      </div>
-    );
+    return <LogoLoader fullscreen />;
   }
 
   return (

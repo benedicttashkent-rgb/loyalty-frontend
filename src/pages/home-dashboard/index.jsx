@@ -12,6 +12,7 @@ import LoyaltyDetailsModal from './components/LoyaltyDetailsModal';
 import QRCodeModal from './components/QRCodeModal';
 import BookTableModal from './components/BookTableModal';
 import { getApiUrl } from '../../config/api';
+import LogoLoader from '../../components/LogoLoader';
 
 const HomeDashboard = () => {
   const navigate = useNavigate();
@@ -303,13 +304,7 @@ const HomeDashboard = () => {
 
   // Show loading state while fetching data
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-muted-foreground">Загрузка...</div>
-        </div>
-      </div>
-    );
+    return <LogoLoader fullscreen />;
   }
 
   // Show error if no user data
