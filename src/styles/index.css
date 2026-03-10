@@ -70,7 +70,6 @@ body {
 .logo-loader-steam-2 {
   height: 36px;
   left: 50%;
-  transform: translateX(-50%);
   animation: steam-rise 2.8s ease-in-out 1.4s infinite;
 }
 
