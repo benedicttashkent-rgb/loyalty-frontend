@@ -2,10 +2,19 @@ import React from 'react';
 import clsx from 'clsx';
 import AppImage from './AppImage';
 
+// Benedict coffee palette for bar animation (inspired by leaf PageLoader)
+const BAR_COLORS = [
+  'rgba(111, 78, 55, 1)', // deep coffee
+  'rgba(153, 102, 51, 1)', // lighter coffee
+  'rgba(201, 140, 74, 1)', // caramel
+  'rgba(111, 78, 55, 1)', // deep coffee
+];
+const BAR_DELAYS = ['0s', '0.18s', '0.36s', '0.54s'];
+
 const sizeConfig = {
-  sm: { logo: 'h-10 w-auto' },
-  md: { logo: 'h-14 w-auto' },
-  lg: { logo: 'h-20 w-auto' },
+  sm: { barHeight: 18 },
+  md: { barHeight: 28 },
+  lg: { barHeight: 40 },
 };
 
 const LogoLoader = ({ fullscreen = false, size = 'md', label = 'Loading', className = '' }) => {
@@ -13,26 +22,27 @@ const LogoLoader = ({ fullscreen = false, size = 'md', label = 'Loading', classN
 
   const content = (
     <div
-      className="relative flex flex-col items-center justify-center"
+      className="flex flex-col items-center justify-center"
       role="status"
       aria-label={label}
     >
-      {/* Glow bloom behind logo */}
-      <div className="logo-loader-bloom" />
-
-      {/* Logo + halo ring */}
-      <div className="logo-loader-logo-wrap">
-        <div className="logo-loader-halo" />
-        <AppImage
-          src="/BENEDICT_CAFE_LOGOTYPE_page-0001-removebg-preview.png"
-          alt="Benedict Café"
-          className={clsx(config.logo, 'object-contain logo-loader-logotype')}
-        />
-
-        {/* Steam wisps — positioned above logo */}
-        <div className="logo-loader-steam logo-loader-steam-1" />
-        <div className="logo-loader-steam logo-loader-steam-2" />
-        <div className="logo-loader-steam logo-loader-steam-3" />
+      {/* Pure bar wave loader (Leaf-style) */}
+      <div
+        className="flex items-center"
+        style={{ gap: 5, height: config.barHeight }}
+      >
+        {BAR_COLORS.map((color, i) => (
+          // eslint-disable-next-line react/no-array-index-key
+          <span
+            key={i}
+            className="logo-loader-bar"
+            style={{
+              height: config.barHeight,
+              background: color,
+              animationDelay: BAR_DELAYS[i],
+            }}
+          />
+        ))}
       </div>
     </div>
   );
