@@ -10,3 +10,97 @@ body {
   font-family: inherit;
   margin: unset;
 }
+
+.logo-loader-logo-breathe {
+  animation: logo-breathe 2.8s ease-in-out infinite;
+}
+
+.logo-loader-steam-line {
+  width: 4px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to top,
+    rgba(111, 78, 55, 0.1),
+    rgba(255, 255, 255, 0.9)
+  );
+  opacity: 0;
+}
+
+.logo-loader-steam-line-1 {
+  height: 100%;
+  animation: steam-rise-1 2.4s ease-in-out infinite;
+}
+
+.logo-loader-steam-line-2 {
+  height: 80%;
+  animation: steam-rise-2 2.8s ease-in-out infinite;
+}
+
+.logo-loader-steam-line-3 {
+  height: 90%;
+  animation: steam-rise-3 3.1s ease-in-out infinite;
+}
+
+@keyframes logo-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0.3));
+  }
+  50% {
+    transform: scale(1.04);
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.35));
+  }
+}
+
+@keyframes steam-rise-1 {
+  0% {
+    transform: translate3d(-6px, 10px, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  80% {
+    transform: translate3d(-2px, -10px, 0);
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes steam-rise-2 {
+  0% {
+    transform: translate3d(0, 10px, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.7;
+  }
+  80% {
+    transform: translate3d(3px, -12px, 0);
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes steam-rise-3 {
+  0% {
+    transform: translate3d(6px, 10px, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.65;
+  }
+  80% {
+    transform: translate3d(2px, -14px, 0);
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+

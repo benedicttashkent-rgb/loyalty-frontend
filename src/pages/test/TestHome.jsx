@@ -4,6 +4,7 @@ import BottomTabNavigation from '../../components/navigation/BottomTabNavigation
 import ProfileButton from '../../components/navigation/ProfileButton';
 import ModalOverlay from '../../components/navigation/ModalOverlay';
 import BrandLogo from '../../components/navigation/BrandLogo';
+import LogoLoader from '../../components/LogoLoader';
 import LoyaltyPointsCard from '../home-dashboard/components/LoyaltyPointsCard';
 import QRCodeButton from '../home-dashboard/components/QRCodeButton';
 import NewsBanner from '../home-dashboard/components/NewsBanner';
@@ -37,6 +38,7 @@ const TestHome = () => {
   const [showBookTable, setShowBookTable] = useState(false);
   const [showNewsBanner, setShowNewsBanner] = useState(true);
   const [cartCount, setCartCount] = useState(0);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const userData = MOCK_USER_DATA;
 
   useEffect(() => {
@@ -50,12 +52,27 @@ const TestHome = () => {
         setCartCount(0);
       }
     }
+    // Simulate brief initial loading to showcase the logo loader in test mode
+    const timeout = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 900);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   const handleProfileClick = () => {
     // In test mode, profile could show a "Demo mode" message; for now do nothing or show toast
     return;
   };
+
+  if (isInitialLoading) {
+    return (
+      <LogoLoader
+        fullscreen
+        label="Brewing your Benedict experience..."
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
