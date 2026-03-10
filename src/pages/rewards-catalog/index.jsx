@@ -155,7 +155,6 @@ const RewardsCatalog = () => {
               <Icon name="Gift" size={48} className="mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium mb-2">Каталог наград пуст</p>
               <p className="text-sm">Награды появятся здесь позже</p>
-              <p className="text-xs text-muted-foreground mt-2">Администратор может добавить награды через админ-панель</p>
             </div>
           </div>
         )}
