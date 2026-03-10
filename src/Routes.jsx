@@ -1,5 +1,5 @@
-import React from "react";
-import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { BrowserRouter, Routes as RouterRoutes, Route, useLocation } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
@@ -23,11 +23,31 @@ import CategoriesEditor from './pages/admin/CategoriesEditor';
 import TelegramTest from './pages/telegram-test';
 import TestLayout from './pages/test/TestLayout';
 import TestHome from './pages/test/TestHome';
+import LogoLoader from './components/LogoLoader';
 
-const Routes = () => {
+const AppRoutes = () => {
+  const location = useLocation();
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const timeoutRef = useRef(null);
+
+  useEffect(() => {
+    setIsTransitioning(true);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setIsTransitioning(false);
+    }, 500);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [location.pathname]);
+
   return (
-    <BrowserRouter>
-      <ErrorBoundary>
+    <>
       <ScrollToTop />
       <RouterRoutes>
         {/* Public Routes */}
@@ -67,6 +87,16 @@ const Routes = () => {
         
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
+      {isTransitioning && <LogoLoader fullscreen />}
+    </>
+  );
+};
+
+const Routes = () => {
+  return (
+    <BrowserRouter>
+      <ErrorBoundary>
+        <AppRoutes />
       </ErrorBoundary>
     </BrowserRouter>
   );
