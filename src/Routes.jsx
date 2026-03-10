@@ -5,6 +5,7 @@ import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
 import HomeDashboard from './pages/home-dashboard';
 import FoodOrderingMenu from './pages/food-ordering-menu';
+import CheckoutPage from './pages/food-ordering-menu/CheckoutPage';
 import AboutBranchLocations from './pages/about-branch-locations';
 import UserProfileManagement from './pages/user-profile-management';
 import RewardsCatalog from './pages/rewards-catalog';
@@ -21,8 +22,6 @@ import TelegramBroadcastEditor from './pages/admin/TelegramBroadcastEditor';
 import MenuItemsEditor from './pages/admin/MenuItemsEditor';
 import CategoriesEditor from './pages/admin/CategoriesEditor';
 import TelegramTest from './pages/telegram-test';
-import TestLayout from './pages/test/TestLayout';
-import TestHome from './pages/test/TestHome';
 import LogoLoader from './components/LogoLoader';
 
 const AppRoutes = () => {
@@ -55,16 +54,8 @@ const AppRoutes = () => {
         <Route path="/home-dashboard" element={<HomeDashboard />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/telegram-test" element={<TelegramTest />} />
-        {/* Test / Demo mode - no registration required */}
-        <Route path="/test" element={<TestLayout />}>
-          <Route index element={<TestHome />} />
-          <Route path="menu" element={<FoodOrderingMenu />} />
-          <Route path="rewards" element={<RewardsCatalog />} />
-          <Route path="about" element={<AboutBranchLocations />} />
-          <Route path="promotions" element={<PromotionsPage />} />
-          <Route path="promotions/:newsId" element={<PromotionsPage />} />
-        </Route>
         <Route path="/food-ordering-menu" element={<FoodOrderingMenu />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/about-branch-locations" element={<AboutBranchLocations />} />
         <Route path="/user-profile-management" element={<UserProfileManagement />} />
         <Route path="/rewards-catalog" element={<RewardsCatalog />} />

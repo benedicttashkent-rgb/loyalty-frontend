@@ -116,7 +116,7 @@ const PromotionsPage = () => {
           {!loading && !detailEvent && (
             <div className="max-w-2xl mx-auto px-4 py-12 text-center">
               <p className="text-muted-foreground">Новость не найдена</p>
-              <button type="button" onClick={() => navigate(location.pathname.startsWith('/test') ? '/test/promotions' : '/promotions-page')} className="mt-4 text-primary font-medium">Вернуться к списку</button>
+              <button type="button" onClick={() => navigate('/promotions-page')} className="mt-4 text-primary font-medium">Вернуться к списку</button>
             </div>
           )}
           {detailEvent && (
@@ -186,7 +186,7 @@ const PromotionsPage = () => {
                     type="button"
                     key={event.id || index}
                     onClick={() => {
-                      const base = location.pathname.startsWith('/test') ? '/test/promotions' : '/promotions-page';
+                      const base = '/promotions-page';
                       navigate(`${base}/${event.id}`, { state: { event } });
                     }}
                     className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 hover:scale-[1.01] hover:shadow-lg animate-slide-up w-full text-left ${

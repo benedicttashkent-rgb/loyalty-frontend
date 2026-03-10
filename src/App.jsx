@@ -103,8 +103,7 @@ function App() {
           }
         }
       } else if (response.status === 404) {
-        // If backend no longer has this order, clear it so we don't show a ghost button
-        console.warn('Order not found in backend, clearing local order details');
+        console.warn('Order not found in backend, clearing');
         localStorage.removeItem('benedictOrderDetails');
         setOrderDetails({ orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null });
       }

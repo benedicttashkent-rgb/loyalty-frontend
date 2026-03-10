@@ -5,10 +5,22 @@ import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
 import { formatPrice } from '../../../utils/formatPrice';
 
-const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem, onCheckout, onItemCommentChange }) => {
+const CartModal = ({
+  isOpen,
+  onClose,
+  cartItems,
+  selectedBranch,
+  onUpdateQuantity,
+  onRemoveItem,
+  onCheckout,
+  onProceedToCheckout,
+  onItemCommentChange
+}) => {
   const [itemComments, setItemComments] = useState({});
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const useCheckoutPage = !!onProceedToCheckout;
 
   const totalAmount = cartItems?.reduce((sum, item) => {
     const basePrice = item?.price || 0;
@@ -35,6 +47,11 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
   };
 
   const handleCheckoutWithComments = async () => {
+    if (useCheckoutPage && onProceedToCheckout) {
+      onProceedToCheckout(itemComments);
+      onClose();
+      return;
+    }
     if (!onCheckout || isSubmitting) return;
     try {
       setIsSubmitting(true);
@@ -42,6 +59,7 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
     } catch (e) {
       console.error('Checkout error:', e);
       setIsSubmitting(false);
+      alert(e?.message || 'Не удалось оформить заказ. Попробуйте ещё раз.');
     }
   };
 
@@ -199,6 +217,11 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
             </div>
 
             <div className="border-t border-border p-4 bg-card">
+              {useCheckoutPage && !selectedBranch && (
+                <p className="text-xs text-muted-foreground mb-3">
+                  Выберите филиал на главной странице меню, чтобы перейти к оформлению
+                </p>
+              )}
               <div className="space-y-3 mb-4">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Товаров ({totalItems})</span>
@@ -215,12 +238,12 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
               <Button
                 variant="default"
                 fullWidth
-                iconName="CreditCard"
+                iconName={useCheckoutPage ? 'ArrowRight' : 'CreditCard'}
                 iconPosition="left"
                 onClick={handleCheckoutWithComments}
-                disabled={isSubmitting}
+                disabled={isSubmitting || (useCheckoutPage && !selectedBranch)}
               >
-                {isSubmitting ? 'Отправка...' : 'Оформить заказ'}
+                {isSubmitting ? 'Отправка...' : useCheckoutPage ? 'Перейти к оформлению' : 'Оформить заказ'}
               </Button>
             </div>
           </>

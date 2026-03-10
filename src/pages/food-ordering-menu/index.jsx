@@ -10,13 +10,13 @@ import CartModal from './components/CartModal';
 import CheckoutSuccessModal from './components/CheckoutSuccessModal';
 import BranchSelectionModal from './components/BranchSelectionModal';
 import Icon from '../../components/AppIcon';
-import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import menuScraper from '../../services/menu/menuScraper';
 import { getApiUrl } from '../../config/api';
 
 
 const FoodOrderingMenu = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState(null);
   const [cartItems, setCartItems] = useState([]);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
@@ -296,92 +296,86 @@ const FoodOrderingMenu = () => {
   const handleCheckout = async (comments) => {
     const orderNumber = `BEN${Date.now()?.toString()?.slice(-6)}`;
     const estimatedTime = orderType === 'takeaway' ? '15-20 мин' : '30-45 мин';
-    
-    // Include comments in order details
+
     const orderComments = comments || itemComments;
-    const newOrderDetails = { 
-      orderNumber, 
+
+    if (orderType === 'takeaway' && selectedBranch) {
+      const totalAmount = cartItems.reduce((sum, item) => {
+        const basePrice = item?.price || 0;
+        const modifierPrice = item?.selectedModifier?.price || 0;
+        return sum + ((basePrice + modifierPrice) * (item?.quantity || 1));
+      }, 0);
+
+      let customerPhone = null;
+      let customerName = null;
+
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        try {
+          const meRes = await fetch(getApiUrl('customers/me'), {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          if (meRes.ok) {
+            const data = await meRes.json();
+            if (data.success && data.customer) {
+              customerPhone = data.customer.phone;
+              customerName = `${data.customer.name || ''} ${data.customer.surName || ''}`.trim() || null;
+            }
+          }
+        } catch (e) {
+          console.error('Error fetching customer info:', e);
+        }
+      }
+
+      const orderData = {
+        orderNumber,
+        branch: selectedBranch,
+        items: cartItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          modifier: item.selectedModifier ? {
+            id: item.selectedModifier.id,
+            name: item.selectedModifier.name,
+            price: item.selectedModifier.price || 0
+          } : null
+        })),
+        totalAmount,
+        comments: orderComments,
+        customerPhone,
+        customerName
+      };
+
+      const response = await fetch(getApiUrl('orders/takeaway'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        let errMsg = 'Не удалось отправить заказ';
+        try {
+          const errJson = JSON.parse(errText);
+          if (errJson?.error) errMsg = errJson.error;
+        } catch (_) {}
+        throw new Error(errMsg);
+      }
+
+      console.log('✅ Order sent to backend');
+    }
+
+    const newOrderDetails = {
+      orderNumber,
       estimatedTime,
       branch: selectedBranch,
-      comments: orderComments
+      comments: orderComments,
+      status: 'NEW'
     };
-    
-    // Save order details to localStorage immediately so it persists across pages
+
     setOrderDetails(newOrderDetails);
     localStorage.setItem('benedictOrderDetails', JSON.stringify(newOrderDetails));
-    
-    // Send order notification to Telegram (for takeaway orders)
-    if (orderType === 'takeaway' && selectedBranch) {
-      try {
-        const totalAmount = cartItems.reduce((sum, item) => {
-          const basePrice = item?.price || 0;
-          const modifierPrice = item?.selectedModifier?.price || 0;
-          return sum + ((basePrice + modifierPrice) * (item?.quantity || 1));
-        }, 0);
-        
-        // Get customer info from localStorage/auth if available
-        const token = localStorage.getItem('authToken');
-        let customerPhone = null;
-        let customerName = null;
-        
-        if (token) {
-          try {
-        const response = await fetch(getApiUrl('customers/me'), {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-            if (response.ok) {
-              const data = await response.json();
-              if (data.success && data.customer) {
-                customerPhone = data.customer.phone;
-                customerName = `${data.customer.name || ''} ${data.customer.surName || ''}`.trim() || null;
-              }
-            }
-          } catch (error) {
-            console.error('Error fetching customer info:', error);
-          }
-        }
-        
-        const orderData = {
-          orderNumber,
-          branch: selectedBranch,
-          items: cartItems.map(item => ({
-            id: item.id,
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            modifier: item.selectedModifier ? {
-              id: item.selectedModifier.id,
-              name: item.selectedModifier.name,
-              price: item.selectedModifier.price || 0
-            } : null
-          })),
-          totalAmount,
-          comments: orderComments,
-          customerPhone,
-          customerName
-        };
-        
-        const response = await fetch(getApiUrl('orders/takeaway'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(orderData)
-        });
-        
-        if (response.ok) {
-          console.log('✅ Order notification sent to Telegram');
-        } else {
-          console.error('❌ Failed to send order notification:', await response.text());
-        }
-      } catch (error) {
-        console.error('Error sending order notification:', error);
-        // Don't block checkout if Telegram notification fails
-      }
-    }
-    
     setIsCartModalOpen(false);
     setIsCheckoutSuccessOpen(true);
     setCartItems([]);
@@ -410,6 +404,15 @@ const FoodOrderingMenu = () => {
       ...prev,
       [itemId]: comment
     }));
+  };
+
+  const handleProceedToCheckout = (comments) => {
+    if (!selectedBranch) return;
+    const mergedComments = { ...itemComments, ...comments };
+    setIsCartModalOpen(false);
+    navigate('/checkout', {
+      state: { cartItems, selectedBranch, itemComments: mergedComments }
+    });
   };
 
   const getCartQuantity = (itemId) => {
@@ -545,9 +548,11 @@ const FoodOrderingMenu = () => {
         isOpen={isCartModalOpen}
         onClose={() => setIsCartModalOpen(false)}
         cartItems={cartItems}
+        selectedBranch={selectedBranch}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
         onCheckout={handleCheckout}
+        onProceedToCheckout={handleProceedToCheckout}
         onItemCommentChange={handleItemCommentChange} />
 
       <CheckoutSuccessModal

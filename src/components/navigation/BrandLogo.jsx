@@ -1,14 +1,11 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import AppImage from '../AppImage';
 
 const BrandLogo = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const isTestMode = location?.pathname?.startsWith('/test');
-
   const handleClick = () => {
-    navigate(isTestMode ? '/test' : '/home-dashboard');
+    navigate('/home-dashboard');
   };
 
   const handleKeyDown = (e) => {
