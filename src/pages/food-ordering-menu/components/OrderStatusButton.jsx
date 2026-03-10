@@ -21,23 +21,22 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
     return s || status;
   })();
 
-  // Status mapping to display text and icons
+  // Status mapping: Заказ отправлен → Заказ готовится → Готов к выдаче → Выдан
   const getStatusInfo = (status) => {
     switch (status) {
       case 'NEW':
-        return { text: 'Новый заказ', icon: 'Package', color: 'text-yellow-500', bg: 'bg-yellow-50', border: 'border-yellow-200' };
       case 'ACCEPTED':
-        return { text: 'Заказ принят', icon: 'CheckCircle', color: 'text-green-500', bg: 'bg-green-50', border: 'border-green-200' };
+        return { text: 'Заказ отправлен', icon: 'Package', color: 'text-yellow-500', bg: 'bg-yellow-50', border: 'border-yellow-200' };
       case 'IN_PROGRESS':
-        return { text: 'Готовится', icon: 'Clock', color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-200' };
+        return { text: 'Заказ готовится', icon: 'Clock', color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-200' };
       case 'READY':
         return { text: 'Готов к выдаче', icon: 'CheckCircle2', color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-200' };
       case 'CLOSED':
-        return { text: 'Выполнен', icon: 'Check', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-300' };
+        return { text: 'Выдан', icon: 'Check', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-300' };
       case 'CANCELLED':
         return { text: 'Отменен', icon: 'X', color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-200' };
       default:
-        return { text: 'Готовится', icon: 'Clock', color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/20' };
+        return { text: 'Заказ готовится', icon: 'Clock', color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/20' };
     }
   };
 
@@ -185,12 +184,11 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
                 <span className={`text-sm font-semibold ${statusInfo.color}`}>{statusInfo.text}</span>
               </div>
               <p className="text-xs text-muted-foreground ml-7">
-                {normalizedStatus === 'NEW' && 'Заказ принят. Скоро начнем готовить ваш заказ.'}
-                {normalizedStatus === 'ACCEPTED' && 'Заказ принят. Скоро начнем готовить ваш заказ.'}
-                {normalizedStatus === 'IN_PROGRESS' && `Заказ готовится. Приблизительное время готовности: ${estimatedTime || '15-20 мин'}`}
-                {normalizedStatus === 'READY' && 'Заказ готов! Заберите в филиале.'}
+                {(normalizedStatus === 'NEW' || normalizedStatus === 'ACCEPTED') && 'Заказ передан в ресторан'}
+                {normalizedStatus === 'IN_PROGRESS' && `Приблизительное время: ${estimatedTime || '15-20 мин'}`}
+                {normalizedStatus === 'READY' && 'Заберите заказ в филиале'}
                 {normalizedStatus === 'CLOSED' && 'Спасибо! Оцените заказ ниже.'}
-                {!normalizedStatus && 'Приблизительное время готовности: ' + (estimatedTime || '15-20 мин')}
+                {!normalizedStatus && 'Приблизительное время: ' + (estimatedTime || '15-20 мин')}
               </p>
             </div>
 
