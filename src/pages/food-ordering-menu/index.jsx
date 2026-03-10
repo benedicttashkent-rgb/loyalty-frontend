@@ -9,7 +9,6 @@ import MenuItemDetailModal from './components/MenuItemDetailModal';
 import CartModal from './components/CartModal';
 import CheckoutSuccessModal from './components/CheckoutSuccessModal';
 import BranchSelectionModal from './components/BranchSelectionModal';
-import OrderStatusButton from './components/OrderStatusButton';
 import Icon from '../../components/AppIcon';
 import { useLocation } from 'react-router-dom';
 import menuScraper from '../../services/menu/menuScraper';
@@ -555,21 +554,8 @@ const FoodOrderingMenu = () => {
         isOpen={isCheckoutSuccessOpen}
         onClose={() => setIsCheckoutSuccessOpen(false)}
         orderNumber={orderDetails?.orderNumber}
-        estimatedTime={orderDetails?.estimatedTime} />
-
-      {/* Floating Order Status Button - shows after order is placed */}
-      {orderDetails?.orderNumber && (
-        <OrderStatusButton
-          orderNumber={orderDetails.orderNumber}
-          estimatedTime={orderDetails.estimatedTime}
-          branch={orderDetails.branch}
-          onClose={() => {
-            const emptyOrder = { orderNumber: '', estimatedTime: '', branch: null, comments: {} };
-            setOrderDetails(emptyOrder);
-            localStorage.removeItem('benedictOrderDetails');
-          }}
-        />
-      )}
+        estimatedTime={orderDetails?.estimatedTime}
+      />
 
       <BranchSelectionModal
         isOpen={isBranchModalOpen}

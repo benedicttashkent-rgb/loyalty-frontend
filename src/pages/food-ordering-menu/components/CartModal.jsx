@@ -8,6 +8,7 @@ import { formatPrice } from '../../../utils/formatPrice';
 const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem, onCheckout, onItemCommentChange }) => {
   const [itemComments, setItemComments] = useState({});
   const [editingCommentId, setEditingCommentId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalAmount = cartItems?.reduce((sum, item) => {
     const basePrice = item?.price || 0;
@@ -33,9 +34,14 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
     setEditingCommentId(null);
   };
 
-  const handleCheckoutWithComments = () => {
-    if (onCheckout) {
-      onCheckout(itemComments);
+  const handleCheckoutWithComments = async () => {
+    if (!onCheckout || isSubmitting) return;
+    try {
+      setIsSubmitting(true);
+      await onCheckout(itemComments);
+    } catch (e) {
+      console.error('Checkout error:', e);
+      setIsSubmitting(false);
     }
   };
 
@@ -212,8 +218,9 @@ const CartModal = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem,
                 iconName="CreditCard"
                 iconPosition="left"
                 onClick={handleCheckoutWithComments}
+                disabled={isSubmitting}
               >
-                Оформить заказ
+                {isSubmitting ? 'Отправка...' : 'Оформить заказ'}
               </Button>
             </div>
           </>

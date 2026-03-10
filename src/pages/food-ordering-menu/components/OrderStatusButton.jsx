@@ -185,9 +185,9 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
                 <span className={`text-sm font-semibold ${statusInfo.color}`}>{statusInfo.text}</span>
               </div>
               <p className="text-xs text-muted-foreground ml-7">
-                {normalizedStatus === 'NEW' && 'Ожидание принятия заказа кассиром'}
-                {normalizedStatus === 'ACCEPTED' && 'Заказ принят. Создание заказа в iiko...'}
-                {normalizedStatus === 'IN_PROGRESS' && `Кухня готовит ваш заказ. Приблизительное время готовности: ${estimatedTime || '15-20 мин'}`}
+                {normalizedStatus === 'NEW' && 'Заказ принят. Скоро начнем готовить ваш заказ.'}
+                {normalizedStatus === 'ACCEPTED' && 'Заказ принят. Скоро начнем готовить ваш заказ.'}
+                {normalizedStatus === 'IN_PROGRESS' && `Заказ готовится. Приблизительное время готовности: ${estimatedTime || '15-20 мин'}`}
                 {normalizedStatus === 'READY' && 'Заказ готов! Заберите в филиале.'}
                 {normalizedStatus === 'CLOSED' && 'Спасибо! Оцените заказ ниже.'}
                 {!normalizedStatus && 'Приблизительное время готовности: ' + (estimatedTime || '15-20 мин')}
