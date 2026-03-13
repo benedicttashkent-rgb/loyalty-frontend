@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../../components/AppIcon';
 
-const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick, onBranchSelect, selectedBranch }) => {
+const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick, onBranchSelect, selectedBranch, onDeliveryAddressChange }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
-  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [useHighAccuracy, setUseHighAccuracy] = useState(true);
-  // Force takeaway only for MVP - delivery removed
-  const [selectedOrderType, setSelectedOrderType] = useState('takeaway');
+  const [selectedOrderType, setSelectedOrderType] = useState(defaultOrderType || 'takeaway');
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: '',
@@ -25,15 +24,13 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
     if (navigator?.geolocation) {
       setIsLoadingLocation(true);
       setLocationError(null);
-      
+
       const options = {
         enableHighAccuracy: highAccuracy,
         timeout: highAccuracy ? 20000 : 10000,
         maximumAge: highAccuracy ? 0 : 5000
       };
 
-      console.log(`Requesting location with ${highAccuracy ? 'high' : 'low'} accuracy (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
-      
       navigator.geolocation?.getCurrentPosition(
         (position) => {
           const location = {
@@ -46,19 +43,10 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
           setRetryCount(0);
           setUseHighAccuracy(true);
           reverseGeocode(location);
-          console.log('Location acquired successfully:', location);
         },
         (error) => {
           let errorMessage = 'Не удалось определить ваше местоположение';
           let canRetry = false;
-          
-          console.error('Geolocation error details:', {
-            code: error?.code,
-            message: error?.message,
-            retryAttempt: retryCount + 1,
-            maxRetries: MAX_RETRIES,
-            highAccuracy: highAccuracy
-          });
 
           switch (error?.code) {
             case 1:
@@ -69,10 +57,9 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
             case 2:
               errorMessage = 'Местоположение недоступно. Проверьте настройки GPS и подключение к интернету';
               canRetry = retryCount < MAX_RETRIES;
-              
+
               if (canRetry) {
                 setTimeout(() => {
-                  console.log(`Retrying with ${highAccuracy ? 'lower' : 'same'} accuracy...`);
                   setRetryCount(prev => prev + 1);
                   setUseHighAccuracy(false);
                   requestLocation(false);
@@ -85,14 +72,13 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
               if (retryCount < MAX_RETRIES) {
                 const nextHighAccuracy = retryCount === 0 ? highAccuracy : false;
                 canRetry = true;
-                
+
                 setTimeout(() => {
-                  console.log(`Timeout retry ${retryCount + 1}/${MAX_RETRIES} with ${nextHighAccuracy ? 'high' : 'low'} accuracy...`);
                   setRetryCount(prev => prev + 1);
                   setUseHighAccuracy(nextHighAccuracy);
                   requestLocation(nextHighAccuracy);
                 }, 2000);
-                
+
                 errorMessage = `Превышено время ожидания. Повторная попытка ${retryCount + 1}/${MAX_RETRIES}...`;
                 setLocationError({
                   message: errorMessage,
@@ -110,7 +96,7 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
             default:
               errorMessage = `Ошибка геолокации: ${error?.message || 'Неизвестная ошибка'}`;
               canRetry = retryCount < MAX_RETRIES;
-              
+
               if (canRetry) {
                 setTimeout(() => {
                   setRetryCount(prev => prev + 1);
@@ -120,7 +106,7 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
               }
               setIsLoadingLocation(false);
           }
-          
+
           setLocationError({
             message: errorMessage,
             code: error?.code,
@@ -141,18 +127,20 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
     }
   };
 
-  // Location tracking removed for MVP - delivery not available
-  // useEffect(() => {
-  //   requestLocation(true);
-  // }, []);
-
-  // Force takeaway only - delivery removed for MVP
   useEffect(() => {
-    setSelectedOrderType('takeaway');
+    const initialType = defaultOrderType || 'takeaway';
+    setSelectedOrderType(initialType);
     if (onOrderTypeSelect) {
-      onOrderTypeSelect('takeaway');
+      onOrderTypeSelect(initialType);
     }
   }, []);
+
+  // Notify parent when delivery address changes
+  useEffect(() => {
+    if (onDeliveryAddressChange) {
+      onDeliveryAddressChange(selectedOrderType === 'delivery' ? userLocation : null);
+    }
+  }, [userLocation, selectedOrderType]);
 
   const handleRetry = () => {
     setRetryCount(0);
@@ -160,14 +148,13 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
     requestLocation(true);
   };
 
-  // Order type is always takeaway for MVP
   const handleOrderTypeChange = (type) => {
-    // Only allow takeaway for MVP
-    if (type === 'takeaway') {
-      setSelectedOrderType('takeaway');
-      if (onOrderTypeSelect) {
-        onOrderTypeSelect('takeaway');
-      }
+    setSelectedOrderType(type);
+    if (onOrderTypeSelect) {
+      onOrderTypeSelect(type);
+    }
+    if (type === 'delivery' && !userLocation && !isLoadingLocation) {
+      requestLocation(true);
     }
   };
 
@@ -195,10 +182,9 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
         isManual: true,
         details: deliveryAddress
       };
-      
+
       setUserLocation(locationData);
       setIsAddressModalOpen(false);
-      // Clear form after successful submission
       setDeliveryAddress({
         street: '',
         building: '',
@@ -222,13 +208,13 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
           }
         }
       );
-      
+
       if (!response?.ok) {
         throw new Error(`HTTP error! status: ${response?.status}`);
       }
-      
+
       const data = await response?.json();
-      
+
       if (data?.address) {
         const address = [
           data?.address?.road,
@@ -236,7 +222,7 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
           data?.address?.suburb || data?.address?.neighbourhood,
           data?.address?.city || data?.address?.town
         ]?.filter(Boolean)?.join(', ');
-        
+
         setUserLocation((prev) => ({
           ...prev,
           address: address || 'Адрес не определен'
@@ -262,39 +248,109 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
         <Icon name="MapPin" size={20} className="text-accent" />
         <h3 className="font-semibold text-foreground">Тип заказа</h3>
       </div>
-      {/* Order Type Selection - Only Takeaway for MVP */}
-      <div className="mb-4">
-        <div className="p-3 rounded-lg bg-accent text-white shadow-md font-medium">
-          <div className="flex items-center justify-center gap-2">
-            <Icon name="ShoppingBag" size={18} />
-            <span>С собой</span>
-          </div>
-        </div>
+
+      {/* Order Type Selection */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <button
+          type="button"
+          onClick={() => handleOrderTypeChange('takeaway')}
+          className={`p-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+            selectedOrderType === 'takeaway'
+              ? 'bg-accent text-white shadow-md'
+              : 'bg-muted text-muted-foreground hover:bg-muted/70'
+          }`}
+        >
+          <Icon name="ShoppingBag" size={18} />
+          <span>С собой</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleOrderTypeChange('delivery')}
+          className={`p-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 ${
+            selectedOrderType === 'delivery'
+              ? 'bg-accent text-white shadow-md'
+              : 'bg-muted text-muted-foreground hover:bg-muted/70'
+          }`}
+        >
+          <Icon name="Truck" size={18} />
+          <span>Доставка</span>
+        </button>
       </div>
 
-      {/* Branch Selection Button - shown for both takeaway and delivery */}
-      <button
-        type="button"
-        onClick={() => {
-          if (onBranchSelect) {
-            onBranchSelect();
-          }
-        }}
-        className="w-full p-3 rounded-lg bg-card border-2 border-border hover:border-accent/50 transition-all duration-200 flex items-center justify-between mb-4"
-      >
-        <div className="flex items-center gap-2">
-          <Icon name="MapPin" size={18} className="text-accent" />
-          <span className="font-medium text-foreground">
-            {selectedBranch ? selectedBranch.name : 'Выберите филиал'}
-          </span>
+      {/* Branch Selection - shown for takeaway */}
+      {selectedOrderType === 'takeaway' && (
+        <button
+          type="button"
+          onClick={() => {
+            if (onBranchSelect) {
+              onBranchSelect();
+            }
+          }}
+          className="w-full p-3 rounded-lg bg-card border-2 border-border hover:border-accent/50 transition-all duration-200 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <Icon name="MapPin" size={18} className="text-accent" />
+            <span className="font-medium text-foreground">
+              {selectedBranch ? selectedBranch.name : 'Выберите филиал'}
+            </span>
+          </div>
+          <Icon name="ChevronRight" size={18} className="text-muted-foreground" />
+        </button>
+      )}
+
+      {/* Delivery Address Section */}
+      {selectedOrderType === 'delivery' && (
+        <div className="space-y-3">
+          {isLoadingLocation ? (
+            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+              <Icon name="Loader2" size={16} className="animate-spin text-accent" />
+              <span className="text-sm text-muted-foreground">Определяем ваш адрес...</span>
+            </div>
+          ) : userLocation?.address ? (
+            <div className="p-3 bg-accent/10 rounded-lg border border-accent/20">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start gap-2">
+                  <Icon name="MapPin" size={16} className="text-accent mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-foreground">{userLocation.address}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddressModalOpen(true)}
+                  className="text-xs text-accent hover:underline whitespace-nowrap flex-shrink-0"
+                >
+                  Изменить
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {locationError && !locationError.isRetrying && (
+                <p className="text-xs text-destructive">{locationError.message}</p>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsAddressModalOpen(true)}
+                className="w-full p-3 rounded-lg border-2 border-dashed border-border hover:border-accent/50 transition-all duration-200 flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                <Icon name="MapPin" size={18} />
+                <span>Указать адрес доставки</span>
+              </button>
+              {locationError?.canRetry && !locationError.isRetrying && (
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  className="w-full text-xs text-accent hover:underline text-center"
+                >
+                  Определить местоположение автоматически
+                </button>
+              )}
+            </div>
+          )}
         </div>
-        <Icon name="ChevronRight" size={18} className="text-muted-foreground" />
-      </button>
+      )}
 
-      {/* Delivery UI removed for MVP - only takeaway orders */}
-
-      {/* Address Input Modal - Hidden for MVP (delivery not available) */}
-      {false && isAddressModalOpen && (
+      {/* Address Input Modal */}
+      {isAddressModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-card rounded-lg p-6 w-full max-w-md shadow-xl border border-border max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
@@ -308,7 +364,7 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
                 <Icon name="X" size={20} />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">

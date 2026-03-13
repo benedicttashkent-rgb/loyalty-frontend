@@ -33,7 +33,12 @@ const CheckoutPage = () => {
     })();
 
     const data = fromState || fromStorage;
-    if (!data?.cartItems?.length || !data?.selectedBranch) {
+    const isDelivery = data?.orderType === 'delivery';
+    if (!data?.cartItems?.length) {
+      navigate(menuPath, { replace: true });
+      return;
+    }
+    if (!isDelivery && !data?.selectedBranch) {
       navigate(menuPath, { replace: true });
       return;
     }
@@ -46,9 +51,9 @@ const CheckoutPage = () => {
   const handleConfirmOrder = async () => {
     if (!checkoutData || isSubmitting) return;
 
-    const { cartItems, selectedBranch, itemComments = {} } = checkoutData;
+    const { cartItems, selectedBranch, itemComments = {}, orderType = 'takeaway', deliveryAddress = null } = checkoutData;
     const orderNumber = `BEN${Date.now()?.toString()?.slice(-6)}`;
-    const estimatedTime = '15-20 мин';
+    const estimatedTime = orderType === 'delivery' ? '30-45 мин' : '15-20 мин';
     const orderComments = itemComments;
 
     setIsSubmitting(true);
@@ -96,10 +101,12 @@ const CheckoutPage = () => {
         totalAmount,
         comments: orderComments,
         customerPhone,
-        customerName
+        customerName,
+        ...(orderType === 'delivery' && deliveryAddress ? { deliveryAddress: deliveryAddress.address, deliveryDetails: deliveryAddress.details } : {})
       };
 
-      const response = await fetch(getApiUrl('orders/takeaway'), {
+      const endpoint = orderType === 'delivery' ? 'orders/delivery' : 'orders/takeaway';
+      const response = await fetch(getApiUrl(endpoint), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
@@ -149,7 +156,7 @@ const CheckoutPage = () => {
     return null;
   }
 
-  const { cartItems, selectedBranch, itemComments = {} } = checkoutData;
+  const { cartItems, selectedBranch, itemComments = {}, orderType = 'takeaway', deliveryAddress = null } = checkoutData;
   const totalAmount = cartItems?.reduce((sum, item) => {
     const basePrice = item?.price || 0;
     const modifierPrice = item?.selectedModifier?.price || 0;
@@ -176,16 +183,26 @@ const CheckoutPage = () => {
         <h1 className="text-xl font-bold text-foreground mb-6">Оформление заказа</h1>
 
         <div className="space-y-6">
-          <div className="bg-card rounded-lg border border-border p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Icon name="MapPin" size={20} className="text-accent" />
-              <h2 className="font-semibold text-foreground">Филиал</h2>
+          {orderType === 'delivery' ? (
+            <div className="bg-card rounded-lg border border-border p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Icon name="Truck" size={20} className="text-accent" />
+                <h2 className="font-semibold text-foreground">Адрес доставки</h2>
+              </div>
+              <p className="text-foreground font-medium">{deliveryAddress?.address || 'Адрес не указан'}</p>
             </div>
-            <p className="text-foreground font-medium">{selectedBranch?.name}</p>
-            {selectedBranch?.address && (
-              <p className="text-sm text-muted-foreground mt-1">{selectedBranch.address}</p>
-            )}
-          </div>
+          ) : (
+            <div className="bg-card rounded-lg border border-border p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Icon name="MapPin" size={20} className="text-accent" />
+                <h2 className="font-semibold text-foreground">Филиал</h2>
+              </div>
+              <p className="text-foreground font-medium">{selectedBranch?.name}</p>
+              {selectedBranch?.address && (
+                <p className="text-sm text-muted-foreground mt-1">{selectedBranch.address}</p>
+              )}
+            </div>
+          )}
 
           <div className="bg-card rounded-lg border border-border p-4">
             <h2 className="font-semibold text-foreground mb-3">Заказ ({totalItems} шт.)</h2>

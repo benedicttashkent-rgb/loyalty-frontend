@@ -30,8 +30,8 @@ const FoodOrderingMenu = () => {
       return { orderNumber: '', estimatedTime: '', branch: null, comments: {} };
     }
   });
-  // Force takeaway only for MVP - delivery removed
   const [orderType, setOrderType] = useState('takeaway');
+  const [deliveryAddress, setDeliveryAddress] = useState(null);
   const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
   // Load selected branch from localStorage on mount
   const [selectedBranch, setSelectedBranch] = useState(() => {
@@ -48,11 +48,6 @@ const FoodOrderingMenu = () => {
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Force takeaway only for MVP - delivery removed
-  useEffect(() => {
-    setOrderType('takeaway');
-  }, []);
 
   // Save selected branch to localStorage when it changes
   useEffect(() => {
@@ -299,7 +294,7 @@ const FoodOrderingMenu = () => {
 
     const orderComments = comments || itemComments;
 
-    if (orderType === 'takeaway' && selectedBranch) {
+    if (selectedBranch) {
       const totalAmount = cartItems.reduce((sum, item) => {
         const basePrice = item?.price || 0;
         const modifierPrice = item?.selectedModifier?.price || 0;
@@ -382,11 +377,15 @@ const FoodOrderingMenu = () => {
     setItemComments({});
   };
 
-  // Order type is always takeaway for MVP
   const handleOrderTypeSelect = (type) => {
+    setOrderType(type);
     if (type === 'takeaway') {
-      setOrderType('takeaway');
+      setDeliveryAddress(null);
     }
+  };
+
+  const handleDeliveryAddressChange = (address) => {
+    setDeliveryAddress(address);
   };
 
   const handleBranchSelect = (branch) => {
@@ -407,11 +406,15 @@ const FoodOrderingMenu = () => {
   };
 
   const handleProceedToCheckout = (comments) => {
-    if (!selectedBranch) return;
+    if (orderType === 'takeaway' && !selectedBranch) return;
+    if (orderType === 'delivery' && !deliveryAddress?.address) {
+      alert('Пожалуйста, укажите адрес доставки');
+      return;
+    }
     const mergedComments = { ...itemComments, ...comments };
     setIsCartModalOpen(false);
     navigate('/checkout', {
-      state: { cartItems, selectedBranch, itemComments: mergedComments }
+      state: { cartItems, selectedBranch, itemComments: mergedComments, orderType, deliveryAddress }
     });
   };
 
@@ -439,27 +442,14 @@ const FoodOrderingMenu = () => {
           <BrandLogo />
         </div>
 
-        <DeliveryInfoCard 
+        <DeliveryInfoCard
           onOrderTypeSelect={handleOrderTypeSelect}
           defaultOrderType={orderType}
           onTakeawayClick={handleTakeawayClick}
           onBranchSelect={() => setIsBranchModalOpen(true)}
           selectedBranch={selectedBranch}
+          onDeliveryAddressChange={handleDeliveryAddressChange}
         />
-
-        {selectedBranch && (
-          <div className="mb-4 p-3 bg-accent/10 rounded-lg border border-accent/20">
-              <div className="flex items-center gap-2">
-                <Icon name="MapPin" size={16} className="text-accent" />
-                <div>
-                <p className="text-xs text-muted-foreground">
-                  Филиал для самовывоза:
-                </p>
-                  <p className="text-sm font-semibold text-foreground">{selectedBranch?.name}</p>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Show menu only if branch is selected - works for both takeaway and delivery */}
         {selectedBranch ? (
