@@ -9,7 +9,6 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
   const [selectedModifierId, setSelectedModifierId] = useState(null);
   const [modifierError, setModifierError] = useState('');
 
-  // Reset state when modal opens/closes or item changes
   React.useEffect(() => {
     if (isOpen && item) {
       setQuantity(1);
@@ -23,27 +22,17 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
   const modifiers = item?.modifiers || [];
   const hasModifiers = modifiers.length > 0;
 
-  const handleIncrement = () => {
-    setQuantity(prev => prev + 1);
-  };
-
-  const handleDecrement = () => {
-    if (quantity > 1) {
-      setQuantity(prev => prev - 1);
-    }
-  };
+  const handleIncrement = () => setQuantity(prev => prev + 1);
+  const handleDecrement = () => { if (quantity > 1) setQuantity(prev => prev - 1); };
 
   const handleAddToCart = () => {
-    // Validate modifier selection if required
     if (hasModifiers && !selectedModifierId) {
       setModifierError('Выберите необходимые модификаторы');
       return;
     }
-
-    const selectedModifier = selectedModifierId 
+    const selectedModifier = selectedModifierId
       ? modifiers.find(m => m.id === selectedModifierId)
       : null;
-
     onAddToCart(item, quantity, selectedModifier);
     setQuantity(1);
     setSelectedModifierId(null);
@@ -51,184 +40,158 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
     onClose();
   };
 
-  // Extract nutritional info - could be in different formats
   const nutritionalInfo = item.nutritionalInfo || {};
   const calories = item.calories || nutritionalInfo.calories || null;
   const proteins = item.proteins || nutritionalInfo.proteins || null;
   const fats = item.fats || nutritionalInfo.fats || null;
   const carbohydrates = item.carbohydrates || nutritionalInfo.carbohydrates || null;
-
   const hasNutritionalInfo = calories || proteins || fats || carbohydrates;
 
+  const cleanDescription = item?.description
+    ?.replace(/Ingredients?:?\s*/i, '')
+    ?.replace(/Ingridients?:?\s*/i, '')
+    ?.replace(/Ингредиенты?:?\s*/i, '')
+    ?.replace(/Состав:?\s*/i, '')
+    ?.trim();
+
+  const totalPrice = item?.price + (
+    selectedModifierId
+      ? (modifiers.find(m => m.id === selectedModifierId)?.price || 0)
+      : 0
+  );
+
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div 
-        className="bg-card rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
+    <div
+      className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card w-full sm:max-w-lg sm:mx-4 sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with close button */}
-        <div className="relative h-64 overflow-hidden">
+        {/* Image header */}
+        <div className="relative h-56 overflow-hidden sm:rounded-t-2xl rounded-t-2xl flex-shrink-0">
           <Image
             src={item?.image}
             alt={item?.imageAlt || item?.name}
             className="w-full h-full object-cover"
           />
+          {/* Gradient overlay at bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors"
+            className="absolute top-3 right-3 w-9 h-9 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors cursor-pointer"
             aria-label="Закрыть"
           >
-            <Icon name="X" size={20} className="text-white" />
+            <Icon name="X" size={18} className="text-white" />
           </button>
           {item?.isNew && (
-            <div className="absolute top-4 left-4 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-medium">
+            <span className="absolute top-3 left-3 bg-accent text-white text-xs font-bold px-2.5 py-1 rounded-full">
               Новинка
-            </div>
+            </span>
+          )}
+          {item?.weight && (
+            <span className="absolute bottom-3 right-3 bg-black/40 text-white text-xs px-2.5 py-1 rounded-full backdrop-blur-sm">
+              {item.weight}
+            </span>
           )}
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
-          {/* Name and Price */}
-          <div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">{item?.name}</h2>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-primary">{formatPrice(item?.price)}</span>
-              {item?.weight && (
-                <span className="text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full">
-                  {item.weight}
-                </span>
-              )}
-            </div>
+        <div className="p-5 space-y-4">
+          {/* Name + price */}
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="text-xl font-bold text-foreground leading-tight flex-1">{item?.name}</h2>
+            <span className="text-xl font-bold text-primary whitespace-nowrap">{formatPrice(item?.price)}</span>
           </div>
 
-          {/* Category */}
-          {item?.categoryName && (
-            <div className="text-sm text-muted-foreground">
-              Категория: <span className="font-medium text-foreground">{item.categoryName}</span>
-            </div>
-          )}
-
           {/* Description */}
-          {item?.description && (
-            <div>
-              <h3 className="text-sm font-semibold text-foreground mb-2">Описание</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {item.description.replace(/Ingredients?:?\s*/i, '').replace(/Ingridients?:?\s*/i, '').replace(/Ингредиенты?:?\s*/i, '').replace(/Состав:?\s*/i, '').trim()}
-              </p>
-            </div>
+          {cleanDescription && (
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {cleanDescription}
+            </p>
           )}
 
-          {/* Nutritional Info (КБЖУ) */}
+          {/* Nutritional info */}
           {hasNutritionalInfo && (
-            <div className="border-t border-border pt-4">
-              <h3 className="text-sm font-semibold text-foreground mb-3">Пищевая ценность (КБЖУ)</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {calories && (
-                  <div className="bg-muted/50 rounded-lg p-3 text-center">
-                    <div className="text-xs text-muted-foreground mb-1">Калории</div>
-                    <div className="text-lg font-bold text-foreground">{calories}</div>
-                    <div className="text-xs text-muted-foreground">ккал</div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">КБЖУ</p>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: 'Ккал', value: calories },
+                  { label: 'Белки', value: proteins },
+                  { label: 'Жиры', value: fats },
+                  { label: 'Углев.', value: carbohydrates },
+                ].filter(n => n.value).map(({ label, value }) => (
+                  <div key={label} className="bg-muted rounded-xl p-2.5 text-center">
+                    <div className="text-xs text-muted-foreground mb-0.5">{label}</div>
+                    <div className="text-sm font-bold text-foreground">{value}</div>
                   </div>
-                )}
-                {proteins && (
-                  <div className="bg-muted/50 rounded-lg p-3 text-center">
-                    <div className="text-xs text-muted-foreground mb-1">Белки</div>
-                    <div className="text-lg font-bold text-foreground">{proteins}</div>
-                    <div className="text-xs text-muted-foreground">г</div>
-                  </div>
-                )}
-                {fats && (
-                  <div className="bg-muted/50 rounded-lg p-3 text-center">
-                    <div className="text-xs text-muted-foreground mb-1">Жиры</div>
-                    <div className="text-lg font-bold text-foreground">{fats}</div>
-                    <div className="text-xs text-muted-foreground">г</div>
-                  </div>
-                )}
-                {carbohydrates && (
-                  <div className="bg-muted/50 rounded-lg p-3 text-center">
-                    <div className="text-xs text-muted-foreground mb-1">Углеводы</div>
-                    <div className="text-lg font-bold text-foreground">{carbohydrates}</div>
-                    <div className="text-xs text-muted-foreground">г</div>
-                  </div>
-                )}
+                ))}
               </div>
             </div>
           )}
 
-          {/* Modifiers Selection */}
+          {/* Modifiers */}
           {hasModifiers && (
-            <div className="border-t border-border pt-4 space-y-3">
-              <h3 className="text-sm font-semibold text-foreground">Выберите вариант</h3>
-              <div className="space-y-2">
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-2">Выберите вариант</p>
+              <div className="flex flex-wrap gap-2">
                 {modifiers.map((modifier) => (
-                  <label
+                  <button
                     key={modifier.id}
-                    className="flex items-center justify-between p-3 bg-muted/30 rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => {
+                      setSelectedModifierId(modifier.id);
+                      setModifierError('');
+                    }}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border ${
+                      selectedModifierId === modifier.id
+                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                        : 'bg-card text-foreground border-border hover:border-primary/40'
+                    }`}
                   >
-                    <div className="flex items-center gap-3 flex-1">
-                      <input
-                        type="radio"
-                        name={`modifier-${item.id}`}
-                        value={modifier.id}
-                        checked={selectedModifierId === modifier.id}
-                        onChange={() => {
-                          setSelectedModifierId(modifier.id);
-                          setModifierError('');
-                        }}
-                        className="w-5 h-5 text-accent focus:ring-accent focus:ring-2"
-                      />
-                      <span className="text-sm font-medium text-foreground">{modifier.name}</span>
-                    </div>
+                    <span>{modifier.name}</span>
                     {modifier.price > 0 && (
-                      <span className="text-sm font-semibold text-foreground">
-                        {formatPrice(modifier.price)}
+                      <span className={`text-xs ${selectedModifierId === modifier.id ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                        +{formatPrice(modifier.price)}
                       </span>
                     )}
-                  </label>
+                  </button>
                 ))}
               </div>
               {modifierError && (
-                <p className="text-sm text-destructive">{modifierError}</p>
+                <p className="text-xs text-destructive mt-2">{modifierError}</p>
               )}
             </div>
           )}
 
-          {/* Quantity Selector and Add to Cart */}
-          <div className="border-t border-border pt-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">Количество</span>
-              <div className="flex items-center border border-border rounded-lg overflow-hidden">
-                <button
-                  onClick={handleDecrement}
-                  className="w-12 h-12 flex items-center justify-center hover:bg-muted transition-colors"
-                  aria-label="Уменьшить количество"
-                >
-                  <Icon name="Minus" size={18} />
-                </button>
-                <span className="w-12 h-12 flex items-center justify-center text-base font-semibold border-x border-border">
-                  {quantity}
-                </span>
-                <button
-                  onClick={handleIncrement}
-                  className="w-12 h-12 flex items-center justify-center hover:bg-muted transition-colors"
-                  aria-label="Увеличить количество"
-                >
-                  <Icon name="Plus" size={18} />
-                </button>
-              </div>
+          {/* Qty + Add */}
+          <div className="flex items-center gap-3 pt-1">
+            <div className="flex items-center bg-muted rounded-xl overflow-hidden">
+              <button
+                onClick={handleDecrement}
+                className="w-11 h-11 flex items-center justify-center hover:bg-muted/70 transition-colors cursor-pointer"
+                aria-label="Уменьшить количество"
+              >
+                <Icon name="Minus" size={16} />
+              </button>
+              <span className="w-10 text-center text-base font-semibold">{quantity}</span>
+              <button
+                onClick={handleIncrement}
+                className="w-11 h-11 flex items-center justify-center hover:bg-muted/70 transition-colors cursor-pointer"
+                aria-label="Увеличить количество"
+              >
+                <Icon name="Plus" size={16} />
+              </button>
             </div>
-
             <Button
               variant="default"
               fullWidth
               size="lg"
-              iconName="ShoppingCart"
-              iconPosition="left"
               onClick={handleAddToCart}
-              className="text-base py-3"
+              className="rounded-xl flex-1"
             >
-              Добавить в корзину
+              В корзину · {formatPrice(totalPrice * quantity)}
             </Button>
           </div>
         </div>

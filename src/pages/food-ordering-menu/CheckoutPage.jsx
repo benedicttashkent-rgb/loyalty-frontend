@@ -54,7 +54,6 @@ const CheckoutPage = () => {
     const { cartItems, selectedBranch, itemComments = {}, orderType = 'takeaway', deliveryAddress = null } = checkoutData;
     const orderNumber = `BEN${Date.now()?.toString()?.slice(-6)}`;
     const estimatedTime = orderType === 'delivery' ? '30-45 мин' : '15-20 мин';
-    const orderComments = itemComments;
 
     setIsSubmitting(true);
     try {
@@ -99,7 +98,7 @@ const CheckoutPage = () => {
           } : null
         })),
         totalAmount,
-        comments: orderComments,
+        comments: itemComments,
         customerPhone,
         customerName,
         ...(orderType === 'delivery' && deliveryAddress ? { deliveryAddress: deliveryAddress.address, deliveryDetails: deliveryAddress.details } : {})
@@ -128,7 +127,7 @@ const CheckoutPage = () => {
         orderNumber,
         estimatedTime,
         branch: selectedBranch,
-        comments: orderComments,
+        comments: itemComments,
         status: 'NEW',
         orderType,
         deliveryAddress: deliveryAddress?.address || null
@@ -150,13 +149,7 @@ const CheckoutPage = () => {
     navigate(menuPath);
   };
 
-  const handleBack = () => {
-    navigate(menuPath);
-  };
-
-  if (!checkoutData) {
-    return null;
-  }
+  if (!checkoutData) return null;
 
   const { cartItems, selectedBranch, itemComments = {}, orderType = 'takeaway', deliveryAddress = null } = checkoutData;
   const totalAmount = cartItems?.reduce((sum, item) => {
@@ -168,114 +161,133 @@ const CheckoutPage = () => {
   const hasComments = Object.values(itemComments || {}).some(Boolean);
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="main-content max-w-md mx-auto px-4">
-        <div className="flex items-center justify-between py-4">
-          <button
-            onClick={handleBack}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted transition-colors"
-            aria-label="Назад"
-          >
-            <Icon name="ArrowLeft" size={20} />
-          </button>
-          <BrandLogo />
-          <div className="w-10" />
-        </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto pb-32">
+        <div className="max-w-md mx-auto px-4">
+          {/* Header */}
+          <div className="flex items-center gap-3 py-4">
+            <button
+              onClick={() => navigate(menuPath)}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer flex-shrink-0"
+              aria-label="Назад"
+            >
+              <Icon name="ArrowLeft" size={20} />
+            </button>
+            <h1 className="text-lg font-bold text-foreground">Оформление заказа</h1>
+          </div>
 
-        <h1 className="text-xl font-bold text-foreground mb-6">Оформление заказа</h1>
-
-        <div className="space-y-6">
-          {orderType === 'delivery' ? (
-            <div className="bg-card rounded-lg border border-border p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Icon name="Truck" size={20} className="text-accent" />
-                <h2 className="font-semibold text-foreground">Адрес доставки</h2>
+          <div className="space-y-3">
+            {/* Delivery / Branch card */}
+            <div className="bg-card rounded-2xl border border-border p-4">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                  <Icon name={orderType === 'delivery' ? 'Truck' : 'MapPin'} size={16} className="text-accent" />
+                </div>
+                <h2 className="font-semibold text-foreground text-sm">
+                  {orderType === 'delivery' ? 'Адрес доставки' : 'Филиал'}
+                </h2>
               </div>
-              <p className="text-foreground font-medium">{deliveryAddress?.address || 'Адрес не указан'}</p>
-            </div>
-          ) : (
-            <div className="bg-card rounded-lg border border-border p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Icon name="MapPin" size={20} className="text-accent" />
-                <h2 className="font-semibold text-foreground">Филиал</h2>
-              </div>
-              <p className="text-foreground font-medium">{selectedBranch?.name}</p>
-              {selectedBranch?.address && (
-                <p className="text-sm text-muted-foreground mt-1">{selectedBranch.address}</p>
+              {orderType === 'delivery' ? (
+                <p className="text-sm text-foreground pl-10.5">{deliveryAddress?.address || 'Адрес не указан'}</p>
+              ) : (
+                <div className="pl-10">
+                  <p className="text-sm font-medium text-foreground">{selectedBranch?.name}</p>
+                  {selectedBranch?.address && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{selectedBranch.address}</p>
+                  )}
+                </div>
               )}
             </div>
-          )}
 
-          <div className="bg-card rounded-lg border border-border p-4">
-            <h2 className="font-semibold text-foreground mb-3">Заказ ({totalItems} шт.)</h2>
-            <div className="space-y-3 max-h-48 overflow-y-auto">
-              {cartItems?.map((item) => (
-                <div key={item?.cartItemId || item?.id} className="flex gap-3">
-                  <div className="w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
-                    <Image
-                      src={item?.image}
-                      alt={item?.imageAlt || item?.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{item?.name}</p>
-                    {item?.selectedModifier && (
-                      <p className="text-xs text-muted-foreground">{item.selectedModifier.name}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {item?.quantity} × {formatPrice(item?.price + (item?.selectedModifier?.price || 0))}
-                    </p>
-                  </div>
-                  <span className="text-sm font-semibold text-foreground">
-                    {formatPrice((item?.price + (item?.selectedModifier?.price || 0)) * (item?.quantity || 1))}
-                  </span>
+            {/* Order items */}
+            <div className="bg-card rounded-2xl border border-border p-4">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Icon name="ShoppingBag" size={16} className="text-primary" />
                 </div>
-              ))}
+                <h2 className="font-semibold text-foreground text-sm">Ваш заказ · {totalItems} шт.</h2>
+              </div>
+              <div className="space-y-3">
+                {cartItems?.map((item) => (
+                  <div key={item?.cartItemId || item?.id} className="flex gap-3 items-center">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
+                      <Image
+                        src={item?.image}
+                        alt={item?.imageAlt || item?.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{item?.name}</p>
+                      {item?.selectedModifier && (
+                        <p className="text-xs text-muted-foreground">{item.selectedModifier.name}</p>
+                      )}
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {item?.quantity} × {formatPrice(item?.price + (item?.selectedModifier?.price || 0))}
+                      </p>
+                    </div>
+                    <span className="text-sm font-bold text-foreground flex-shrink-0">
+                      {formatPrice((item?.price + (item?.selectedModifier?.price || 0)) * (item?.quantity || 1))}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Comments */}
+            {hasComments && (
+              <div className="bg-card rounded-2xl border border-border p-4">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <Icon name="MessageSquare" size={15} className="text-muted-foreground" />
+                  </div>
+                  <h2 className="font-semibold text-foreground text-sm">Комментарии</h2>
+                </div>
+                <ul className="space-y-1 text-sm text-muted-foreground pl-10">
+                  {Object.entries(itemComments || {}).filter(([, v]) => v).map(([itemId, comment]) => {
+                    const ci = cartItems?.find(i => (i?.id || i?.cartItemId)?.toString() === itemId);
+                    return (
+                      <li key={itemId}>
+                        <span className="font-medium text-foreground">{ci?.name || 'Блюдо'}:</span>{' '}
+                        {comment}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            {/* Total */}
+            <div className="bg-card rounded-2xl border border-border p-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-muted-foreground">Товаров ({totalItems})</span>
+                <span className="font-medium text-foreground">{formatPrice(totalAmount)}</span>
+              </div>
+              <div className="h-px bg-border my-2.5" />
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-foreground">Итого</span>
+                <span className="text-xl font-bold text-foreground">{formatPrice(totalAmount)}</span>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {hasComments && (
-            <div className="bg-muted/50 rounded-lg border border-border p-4">
-              <h2 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-                <Icon name="MessageSquare" size={16} />
-                Комментарии
-              </h2>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                {Object.entries(itemComments || {}).filter(([, v]) => v).map(([itemId, comment]) => {
-                  const item = cartItems?.find(i => (i?.id || i?.cartItemId)?.toString() === itemId);
-                  return (
-                    <li key={itemId}>
-                      <span className="font-medium text-foreground">{item?.name || 'Блюдо'}:</span> {comment}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-
-          <div className="bg-card rounded-lg border border-border p-4">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-muted-foreground">Товаров ({totalItems})</span>
-              <span className="font-medium text-foreground">{formatPrice(totalAmount)}</span>
-            </div>
-            <div className="h-px bg-border my-2" />
-            <div className="flex justify-between">
-              <span className="font-semibold text-foreground">Итого</span>
-              <span className="text-lg font-bold text-foreground">{formatPrice(totalAmount)}</span>
-            </div>
-          </div>
-
+      {/* Sticky confirm footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border px-4 pt-3 pb-safe" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
+        <div className="max-w-md mx-auto">
           <Button
             variant="default"
             fullWidth
             size="lg"
-            iconName="Check"
+            iconName={isSubmitting ? undefined : 'Check'}
             iconPosition="left"
             onClick={handleConfirmOrder}
             disabled={isSubmitting}
+            className="rounded-xl"
           >
-            {isSubmitting ? 'Отправка...' : 'Подтвердить заказ'}
+            {isSubmitting ? 'Отправка...' : `Подтвердить · ${formatPrice(totalAmount)}`}
           </Button>
         </div>
       </div>

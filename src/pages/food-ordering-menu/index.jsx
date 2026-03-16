@@ -459,24 +459,25 @@ const FoodOrderingMenu = () => {
         {/* Search Bar */}
         <div className="mb-4">
           <div className="relative">
-            <Icon 
-              name="Search" 
-              size={20} 
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" 
+            <Icon
+              name="Search"
+              size={17}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
             />
             <input
               type="text"
               placeholder="Поиск блюд..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full pl-10 pr-9 py-2.5 bg-card border border-border rounded-2xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 shadow-sm transition-shadow"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer"
+                aria-label="Очистить поиск"
               >
-                <Icon name="X" size={18} />
+                <Icon name="X" size={12} />
               </button>
             )}
           </div>
@@ -493,40 +494,51 @@ const FoodOrderingMenu = () => {
         </div>
 
             {isLoadingMenu ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Icon name="Loader2" size={32} className="animate-spin text-accent mb-4" />
-                <p className="text-muted-foreground">Загрузка меню...</p>
+              <div className="space-y-3 pb-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="bg-card rounded-2xl border border-border/60 p-3 flex gap-3 animate-pulse">
+                    <div className="w-[88px] h-[88px] rounded-xl bg-muted flex-shrink-0" />
+                    <div className="flex-1 space-y-2 py-1">
+                      <div className="h-3.5 bg-muted rounded-full w-3/4" />
+                      <div className="h-3 bg-muted rounded-full w-full" />
+                      <div className="h-3 bg-muted rounded-full w-2/3" />
+                      <div className="h-3 bg-muted rounded-full w-1/2 mt-2" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : (
-        <div className="grid grid-cols-1 gap-4 pb-4">
+              <div className="grid grid-cols-1 gap-3 pb-4">
                 {filteredMenuItems?.length > 0 ? (
                   filteredMenuItems?.map((item) => (
-            <MenuItemCard
-              key={item?.id}
-              item={item}
-              onAddToCart={handleAddToCart}
-              cartQuantity={getCartQuantity(item?.id)}
-              onItemClick={handleMenuItemClick}
-            />
+                    <MenuItemCard
+                      key={item?.id}
+                      item={item}
+                      onAddToCart={handleAddToCart}
+                      cartQuantity={getCartQuantity(item?.id)}
+                      onItemClick={handleMenuItemClick}
+                    />
                   ))
                 ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <p>Меню для этого филиала пока не загружено.</p>
-                    <p className="text-sm mt-2">Используется базовое меню.</p>
+                  <div className="flex flex-col items-center text-center py-14">
+                    <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                      <Icon name="Search" size={22} className="text-muted-foreground/60" />
+                    </div>
+                    <p className="text-sm font-medium text-foreground mb-1">Ничего не найдено</p>
+                    <p className="text-xs text-muted-foreground">Попробуйте другой запрос или категорию</p>
                   </div>
                 )}
               </div>
             )}
           </>
         ) : (
-          <div className="text-center py-12 text-muted-foreground">
-            <Icon name="MapPin" size={48} className="mx-auto mb-4 text-muted-foreground/50" />
-            <p className="text-lg font-medium mb-2">Выберите филиал</p>
-            <p className="text-sm">Для просмотра меню необходимо выбрать филиал</p>
-            <p className="text-xs mt-2 text-muted-foreground/70">
-              Выберите филиал для самовывоза
-            </p>
-        </div>
+          <div className="flex flex-col items-center text-center py-16 px-4">
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+              <Icon name="Store" size={28} className="text-muted-foreground/60" />
+            </div>
+            <p className="text-base font-semibold text-foreground mb-1">Выберите филиал</p>
+            <p className="text-sm text-muted-foreground">Выберите ближайший филиал, чтобы увидеть меню</p>
+          </div>
         )}
       </div>
       <BottomTabNavigation cartCount={cartCount} />

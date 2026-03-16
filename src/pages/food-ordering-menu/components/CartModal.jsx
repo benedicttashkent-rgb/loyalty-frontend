@@ -33,6 +33,12 @@ const CartModal = ({
   }, 0);
   const totalItems = cartItems?.reduce((sum, item) => sum + item?.quantity, 0);
 
+  const itemCountLabel = (n) => {
+    if (n === 1) return '1 товар';
+    if (n >= 2 && n <= 4) return `${n} товара`;
+    return `${n} товаров`;
+  };
+
   const handleQuantityChange = (itemId, newQuantity) => {
     if (newQuantity > 0) {
       onUpdateQuantity(itemId, newQuantity);
@@ -40,13 +46,8 @@ const CartModal = ({
   };
 
   const handleCommentSave = (itemId, comment) => {
-    setItemComments(prev => ({
-      ...prev,
-      [itemId]: comment
-    }));
-    if (onItemCommentChange) {
-      onItemCommentChange(itemId, comment);
-    }
+    setItemComments(prev => ({ ...prev, [itemId]: comment }));
+    if (onItemCommentChange) onItemCommentChange(itemId, comment);
     setEditingCommentId(null);
   };
 
@@ -70,186 +71,173 @@ const CartModal = ({
   return (
     <ModalOverlay isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col h-full max-h-[90vh]">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-xl font-bold text-foreground">Корзина</h2>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Корзина</h2>
+            {totalItems > 0 && (
+              <p className="text-xs text-muted-foreground mt-0.5">{itemCountLabel(totalItems)}</p>
+            )}
+          </div>
           <button
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-muted transition-smooth"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer"
             aria-label="Закрыть корзину"
           >
-            <Icon name="X" size={20} />
+            <Icon name="X" size={16} />
           </button>
         </div>
 
         {cartItems?.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
-              <Icon name="ShoppingCart" size={32} color="var(--color-muted-foreground)" />
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Icon name="ShoppingCart" size={28} color="var(--color-muted-foreground)" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Корзина пуста</h3>
-            <p className="text-sm text-muted-foreground text-center mb-6">
-              Добавьте блюда из меню, чтобы начать заказ
+            <h3 className="text-base font-semibold text-foreground mb-1">Корзина пуста</h3>
+            <p className="text-sm text-muted-foreground text-center mb-5">
+              Добавьте блюда из меню
             </p>
-            <Button variant="default" onClick={onClose}>
+            <Button variant="default" onClick={onClose} size="sm">
               Вернуться к меню
             </Button>
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-4">
-                {cartItems?.map((item) => (
-                  <div key={item?.id} className="bg-muted/50 rounded-lg p-3">
-                    <div className="flex gap-3">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-                        <Image
-                          src={item?.image}
-                          alt={item?.imageAlt}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-semibold text-foreground">{item?.name}</h3>
-                            {item?.selectedModifier && (
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {item.selectedModifier.name}
-                                {item.selectedModifier.price > 0 && (
-                                  <span className="ml-1">(+{formatPrice(item.selectedModifier.price)})</span>
-                                )}
-                              </p>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => {
-                              const itemId = item?.cartItemId || item?.id;
-                              onRemoveItem(itemId);
-                            }}
-                            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-destructive/10 transition-smooth flex-shrink-0 ml-2"
-                            aria-label="Удалить из корзины"
-                          >
-                            <Icon name="Trash2" size={14} color="var(--color-destructive)" />
-                          </button>
+            {/* Items list */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="divide-y divide-border">
+                {cartItems?.map((item) => {
+                  const itemId = item?.cartItemId || item?.id;
+                  return (
+                    <div key={itemId} className="px-5 py-3.5">
+                      <div className="flex gap-3">
+                        {/* Thumbnail */}
+                        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-muted">
+                          <Image
+                            src={item?.image}
+                            alt={item?.imageAlt}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
 
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center border border-border rounded-lg overflow-hidden">
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-sm font-semibold text-foreground leading-snug">{item?.name}</h3>
+                              {item?.selectedModifier && (
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                  {item.selectedModifier.name}
+                                  {item.selectedModifier.price > 0 && (
+                                    <span className="ml-1 text-accent">+{formatPrice(item.selectedModifier.price)}</span>
+                                  )}
+                                </p>
+                              )}
+                            </div>
                             <button
-                              onClick={() => {
-                                const itemId = item?.cartItemId || item?.id;
-                                const modifierPrice = item?.selectedModifier?.price || 0;
-                                handleQuantityChange(itemId, item?.quantity - 1);
-                              }}
-                              className="w-8 h-8 flex items-center justify-center hover:bg-card transition-smooth"
-                              aria-label="Уменьшить количество"
+                              onClick={() => onRemoveItem(itemId)}
+                              className="w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 cursor-pointer"
+                              aria-label="Удалить из корзины"
                             >
-                              <Icon name="Minus" size={14} />
+                              <Icon name="Trash2" size={14} />
                             </button>
-                            <span className="w-8 h-8 flex items-center justify-center text-sm font-medium border-x border-border">
-                              {item?.quantity}
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            {/* Qty pill */}
+                            <div className="flex items-center gap-1 bg-muted rounded-full px-1 py-0.5">
+                              <button
+                                onClick={() => handleQuantityChange(itemId, item?.quantity - 1)}
+                                className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-card transition-colors cursor-pointer"
+                                aria-label="Уменьшить"
+                              >
+                                <Icon name="Minus" size={12} />
+                              </button>
+                              <span className="text-sm font-semibold min-w-[20px] text-center">{item?.quantity}</span>
+                              <button
+                                onClick={() => handleQuantityChange(itemId, item?.quantity + 1)}
+                                className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-card transition-colors cursor-pointer"
+                                aria-label="Увеличить"
+                              >
+                                <Icon name="Plus" size={12} />
+                              </button>
+                            </div>
+                            <span className="text-sm font-bold text-foreground">
+                              {formatPrice((item?.price + (item?.selectedModifier?.price || 0)) * item?.quantity)}
                             </span>
+                          </div>
+
+                          {/* Comment */}
+                          {editingCommentId === itemId ? (
+                            <div className="mt-2 space-y-1.5">
+                              <textarea
+                                value={itemComments?.[itemId] || ''}
+                                onChange={(e) => setItemComments(prev => ({ ...prev, [itemId]: e?.target?.value }))}
+                                placeholder="Без соли, без перца..."
+                                className="w-full px-2.5 py-1.5 text-xs bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+                                rows={2}
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleCommentSave(itemId, itemComments?.[itemId] || '')}
+                                  className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors cursor-pointer"
+                                >
+                                  Сохранить
+                                </button>
+                                <button
+                                  onClick={() => setEditingCommentId(null)}
+                                  className="px-3 py-1 text-xs bg-muted text-foreground rounded-full hover:bg-muted/80 transition-colors cursor-pointer"
+                                >
+                                  Отмена
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
                             <button
-                              onClick={() => {
-                                const itemId = item?.cartItemId || item?.id;
-                                handleQuantityChange(itemId, item?.quantity + 1);
-                              }}
-                              className="w-8 h-8 flex items-center justify-center hover:bg-card transition-smooth"
-                              aria-label="Увеличить количество"
+                              onClick={() => setEditingCommentId(itemId)}
+                              className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground hover:text-accent transition-colors cursor-pointer"
                             >
-                              <Icon name="Plus" size={14} />
+                              <Icon name="MessageSquare" size={11} />
+                              {itemComments?.[itemId] ? (
+                                <span className="text-foreground/70 truncate max-w-[160px]">{itemComments[itemId]}</span>
+                              ) : (
+                                <span>Добавить комментарий</span>
+                              )}
                             </button>
-                          </div>
-
-                          <span className="text-base font-bold text-foreground">
-                            {formatPrice((item?.price + (item?.selectedModifier?.price || 0)) * item?.quantity)}
-                          </span>
+                          )}
                         </div>
-
-                        {/* Comment Section */}
-                        {editingCommentId === item?.id ? (
-                          <div className="mt-2 space-y-2">
-                            <textarea
-                              value={itemComments?.[item?.id] || ''}
-                              onChange={(e) => setItemComments(prev => ({
-                                ...prev,
-                                [item?.id]: e?.target?.value
-                              }))}
-                              placeholder="Например: без соли, без перца..."
-                              className="w-full px-2 py-1.5 text-xs bg-background border border-border rounded text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent resize-none"
-                              rows={2}
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleCommentSave(item?.id, itemComments?.[item?.id] || '')}
-                                className="px-3 py-1 text-xs bg-accent text-white rounded hover:bg-accent/90 transition-colors"
-                              >
-                                Сохранить
-                              </button>
-                              <button
-                                onClick={() => setEditingCommentId(null)}
-                                className="px-3 py-1 text-xs bg-muted text-foreground rounded hover:bg-muted/80 transition-colors"
-                              >
-                                Отмена
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={() => setEditingCommentId(item?.id)}
-                            className="mt-2 flex items-center gap-1 text-xs text-accent hover:text-accent/80 transition-colors"
-                          >
-                            <Icon name="MessageSquare" size={12} />
-                            {itemComments?.[item?.id] ? 'Изменить комментарий' : 'Добавить комментарий'}
-                          </button>
-                        )}
-
-                        {itemComments?.[item?.id] && editingCommentId !== item?.id && (
-                          <div className="mt-2 p-2 bg-background rounded text-xs text-muted-foreground">
-                            <div className="flex items-start gap-1">
-                              <Icon name="MessageSquare" size={12} className="text-accent mt-0.5 flex-shrink-0" />
-                              <span>{itemComments?.[item?.id]}</span>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            <div className="border-t border-border p-4 bg-card">
+            {/* Footer */}
+            <div className="border-t border-border px-5 pt-4 pb-5 bg-card">
               {useCheckoutPage && !canProceed && (
-                <p className="text-xs text-muted-foreground mb-3">
-                  {isDelivery
-                    ? 'Укажите адрес доставки, чтобы перейти к оформлению'
-                    : 'Выберите филиал на главной странице меню, чтобы перейти к оформлению'}
-                </p>
+                <div className="flex items-start gap-2 mb-3 p-2.5 bg-warning/10 rounded-xl">
+                  <Icon name="AlertCircle" size={14} className="text-warning mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    {isDelivery ? 'Укажите адрес доставки' : 'Выберите филиал для самовывоза'}
+                  </p>
+                </div>
               )}
-              <div className="space-y-3 mb-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Товаров ({totalItems})</span>
-                  <span className="font-medium text-foreground">{formatPrice(totalAmount)}</span>
-                </div>
-                {/* Delivery removed for MVP - only takeaway */}
-                <div className="h-px bg-border"></div>
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-semibold text-foreground">Итого</span>
-                  <span className="text-xl font-bold text-foreground">{formatPrice(totalAmount)}</span>
-                </div>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-muted-foreground">{itemCountLabel(totalItems)}</span>
+                <span className="text-xl font-bold text-foreground">{formatPrice(totalAmount)}</span>
               </div>
-
               <Button
                 variant="default"
                 fullWidth
+                size="lg"
                 iconName={useCheckoutPage ? 'ArrowRight' : 'CreditCard'}
-                iconPosition="left"
+                iconPosition="right"
                 onClick={handleCheckoutWithComments}
                 disabled={isSubmitting || (useCheckoutPage && !canProceed)}
+                className="rounded-xl"
               >
-                {isSubmitting ? 'Отправка...' : useCheckoutPage ? 'Перейти к оформлению' : 'Оформить заказ'}
+                {isSubmitting ? 'Отправка...' : useCheckoutPage ? 'Оформить заказ' : 'Подтвердить'}
               </Button>
             </div>
           </>
