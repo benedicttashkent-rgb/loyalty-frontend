@@ -366,7 +366,9 @@ const FoodOrderingMenu = () => {
       estimatedTime,
       branch: selectedBranch,
       comments: orderComments,
-      status: 'NEW'
+      status: 'NEW',
+      orderType,
+      deliveryAddress: deliveryAddress?.address || null
     };
 
     setOrderDetails(newOrderDetails);
@@ -543,7 +545,9 @@ const FoodOrderingMenu = () => {
         onRemoveItem={handleRemoveItem}
         onCheckout={handleCheckout}
         onProceedToCheckout={handleProceedToCheckout}
-        onItemCommentChange={handleItemCommentChange} />
+        onItemCommentChange={handleItemCommentChange}
+        orderType={orderType}
+        deliveryAddress={deliveryAddress} />
 
       <CheckoutSuccessModal
         isOpen={isCheckoutSuccessOpen}

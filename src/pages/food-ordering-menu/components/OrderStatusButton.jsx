@@ -4,7 +4,7 @@ import ModalOverlay from '../../../components/navigation/ModalOverlay';
 import RatingModal from './RatingModal';
 import { getApiUrl } from '../../../config/api';
 
-const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose }) => {
+const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose, orderType = 'takeaway', deliveryAddress = null }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -21,7 +21,8 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
     return s || status;
   })();
 
-  // Status mapping: Заказ отправлен → Заказ готовится → Готов к выдаче → Выдан
+  const isDelivery = orderType === 'delivery';
+
   const getStatusInfo = (status) => {
     switch (status) {
       case 'NEW':
@@ -30,9 +31,13 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
       case 'IN_PROGRESS':
         return { text: 'Заказ готовится', icon: 'Clock', color: 'text-blue-500', bg: 'bg-blue-50', border: 'border-blue-200' };
       case 'READY':
-        return { text: 'Готов к выдаче', icon: 'CheckCircle2', color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-200' };
+        return isDelivery
+          ? { text: 'Курьер в пути', icon: 'Truck', color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-200' }
+          : { text: 'Готов к выдаче', icon: 'CheckCircle2', color: 'text-purple-500', bg: 'bg-purple-50', border: 'border-purple-200' };
       case 'CLOSED':
-        return { text: 'Выдан', icon: 'Check', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-300' };
+        return isDelivery
+          ? { text: 'Доставлен', icon: 'Check', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-300' }
+          : { text: 'Выдан', icon: 'Check', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-300' };
       case 'CANCELLED':
         return { text: 'Отменен', icon: 'X', color: 'text-red-500', bg: 'bg-red-50', border: 'border-red-200' };
       default:
@@ -185,31 +190,47 @@ const OrderStatusButton = ({ orderNumber, estimatedTime, branch, status, onClose
               </div>
               <p className="text-xs text-muted-foreground ml-7">
                 {(normalizedStatus === 'NEW' || normalizedStatus === 'ACCEPTED') && 'Заказ передан в ресторан'}
-                {normalizedStatus === 'IN_PROGRESS' && `Приблизительное время: ${estimatedTime || '15-20 мин'}`}
-                {normalizedStatus === 'READY' && 'Заберите заказ в филиале'}
+                {normalizedStatus === 'IN_PROGRESS' && `Приблизительное время: ${estimatedTime || (isDelivery ? '30-45 мин' : '15-20 мин')}`}
+                {normalizedStatus === 'READY' && (isDelivery ? 'Курьер едет к вам' : 'Заберите заказ в филиале')}
                 {normalizedStatus === 'CLOSED' && 'Спасибо! Оцените заказ ниже.'}
-                {!normalizedStatus && 'Приблизительное время: ' + (estimatedTime || '15-20 мин')}
+                {!normalizedStatus && 'Приблизительное время: ' + (estimatedTime || (isDelivery ? '30-45 мин' : '15-20 мин'))}
               </p>
             </div>
 
-            {/* Branch Info */}
-            {branch && (
-              <div className="bg-card rounded-lg p-4 border border-border">
-                <div className="flex items-start gap-3">
-                  <Icon name="MapPin" size={20} className="text-accent mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-foreground mb-1">{branch.name}</p>
-                    <p className="text-xs text-muted-foreground">{branch.address}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{branch.phone}</p>
+            {/* Location Info */}
+            {isDelivery ? (
+              deliveryAddress && (
+                <div className="bg-card rounded-lg p-4 border border-border">
+                  <div className="flex items-start gap-3">
+                    <Icon name="Truck" size={20} className="text-accent mt-0.5" />
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Адрес доставки</p>
+                      <p className="text-sm font-semibold text-foreground">{deliveryAddress}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )
+            ) : (
+              branch && (
+                <div className="bg-card rounded-lg p-4 border border-border">
+                  <div className="flex items-start gap-3">
+                    <Icon name="MapPin" size={20} className="text-accent mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-foreground mb-1">{branch.name}</p>
+                      <p className="text-xs text-muted-foreground">{branch.address}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{branch.phone}</p>
+                    </div>
+                  </div>
+                </div>
+              )
             )}
 
             {/* Instructions */}
             <div className="bg-muted/50 rounded-lg p-4">
               <p className="text-xs text-muted-foreground text-center">
-                Когда заказ будет готов, мы уведомим вас. Заберите заказ в филиале.
+                {isDelivery
+                  ? 'Курьер доставит ваш заказ по указанному адресу.'
+                  : 'Когда заказ будет готов, мы уведомим вас. Заберите заказ в филиале.'}
               </p>
             </div>
 

@@ -191,6 +191,8 @@ function App() {
           estimatedTime={orderDetails.estimatedTime}
           branch={orderDetails.branch}
           status={orderDetails.status}
+          orderType={orderDetails.orderType || 'takeaway'}
+          deliveryAddress={orderDetails.deliveryAddress || null}
           onClose={() => {
             const emptyOrder = { orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null };
             setOrderDetails(emptyOrder);

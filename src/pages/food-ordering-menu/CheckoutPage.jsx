@@ -129,7 +129,9 @@ const CheckoutPage = () => {
         estimatedTime,
         branch: selectedBranch,
         comments: orderComments,
-        status: 'NEW'
+        status: 'NEW',
+        orderType,
+        deliveryAddress: deliveryAddress?.address || null
       };
       localStorage.setItem('benedictOrderDetails', JSON.stringify(newOrderDetails));
 
@@ -285,6 +287,7 @@ const CheckoutPage = () => {
         onClose={handleSuccessClose}
         orderNumber={orderResult.orderNumber}
         estimatedTime={orderResult.estimatedTime}
+        orderType={orderType}
       />
     </div>
   );

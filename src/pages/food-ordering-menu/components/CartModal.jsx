@@ -14,13 +14,17 @@ const CartModal = ({
   onRemoveItem,
   onCheckout,
   onProceedToCheckout,
-  onItemCommentChange
+  onItemCommentChange,
+  orderType = 'takeaway',
+  deliveryAddress = null
 }) => {
   const [itemComments, setItemComments] = useState({});
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const useCheckoutPage = !!onProceedToCheckout;
+  const isDelivery = orderType === 'delivery';
+  const canProceed = isDelivery ? !!deliveryAddress?.address : !!selectedBranch;
 
   const totalAmount = cartItems?.reduce((sum, item) => {
     const basePrice = item?.price || 0;
@@ -217,9 +221,11 @@ const CartModal = ({
             </div>
 
             <div className="border-t border-border p-4 bg-card">
-              {useCheckoutPage && !selectedBranch && (
+              {useCheckoutPage && !canProceed && (
                 <p className="text-xs text-muted-foreground mb-3">
-                  Выберите филиал на главной странице меню, чтобы перейти к оформлению
+                  {isDelivery
+                    ? 'Укажите адрес доставки, чтобы перейти к оформлению'
+                    : 'Выберите филиал на главной странице меню, чтобы перейти к оформлению'}
                 </p>
               )}
               <div className="space-y-3 mb-4">
@@ -241,7 +247,7 @@ const CartModal = ({
                 iconName={useCheckoutPage ? 'ArrowRight' : 'CreditCard'}
                 iconPosition="left"
                 onClick={handleCheckoutWithComments}
-                disabled={isSubmitting || (useCheckoutPage && !selectedBranch)}
+                disabled={isSubmitting || (useCheckoutPage && !canProceed)}
               >
                 {isSubmitting ? 'Отправка...' : useCheckoutPage ? 'Перейти к оформлению' : 'Оформить заказ'}
               </Button>
