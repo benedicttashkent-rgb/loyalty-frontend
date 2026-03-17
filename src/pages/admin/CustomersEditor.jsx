@@ -15,6 +15,9 @@ const CustomersEditor = () => {
   const [pagination, setPagination] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [detailTab, setDetailTab] = useState('info');
+  const [insights, setInsights] = useState(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
   const [includeBalance, setIncludeBalance] = useState(true);
   const [showAll, setShowAll] = useState(true); // Show all customers by default
   const [limit, setLimit] = useState(1000); // Large limit to show all
@@ -93,11 +96,29 @@ const CustomersEditor = () => {
         const data = await response.json();
         if (data.success) {
           setSelectedCustomer(data.customer);
+          setDetailTab('info');
+          setInsights(null);
           setShowDetails(true);
         }
       }
     } catch (error) {
       console.error('Fetch customer details error:', error);
+    }
+  };
+
+  const fetchInsights = async (customerId) => {
+    if (insights) return; // already loaded
+    setInsightsLoading(true);
+    try {
+      const response = await adminApiRequest(`admin/customers/${customerId}/insights`, { method: 'GET' });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) setInsights(data.insights);
+      }
+    } catch (e) {
+      console.error('Fetch insights error:', e);
+    } finally {
+      setInsightsLoading(false);
     }
   };
 
@@ -138,6 +159,9 @@ const CustomersEditor = () => {
     }
   };
 
+
+  const DAY_NAMES = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  const formatHour = (h) => `${String(h).padStart(2, '0')}:00`;
 
   if (loading && customers.length === 0) {
     return (
@@ -419,143 +443,222 @@ const CustomersEditor = () => {
       {/* Customer Details Modal */}
       {showDetails && selectedCustomer && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-foreground">Детали клиента</h2>
+          <div className="bg-card rounded-lg max-w-2xl w-full max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 pb-0">
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">
+                  {selectedCustomer.name || ''} {selectedCustomer.sur_name || ''}
+                </h2>
+                <p className="text-sm text-muted-foreground">{formatPhone(selectedCustomer.phone)}</p>
+              </div>
               <button
-                onClick={() => {
-                  setShowDetails(false);
-                  setSelectedCustomer(null);
-                }}
+                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); }}
                 className="p-2 hover:bg-muted rounded-lg transition-colors"
               >
                 <Icon name="X" size={20} />
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Имя</label>
-                  <p className="text-foreground font-medium">
-                    {selectedCustomer.name || '—'}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Фамилия</label>
-                  <p className="text-foreground font-medium">
-                    {selectedCustomer.sur_name || '—'}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Телефон</label>
-                  <p className="text-foreground">{formatPhone(selectedCustomer.phone)}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Email</label>
-                  <p className="text-foreground">{selectedCustomer.email || '—'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Дата рождения</label>
-                  <p className="text-foreground">
-                    {formatDateDDMMYYYY(selectedCustomer.birth_date) || '—'}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Дата регистрации</label>
-                  <p className="text-foreground">
-                    {formatDateDDMMYYYY(selectedCustomer.created_at)}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Баланс</label>
-                  <p className="text-foreground font-semibold text-primary text-lg">
-                    {formatBalance(selectedCustomer.balance)} сум
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Статус</label>
-                  <p className="text-foreground">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        selectedCustomer.is_new_customer
-                          ? 'bg-green-500/20 text-green-500'
-                          : 'bg-blue-500/20 text-blue-500'
-                      }`}
-                    >
+            {/* Tabs */}
+            <div className="flex gap-1 px-6 pt-4 border-b border-border">
+              {[
+                { id: 'info', label: 'Профиль', icon: 'User' },
+                { id: 'insights', label: 'Аналитика', icon: 'BarChart2' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setDetailTab(tab.id);
+                    if (tab.id === 'insights') fetchInsights(selectedCustomer.id);
+                  }}
+                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+                    detailTab === tab.id
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <Icon name={tab.icon} size={15} />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Tab content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {detailTab === 'info' && (
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'Имя', value: selectedCustomer.name || '—' },
+                    { label: 'Фамилия', value: selectedCustomer.sur_name || '—' },
+                    { label: 'Телефон', value: formatPhone(selectedCustomer.phone) },
+                    { label: 'Email', value: selectedCustomer.email || '—' },
+                    { label: 'Дата рождения', value: formatDateDDMMYYYY(selectedCustomer.birth_date) || '—' },
+                    { label: 'Дата регистрации', value: formatDateDDMMYYYY(selectedCustomer.created_at) },
+                    { label: 'Последний визит', value: selectedCustomer.last_visit_date ? formatDateDDMMYYYY(selectedCustomer.last_visit_date) : '—' },
+                    { label: 'Количество визитов', value: selectedCustomer.visit_count || 0 },
+                    { label: 'Карта лояльности', value: selectedCustomer.card_number || '—' },
+                    { label: 'Тир', value: selectedCustomer.tier || '—' },
+                  ].map(({ label, value }) => (
+                    <div key={label}>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">{label}</label>
+                      <p className="text-foreground">{value}</p>
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Баланс</label>
+                    <p className="text-primary font-semibold text-lg">{formatBalance(selectedCustomer.balance)} сум</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground mb-1">Статус</label>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${selectedCustomer.is_new_customer ? 'bg-green-500/20 text-green-500' : 'bg-blue-500/20 text-blue-500'}`}>
                       {selectedCustomer.is_new_customer ? 'Новый' : 'Существующий'}
                     </span>
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Карта лояльности</label>
-                  <p className="text-foreground">{selectedCustomer.card_number || '—'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Тир</label>
-                  <p className="text-foreground">{selectedCustomer.tier || '—'}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Последний визит</label>
-                  <p className="text-foreground">
-                    {selectedCustomer.last_visit_date
-                      ? formatDateDDMMYYYY(selectedCustomer.last_visit_date)
-                      : '—'}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground mb-1">Количество визитов</label>
-                  <p className="text-foreground">{selectedCustomer.visit_count || 0}</p>
-                </div>
-                {selectedCustomer.iiko_customer_id && (
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1">iiko ID</label>
-                    <p className="text-xs text-foreground font-mono">
-                      {selectedCustomer.iiko_customer_id}
-                    </p>
                   </div>
-                )}
-                {selectedCustomer.telegram_chat_id && (
-                  <div>
-                    <label className="block text-sm font-medium text-muted-foreground mb-1">Telegram Chat ID</label>
-                    <p className="text-xs text-foreground font-mono">
-                      {selectedCustomer.telegram_chat_id}
-                    </p>
-                  </div>
-                )}
-                {selectedCustomer.iikoInfo && (
-                  <>
-                    {selectedCustomer.iikoInfo.categories && selectedCustomer.iikoInfo.categories.length > 0 && (
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground mb-1">Категории iiko</label>
-                        <div className="flex flex-wrap gap-1">
-                          {selectedCustomer.iikoInfo.categories.map((cat, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-500"
-                            >
-                              {cat.name}
-                            </span>
-                          ))}
-                        </div>
+                  {selectedCustomer.iiko_customer_id && (
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">iiko ID</label>
+                      <p className="text-xs text-foreground font-mono">{selectedCustomer.iiko_customer_id}</p>
+                    </div>
+                  )}
+                  {selectedCustomer.telegram_chat_id && (
+                    <div>
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Telegram Chat ID</label>
+                      <p className="text-xs text-foreground font-mono">{selectedCustomer.telegram_chat_id}</p>
+                    </div>
+                  )}
+                  {selectedCustomer.iikoInfo?.walletBalances?.length > 0 && (
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-muted-foreground mb-1">Кошельки iiko</label>
+                      <div className="space-y-1">
+                        {selectedCustomer.iikoInfo.walletBalances.map((w, i) => (
+                          <div key={i} className="text-xs text-foreground">
+                            <span className="font-medium">{w.name}:</span>{' '}
+                            <span className="text-primary">{(w.balance || 0).toLocaleString('ru-RU')} сум</span>
+                          </div>
+                        ))}
                       </div>
-                    )}
-                    {selectedCustomer.iikoInfo.walletBalances && selectedCustomer.iikoInfo.walletBalances.length > 0 && (
-                      <div>
-                        <label className="block text-sm font-medium text-muted-foreground mb-1">Кошельки iiko</label>
-                        <div className="space-y-1">
-                          {selectedCustomer.iikoInfo.walletBalances.map((wallet, idx) => (
-                            <div key={idx} className="text-xs text-foreground">
-                              <span className="font-medium">{wallet.name}:</span>{' '}
-                              <span className="text-primary">{(wallet.balance || 0).toLocaleString('ru-RU')} сум</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {detailTab === 'insights' && (
+                <div>
+                  {insightsLoading && (
+                    <div className="flex items-center justify-center py-16">
+                      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    </div>
+                  )}
+
+                  {!insightsLoading && !insights && (
+                    <div className="text-center py-16 text-muted-foreground">
+                      <Icon name="ShoppingBag" size={40} className="mx-auto mb-3 opacity-30" />
+                      <p>Нет завершённых заказов</p>
+                    </div>
+                  )}
+
+                  {!insightsLoading && insights && (
+                    <div className="space-y-6">
+                      {/* Summary stats */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: 'Заказов всего', value: insights.totalOrders, icon: 'ShoppingBag', color: 'text-primary' },
+                          { label: 'За последние 30 дней', value: insights.ordersLast30, icon: 'Calendar', color: 'text-blue-500' },
+                          { label: 'Общий чек', value: `${insights.totalSpend.toLocaleString('ru-RU')} сум`, icon: 'TrendingUp', color: 'text-green-500' },
+                          { label: 'Средний чек', value: `${insights.avgOrderValue.toLocaleString('ru-RU')} сум`, icon: 'Receipt', color: 'text-yellow-500' },
+                        ].map(({ label, value, icon, color }) => (
+                          <div key={label} className="bg-muted/50 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Icon name={icon} size={15} className={color} />
+                              <span className="text-xs text-muted-foreground">{label}</span>
                             </div>
-                          ))}
+                            <p className={`text-lg font-bold ${color}`}>{value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Favourite day & time */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Icon name="Star" size={15} className="text-yellow-500" />
+                            <span className="text-xs text-muted-foreground">Любимый день</span>
+                          </div>
+                          <p className="text-lg font-bold text-foreground">{DAY_NAMES[insights.favoriteDay]}</p>
+                        </div>
+                        <div className="bg-muted/50 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Icon name="Clock" size={15} className="text-blue-400" />
+                            <span className="text-xs text-muted-foreground">Любимое время</span>
+                          </div>
+                          <p className="text-lg font-bold text-foreground">{formatHour(insights.favoriteHour)}</p>
                         </div>
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
+
+                      {/* Top dishes */}
+                      {insights.topItems.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                            <Icon name="Utensils" size={15} />
+                            Любимые блюда
+                          </h3>
+                          <div className="space-y-2">
+                            {insights.topItems.map((item, i) => {
+                              const maxQty = insights.topItems[0].totalQty;
+                              const pct = Math.round((item.totalQty / maxQty) * 100);
+                              return (
+                                <div key={item.name}>
+                                  <div className="flex items-center justify-between mb-0.5">
+                                    <span className="text-sm text-foreground flex items-center gap-1.5">
+                                      {i === 0 && <Icon name="Trophy" size={13} className="text-yellow-500" />}
+                                      {item.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">×{item.totalQty}</span>
+                                  </div>
+                                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                    <div
+                                      className="h-full bg-primary rounded-full transition-all"
+                                      style={{ width: `${pct}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Ratings */}
+                      {insights.ratings.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                            <Icon name="Star" size={15} />
+                            Оценки блюд
+                          </h3>
+                          <div className="space-y-1.5">
+                            {insights.ratings.map((r, i) => (
+                              <div key={i} className="flex items-center justify-between text-sm">
+                                <span className="text-foreground truncate flex-1 mr-2">{r.item_name}</span>
+                                <div className="flex items-center gap-0.5 flex-shrink-0">
+                                  {Array.from({ length: 5 }).map((_, s) => (
+                                    <Icon
+                                      key={s}
+                                      name="Star"
+                                      size={11}
+                                      className={s < r.rating ? 'text-yellow-400' : 'text-muted'}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
