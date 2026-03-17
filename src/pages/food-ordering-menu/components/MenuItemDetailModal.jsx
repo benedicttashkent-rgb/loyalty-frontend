@@ -54,7 +54,7 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
     ?.replace(/Состав:?\s*/i, '')
     ?.trim();
 
-  const totalPrice = item?.price + (
+  const totalPrice = (item?.price || 0) + (
     selectedModifierId
       ? (modifiers.find(m => m.id === selectedModifierId)?.price || 0)
       : 0
@@ -66,7 +66,8 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
       onClick={onClose}
     >
       <div
-        className="bg-card w-full sm:max-w-lg sm:mx-4 sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto shadow-2xl"
+        className="bg-card w-full sm:max-w-lg sm:mx-4 sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto shadow-2xl animate-slide-up"
+        style={{ overscrollBehavior: 'contain' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Image header */}

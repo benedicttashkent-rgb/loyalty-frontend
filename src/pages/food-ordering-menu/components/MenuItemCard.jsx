@@ -77,22 +77,25 @@ const MenuItemCard = ({ item, onAddToCart, cartQuantity, onItemClick }) => {
             <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
               <button
                 onClick={handleDecrement}
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer select-none"
+                style={{ touchAction: 'manipulation' }}
                 aria-label="Уменьшить количество"
               >
-                <Icon name="Minus" size={12} />
+                <Icon name="Minus" size={13} />
               </button>
-              <span className="text-sm font-semibold w-5 text-center">{quantity}</span>
+              <span className="text-sm font-semibold min-w-[20px] text-center select-none">{quantity}</span>
               <button
                 onClick={handleIncrement}
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer select-none"
+                style={{ touchAction: 'manipulation' }}
                 aria-label="Увеличить количество"
               >
-                <Icon name="Plus" size={12} />
+                <Icon name="Plus" size={13} />
               </button>
               <button
                 onClick={handleAddToCart}
-                className="h-7 px-2.5 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold transition-all duration-200 hover:bg-primary/90 active:scale-95 ml-0.5 whitespace-nowrap cursor-pointer"
+                className="h-9 px-3 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold transition-all duration-200 hover:bg-primary/90 active:scale-95 ml-0.5 whitespace-nowrap cursor-pointer select-none"
+                style={{ touchAction: 'manipulation' }}
                 aria-label="Добавить в корзину"
               >
                 В корзину

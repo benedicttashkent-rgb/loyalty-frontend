@@ -358,7 +358,7 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
                   value={deliveryAddress?.street}
                   onChange={(e) => handleAddressInputChange('street', e?.target?.value)}
                   placeholder="Например: ул. Амира Темура"
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
                 />
               </div>
 
@@ -369,10 +369,11 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={deliveryAddress?.building}
                     onChange={(e) => handleAddressInputChange('building', e?.target?.value)}
                     placeholder="25"
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
                   />
                 </div>
 
@@ -382,10 +383,11 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={deliveryAddress?.apartment}
                     onChange={(e) => handleAddressInputChange('apartment', e?.target?.value)}
                     placeholder="42"
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
                   />
                 </div>
               </div>
@@ -397,10 +399,11 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={deliveryAddress?.entrance}
                     onChange={(e) => handleAddressInputChange('entrance', e?.target?.value)}
                     placeholder="2"
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
                   />
                 </div>
 
@@ -410,10 +413,11 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={deliveryAddress?.floor}
                     onChange={(e) => handleAddressInputChange('floor', e?.target?.value)}
                     placeholder="5"
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
                   />
                 </div>
 
@@ -423,10 +427,11 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
                     value={deliveryAddress?.intercom}
                     onChange={(e) => handleAddressInputChange('intercom', e?.target?.value)}
                     placeholder="42"
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
                   />
                 </div>
               </div>
@@ -439,7 +444,7 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
                   value={deliveryAddress?.additionalInfo}
                   onChange={(e) => handleAddressInputChange('additionalInfo', e?.target?.value)}
                   placeholder="Ориентиры, комментарии для курьера..."
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+                  className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors resize-none"
                   rows={3}
                 />
               </div>

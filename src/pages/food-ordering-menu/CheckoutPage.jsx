@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import BrandLogo from '../../components/navigation/BrandLogo';
-import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import CheckoutSuccessModal from './components/CheckoutSuccessModal';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
@@ -16,6 +14,7 @@ const CheckoutPage = () => {
   const location = useLocation();
   const [checkoutData, setCheckoutData] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [successOpen, setSuccessOpen] = useState(false);
   const [orderResult, setOrderResult] = useState({ orderNumber: '', estimatedTime: '' });
 
@@ -55,6 +54,7 @@ const CheckoutPage = () => {
     const orderNumber = `BEN${Date.now()?.toString()?.slice(-6)}`;
     const estimatedTime = orderType === 'delivery' ? '30-45 мин' : '15-20 мин';
 
+    setSubmitError('');
     setIsSubmitting(true);
     try {
       const totalAmount = cartItems.reduce((sum, item) => {
@@ -138,7 +138,7 @@ const CheckoutPage = () => {
       setSuccessOpen(true);
     } catch (e) {
       console.error('Checkout error:', e);
-      alert(e?.message || 'Не удалось оформить заказ. Попробуйте ещё раз.');
+      setSubmitError(e?.message || 'Не удалось оформить заказ. Попробуйте ещё раз.');
     } finally {
       setIsSubmitting(false);
     }
@@ -162,8 +162,8 @@ const CheckoutPage = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Scrollable content area */}
-      <div className="flex-1 overflow-y-auto pb-32">
+      {/* Scrollable content area — pb accounts for the sticky confirm footer (~80px) */}
+      <div className="flex-1 overflow-y-auto pb-24">
         <div className="max-w-md mx-auto px-4">
           {/* Header */}
           <div className="flex items-center gap-3 py-4">
@@ -189,7 +189,7 @@ const CheckoutPage = () => {
                 </h2>
               </div>
               {orderType === 'delivery' ? (
-                <p className="text-sm text-foreground pl-10.5">{deliveryAddress?.address || 'Адрес не указан'}</p>
+                <p className="text-sm text-foreground pl-10">{deliveryAddress?.address || 'Адрес не указан'}</p>
               ) : (
                 <div className="pl-10">
                   <p className="text-sm font-medium text-foreground">{selectedBranch?.name}</p>
@@ -274,9 +274,18 @@ const CheckoutPage = () => {
         </div>
       </div>
 
-      {/* Sticky confirm footer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border px-4 pt-3 pb-safe" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}>
-        <div className="max-w-md mx-auto">
+      {/* Sticky confirm footer — no tab bar on checkout (focused flow) */}
+      <div
+        className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border px-4 pt-3 z-40"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+      >
+        <div className="max-w-md mx-auto space-y-2">
+          {submitError && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-destructive/10 border border-destructive/20 rounded-xl">
+              <Icon name="AlertCircle" size={15} className="text-destructive flex-shrink-0" />
+              <p className="text-xs text-destructive leading-snug">{submitError}</p>
+            </div>
+          )}
           <Button
             variant="default"
             fullWidth
@@ -287,12 +296,15 @@ const CheckoutPage = () => {
             disabled={isSubmitting}
             className="rounded-xl"
           >
-            {isSubmitting ? 'Отправка...' : `Подтвердить · ${formatPrice(totalAmount)}`}
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <Icon name="Loader2" size={16} className="animate-spin" />
+                Отправка...
+              </span>
+            ) : `Подтвердить · ${formatPrice(totalAmount)}`}
           </Button>
         </div>
       </div>
-
-      <BottomTabNavigation />
 
       <CheckoutSuccessModal
         isOpen={successOpen}
