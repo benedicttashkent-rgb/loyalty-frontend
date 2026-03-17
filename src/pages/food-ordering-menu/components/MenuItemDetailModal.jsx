@@ -62,7 +62,7 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50"
+      className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-[200]"
       onClick={onClose}
     >
       {/* Sheet container — flex column, fixed max height, no overflow here */}
@@ -168,7 +168,7 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
         </div>
 
         {/* ── Sticky footer — always visible ── */}
-        <div className="flex-shrink-0 px-5 pt-3 pb-5 border-t border-border bg-card">
+        <div className="flex-shrink-0 px-5 pt-3 border-t border-border bg-card" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)' }}>
           <div className="flex items-center gap-3">
             <div className="flex items-center bg-muted rounded-xl overflow-hidden">
               <button
