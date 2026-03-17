@@ -492,7 +492,7 @@ const FoodOrderingMenu = () => {
         </div>
 
             {isLoadingMenu ? (
-              <div className="space-y-3 pb-4">
+              <div className="space-y-3 pb-24">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="bg-card rounded-2xl border border-border/60 p-3 flex gap-3 animate-pulse">
                     <div className="w-[88px] h-[88px] rounded-xl bg-muted flex-shrink-0" />
@@ -506,7 +506,7 @@ const FoodOrderingMenu = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 pb-4">
+              <div className="grid grid-cols-1 gap-3 pb-24">
                 {filteredMenuItems?.length > 0 ? (
                   filteredMenuItems?.map((item) => (
                     <MenuItemCard
