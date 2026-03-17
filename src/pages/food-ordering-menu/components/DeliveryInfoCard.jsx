@@ -337,8 +337,9 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
       {/* Address Input Modal */}
       {isAddressModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50">
-          <div className="bg-card sm:rounded-2xl rounded-t-2xl p-5 w-full sm:max-w-md shadow-xl border border-border max-h-[85dvh] overflow-y-auto pb-safe">
-            <div className="flex items-center justify-between mb-5">
+          <div className="bg-card sm:rounded-2xl rounded-t-2xl w-full sm:max-w-md shadow-xl border border-border flex flex-col max-h-[90dvh]">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 shrink-0">
               <h3 className="text-lg font-bold text-foreground">Адрес доставки</h3>
               <button
                 onClick={() => setIsAddressModalOpen(false)}
@@ -348,122 +349,126 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
               </button>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Улица <span className="text-destructive">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={deliveryAddress?.street}
-                  onChange={(e) => handleAddressInputChange('street', e?.target?.value)}
-                  placeholder="Например: ул. Амира Темура"
-                  className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            {/* Scrollable fields */}
+            <div className="overflow-y-auto px-5 pb-4">
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Дом <span className="text-destructive">*</span>
+                    Улица <span className="text-destructive">*</span>
                   </label>
                   <input
                     type="text"
-                    inputMode="numeric"
-                    value={deliveryAddress?.building}
-                    onChange={(e) => handleAddressInputChange('building', e?.target?.value)}
-                    placeholder="25"
+                    value={deliveryAddress?.street}
+                    onChange={(e) => handleAddressInputChange('street', e?.target?.value)}
+                    placeholder="Например: ул. Амира Темура"
                     className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
                   />
                 </div>
 
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Дом <span className="text-destructive">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={deliveryAddress?.building}
+                      onChange={(e) => handleAddressInputChange('building', e?.target?.value)}
+                      placeholder="25"
+                      className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Квартира
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={deliveryAddress?.apartment}
+                      onChange={(e) => handleAddressInputChange('apartment', e?.target?.value)}
+                      placeholder="42"
+                      className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Подъезд
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={deliveryAddress?.entrance}
+                      onChange={(e) => handleAddressInputChange('entrance', e?.target?.value)}
+                      placeholder="2"
+                      className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Этаж
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={deliveryAddress?.floor}
+                      onChange={(e) => handleAddressInputChange('floor', e?.target?.value)}
+                      placeholder="5"
+                      className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Домофон
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={deliveryAddress?.intercom}
+                      onChange={(e) => handleAddressInputChange('intercom', e?.target?.value)}
+                      placeholder="42"
+                      className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-2">
-                    Квартира
+                    Дополнительная информация
                   </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={deliveryAddress?.apartment}
-                    onChange={(e) => handleAddressInputChange('apartment', e?.target?.value)}
-                    placeholder="42"
-                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
+                  <textarea
+                    value={deliveryAddress?.additionalInfo}
+                    onChange={(e) => handleAddressInputChange('additionalInfo', e?.target?.value)}
+                    placeholder="Ориентиры, комментарии для курьера..."
+                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors resize-none"
+                    rows={3}
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Подъезд
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={deliveryAddress?.entrance}
-                    onChange={(e) => handleAddressInputChange('entrance', e?.target?.value)}
-                    placeholder="2"
-                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Этаж
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={deliveryAddress?.floor}
-                    onChange={(e) => handleAddressInputChange('floor', e?.target?.value)}
-                    placeholder="5"
-                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Домофон
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={deliveryAddress?.intercom}
-                    onChange={(e) => handleAddressInputChange('intercom', e?.target?.value)}
-                    placeholder="42"
-                    className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Дополнительная информация
-                </label>
-                <textarea
-                  value={deliveryAddress?.additionalInfo}
-                  onChange={(e) => handleAddressInputChange('additionalInfo', e?.target?.value)}
-                  placeholder="Ориентиры, комментарии для курьера..."
-                  className="w-full px-3 py-2.5 bg-background border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-colors resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setIsAddressModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-colors font-medium text-sm cursor-pointer"
-                >
-                  Отмена
-                </button>
-                <button
-                  onClick={handleManualAddressSubmit}
-                  disabled={!deliveryAddress?.street?.trim() || !deliveryAddress?.building?.trim()}
-                  className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  Сохранить
-                </button>
-              </div>
+            {/* Sticky buttons */}
+            <div className="flex gap-3 px-5 py-4 border-t border-border shrink-0">
+              <button
+                onClick={() => setIsAddressModalOpen(false)}
+                className="flex-1 px-4 py-2.5 bg-muted text-foreground rounded-xl hover:bg-muted/80 transition-colors font-medium text-sm cursor-pointer"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleManualAddressSubmit}
+                disabled={!deliveryAddress?.street?.trim() || !deliveryAddress?.building?.trim()}
+                className="flex-1 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl hover:bg-primary/90 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Сохранить
+              </button>
             </div>
           </div>
         </div>
