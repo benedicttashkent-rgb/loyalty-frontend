@@ -336,8 +336,8 @@ const DeliveryInfoCard = ({ onOrderTypeSelect, defaultOrderType, onTakeawayClick
 
       {/* Address Input Modal */}
       {isAddressModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50">
-          <div className="bg-card sm:rounded-2xl rounded-t-2xl w-full sm:max-w-md shadow-xl border border-border flex flex-col max-h-[90dvh]">
+        <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50">
+          <div className="bg-card sm:rounded-2xl rounded-t-2xl w-full sm:max-w-md shadow-xl border border-border flex flex-col max-h-[90dvh] mb-[60px] sm:mb-0">
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-4 shrink-0">
               <h3 className="text-lg font-bold text-foreground">Адрес доставки</h3>
