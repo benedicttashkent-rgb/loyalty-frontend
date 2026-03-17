@@ -306,7 +306,7 @@ class IikoLoyaltyAPI {
   // ========== Menu Methods ==========
 
   /**
-   * Get full menu
+   * Get full menu (nomenclature)
    */
   async getMenu() {
     return await this.request('POST', this.config?.endpoints?.menu?.getMenu, {
@@ -329,6 +329,24 @@ class IikoLoyaltyAPI {
   async getProducts() {
     return await this.request('POST', this.config?.endpoints?.menu?.getProducts, {
       organizationId: this.config?.organizationId,
+    });
+  }
+
+  /**
+   * List all external menus — returns { externalMenus: [{id, name}, ...] }
+   * POST /api/2/menu — no required body per iiko docs
+   */
+  async listExternalMenus() {
+    return await this.request('POST', this.config?.endpoints?.menu?.listExternalMenus, {});
+  }
+
+  /**
+   * Fetch external menu by its ID
+   */
+  async getExternalMenuById(externalMenuId) {
+    return await this.request('POST', this.config?.endpoints?.menu?.getExternalMenu, {
+      externalMenuId,
+      organizationIds: [this.config?.organizationId],
     });
   }
 

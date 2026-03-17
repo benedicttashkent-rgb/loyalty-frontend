@@ -67,7 +67,7 @@ const FoodOrderingMenu = () => {
       setIsLoadingMenu(true);
       try {
         const menu = await menuScraper.fetchMenu(branchId);
-        const transformedMenu = menuScraper.transformMenuData(menu, branchId);
+        const transformedMenu = menuScraper.transformMenuData(menu);
         setMenuData(prev => ({
           ...prev,
           [branchId]: transformedMenu

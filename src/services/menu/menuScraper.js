@@ -1,28 +1,67 @@
 /**
  * Menu Scraper Service
- * Fetches menu data from backend API using API key authentication
- * 
- * The backend API handles menu import from external sources using API keys.
- * This service fetches the menu data from the backend API endpoint.
+ * Fetches external menu from iiko API by matching branch name,
+ * then transforms the response into the app's menu item format.
  */
 
-import restaurantConfig from '../../config/restaurant.config';
-import { getApiUrl } from '../../config/api';
+import iikoLoyaltyAPI from '../api/iikoLoyaltyAPI';
 
-const MENU_URLS = {
-  nukus: 'https://benedictnuk.myresto.online/',
-  mirabad: 'https://benedictmir.myresto.online/'
+// Keywords used to match the correct external menu by branch
+const BRANCH_KEYWORDS = {
+  mirabad: ['мирабад', 'mirabad'],
+  nukus: ['нукус', 'nukus'],
 };
 
 class MenuScraper {
   constructor() {
     this.cache = new Map();
     this.cacheTimeout = 30 * 60 * 1000; // 30 minutes
+    // Cached list of external menus so we don't re-fetch on every branch load
+    this._externalMenuList = null;
+    this._externalMenuListFetchedAt = null;
   }
 
   /**
-   * Fetch menu data for a specific branch from database (via API)
-   * Menu items are managed manually through admin panel
+   * Fetch and cache the list of all external menus from iiko
+   */
+  async _getExternalMenuList() {
+    const now = Date.now();
+    if (
+      this._externalMenuList &&
+      this._externalMenuListFetchedAt &&
+      now - this._externalMenuListFetchedAt < this.cacheTimeout
+    ) {
+      return this._externalMenuList;
+    }
+
+    const response = await iikoLoyaltyAPI.listExternalMenus();
+    const list = response?.externalMenus || [];
+    this._externalMenuList = list;
+    this._externalMenuListFetchedAt = now;
+    return list;
+  }
+
+  /**
+   * Find the external menu ID that matches the given branch
+   */
+  async _findExternalMenuId(branchId) {
+    const list = await this._getExternalMenuList();
+    const keywords = BRANCH_KEYWORDS[branchId] || [branchId];
+
+    const match = list.find((menu) => {
+      const name = (menu?.name || '').toLowerCase();
+      return keywords.some((kw) => name.includes(kw));
+    });
+
+    if (!match) {
+      throw new Error(`No external menu found for branch: ${branchId}`);
+    }
+
+    return match.id;
+  }
+
+  /**
+   * Fetch menu data for a specific branch from iiko external menu API
    */
   async fetchMenu(branchId) {
     // Check cache first
@@ -31,284 +70,181 @@ class MenuScraper {
       return cached.data;
     }
 
-    try {
-      // Call backend API to fetch menu from database
-      // Backend endpoint: /api/menu/:branchId (public access)
-      const apiUrl = getApiUrl(`menu/${branchId}`);
-      const response = await fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+    const externalMenuId = await this._findExternalMenuId(branchId);
+    // POST /api/2/menu/by_id returns the menu object directly at root (not wrapped in externalMenus)
+    const menuData = await iikoLoyaltyAPI.getExternalMenuById(externalMenuId);
 
-      if (response.ok) {
-        const menuData = await response.json();
-        
-        // Validate that it has items
-        if (menuData.success && menuData.items && menuData.items.length > 0) {
-          // Cache the result
-          this.cache.set(branchId, {
-            data: menuData,
-            timestamp: Date.now()
-          });
-          console.log(`✅ Loaded ${menuData.items.length} items from database for ${branchId}`);
-          return menuData;
-        } else {
-          console.warn(`⚠️ API returned empty menu for ${branchId} (${menuData.items?.length || 0} items)`);
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error(`❌ API error for ${branchId}: ${response.status} ${response.statusText}`, errorData);
-      }
-
-      // If API fails, return fallback menu
-      return this.getFallbackMenu(branchId);
-    } catch (error) {
-      console.error(`Error fetching menu for ${branchId}:`, error);
-      return this.getFallbackMenu(branchId);
+    if (!menuData?.itemCategories) {
+      throw new Error(`External menu data not found in response for branch: ${branchId}`);
     }
-  }
 
-  /**
-   * Get fallback menu structure
-   * This will be replaced with actual scraped data
-   */
-  getFallbackMenu(branchId) {
-    // Return empty structure - will be populated by backend scraping
-    return {
+    const result = {
       branchId,
-      categories: [],
-      items: [],
-      lastUpdated: null
+      categories: menuData.itemCategories?.map((c) => ({ id: c.id, name: c.name })) || [],
+      items: this._flattenItems(menuData.itemCategories || [], branchId),
+      lastUpdated: new Date().toISOString(),
     };
+
+    this.cache.set(branchId, { data: result, timestamp: Date.now() });
+    console.log(`✅ Loaded ${result.items.length} items from iiko external menu for ${branchId}`);
+    return result;
   }
 
   /**
-   * Transform scraped menu data to app format
+   * Flatten itemCategories → items into a single array with category info attached
    */
-  transformMenuData(scrapedData, branchId) {
-    // Transform the scraped data to match our menu item structure
-    return scrapedData.items?.map((item, index) => {
-      // Preserve original category name from backend, but also store normalized ID for filtering
-      const originalCategory = item.category || item.category_name || '';
-      const normalizedCategory = this.mapCategory(originalCategory);
-      
-      // Backend already returns full URLs in /api/menu/:branchId
-      // So we should use them as-is without modification
-      let imageUrl = item.image || item.photo || item.image_url || '';
-      if (imageUrl) {
-        // If backend already returned a full URL (starts with http/https), use it as is
-        if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-          // Backend already converted to full URL, just normalize any double slashes
-          // Replace double slashes but preserve http:// or https://
-          imageUrl = imageUrl.replace(/([^:]\/)\/+/g, '$1');
-        } else if (imageUrl.startsWith('/uploads/')) {
-          // Backend didn't convert (shouldn't happen, but handle it as fallback)
-          // Import getApiUrl dynamically to avoid circular dependency
-          const { getApiUrl } = require('../../config/api');
-          let apiBase = getApiUrl('').replace('/api', ''); // Remove /api suffix
-          // Remove ALL trailing slashes
-          apiBase = apiBase.replace(/\/+$/, '');
-          // Ensure imageUrl has single leading slash
-          const cleanImagePath = imageUrl.replace(/^\/+/, '/');
-          // Combine: base + path (no double slashes)
-          imageUrl = `${apiBase}${cleanImagePath}`;
-          console.warn(`[menuScraper] Backend didn't provide full URL, converted: ${item.image || item.image_url} → ${imageUrl}`);
-        }
-      }
-      
-      return {
-        id: item.id || `${branchId}-${index}`,
-        name: item.name || item.title,
-        description: item.description || '',
-        price: item.price || 0,
-        weight: item.weight || item.size || '',
-        category: normalizedCategory, // Use normalized for filtering
-        categoryName: originalCategory, // Preserve original name for display
-        image: imageUrl,
-        imageAlt: item.imageAlt || `${item.name} from Benedict ${branchId}`,
-        isNew: item.isNew || false,
-        branch: branchId,
-        modifiers: item.modifiers || [],
-        // Extract nutritional info - support both nested and flat structures
-        calories: item.calories || item.nutritionalInfo?.calories || null,
-        proteins: item.proteins || item.nutritionalInfo?.proteins || null,
-        fats: item.fats || item.nutritionalInfo?.fats || null,
-        carbohydrates: item.carbohydrates || item.nutritionalInfo?.carbohydrates || null,
-        nutritionalInfo: item.nutritionalInfo || {
-          calories: item.calories || null,
-          proteins: item.proteins || null,
-          fats: item.fats || null,
-          carbohydrates: item.carbohydrates || null
-        }
-      };
-    }) || [];
+  _flattenItems(itemCategories, branchId) {
+    const items = [];
+    itemCategories.forEach((category) => {
+      (category.items || []).forEach((item, index) => {
+        const size = item.itemSizes?.[0];
+        const price = size?.prices?.[0]?.price ?? 0;
+        const imageUrl =
+          size?.buttonImageUrl ||
+          size?.sectionImageUrl?.[0] ||
+          item.imageLinks?.[0] ||
+          '';
+
+        const nutrition = size?.nutritionPerHundredGrams || {};
+
+        items.push({
+          id: item.sku || `${branchId}-${category.id}-${index}`,
+          name: item.name || '',
+          description: item.description || item.additionalInfo || '',
+          price,
+          weight: size?.portionWeightGrams ? `${size.portionWeightGrams} г` : '',
+          category: this.mapCategory(category.name),
+          categoryName: category.name,
+          image: imageUrl,
+          imageAlt: `${item.name} from Benedict ${branchId}`,
+          isNew: false,
+          branch: branchId,
+          modifiers: this._extractModifiers(size?.modifierGroups || []),
+          calories: nutrition.calories ?? null,
+          proteins: nutrition.proteins ?? null,
+          fats: nutrition.fats ?? null,
+          carbohydrates: nutrition.carbohydrates ?? null,
+          nutritionalInfo: {
+            calories: nutrition.calories ?? null,
+            proteins: nutrition.proteins ?? null,
+            fats: nutrition.fats ?? null,
+            carbohydrates: nutrition.carbohydrates ?? null,
+          },
+        });
+      });
+    });
+    return items;
   }
 
   /**
-   * Map category names to our category IDs
+   * Extract modifiers from iiko modifier groups into app format
+   */
+  _extractModifiers(modifierGroups) {
+    const modifiers = [];
+    modifierGroups.forEach((group) => {
+      (group.items || []).forEach((mod) => {
+        const price = mod.prices?.[0]?.price ?? 0;
+        modifiers.push({
+          id: mod.sku || mod.id,
+          name: mod.name,
+          price,
+        });
+      });
+    });
+    return modifiers;
+  }
+
+  /**
+   * Transform fetched menu data to app format (called by index.jsx)
+   */
+  transformMenuData(fetchedData) {
+    // Data is already transformed in fetchMenu; just return items
+    return fetchedData?.items || [];
+  }
+
+  /**
+   * Map iiko category names to our internal category IDs
    */
   mapCategory(categoryName) {
     if (!categoryName) return 'all';
-    
+
     const categoryMap = {
-      // Breakfast
       'завтрак': 'breakfast',
       'breakfast': 'breakfast',
       'завтраки': 'breakfast',
-      'бенедикт': 'breakfast', // Benedict items moved to breakfast
+      'бенедикт': 'breakfast',
       'benedict': 'breakfast',
-      
-      // Special Breakfast
       'особые завтраки': 'special-breakfast',
       'special-breakfast': 'special-breakfast',
       'special_breakfast': 'special-breakfast',
-      
-      // Salads and Appetizers
       'салаты и закуски': 'salads-appetizers',
       'salads-appetizers': 'salads-appetizers',
-      'salads_appetizers': 'salads-appetizers',
       'салаты': 'salads-appetizers',
       'закуски': 'salads-appetizers',
-      
-      // Alcohol Snacks (only for Nukus)
       'закуски к алкогольным напиткам': 'alcohol-snacks',
       'alcohol-snacks': 'alcohol-snacks',
-      'alcohol_snacks': 'alcohol-snacks',
-      
-      // Additions (only for Nukus)
       'дополнительно': 'additions',
       'additions': 'additions',
       'дополнительно к любому блюду': 'additions',
-      
-      // Meat Set (only for Nukus)
       'сет мясной': 'meat-set',
       'meat-set': 'meat-set',
-      'meat_set': 'meat-set',
-      
-      // Soups
       'супы': 'soups',
       'soups': 'soups',
-      'soup': 'soups',
-      
-      // Healthy Eating
       'правильное питание': 'healthy-eating',
       'healthy-eating': 'healthy-eating',
-      'healthy_eating': 'healthy-eating',
-      
-      // Bruschettas and Sandwiches
       'брускетты и сэндвичи': 'bruschettas-sandwiches',
       'bruschettas-sandwiches': 'bruschettas-sandwiches',
-      'bruschettas_sandwiches': 'bruschettas-sandwiches',
       'сэндвичи': 'bruschettas-sandwiches',
       'брускетты': 'bruschettas-sandwiches',
-      
-      // Main Courses
       'основное': 'main-courses',
       'main-courses': 'main-courses',
-      'main_courses': 'main-courses',
-      'hot_meals': 'main-courses',
       'основные блюда': 'main-courses',
-      
-      // Pasta (used as Гарниры)
+      'обед': 'main-courses',
+      'lunch': 'main-courses',
       'паста': 'pasta',
       'pasta': 'pasta',
       'гарниры': 'pasta',
-      
-      // Pizza
       'пицца': 'pizza',
       'pizza': 'pizza',
-      
-      // Coffee
       'кофе': 'coffee',
       'coffee': 'coffee',
-      
-      // Cold Coffee
       'холодный кофе': 'cold-coffee',
       'cold-coffee': 'cold-coffee',
-      'cold_coffee': 'cold-coffee',
-      'iced-coffee': 'cold-coffee',
-      
-      // Hot Drinks (Айс ТИ)
       'горячие напитки': 'hot-drinks',
       'hot-drinks': 'hot-drinks',
-      'hot_drinks': 'hot-drinks',
       'айс ти': 'hot-drinks',
-      'iced-tea': 'hot-drinks',
-      
-      // Coffee on Alternative Milk
       'кофе на альтернативном молоке': 'coffee-alt-milk',
       'coffee-alt-milk': 'coffee-alt-milk',
-      'coffee_alt_milk': 'coffee-alt-milk',
-      
-      // Pastries
       'выпечка': 'pastries',
       'pastries': 'pastries',
-      'pastry': 'pastries',
-      
-      // Signature Tea
       'авторский чай': 'signature-tea',
       'signature-tea': 'signature-tea',
-      'signature_tea': 'signature-tea',
-      
-      // Leaf Tea
       'листовой чай': 'leaf-tea',
       'leaf-tea': 'leaf-tea',
-      'leaf_tea': 'leaf-tea',
-      'loose-leaf-tea': 'leaf-tea',
-      
-      // Smoothies
       'смузи': 'smoothies',
       'smoothies': 'smoothies',
-      'smoothie': 'smoothies',
-      
-      // Fresh Juices
       'фреши': 'fresh-juices',
       'fresh-juices': 'fresh-juices',
-      'fresh_juices': 'fresh-juices',
       'фреш': 'fresh-juices',
-      
-      // Desserts
       'десерты': 'desserts',
       'desserts': 'desserts',
-      'dessert': 'desserts',
-      
-      // Milkshakes
       'молочные шейки': 'milkshakes',
       'milkshakes': 'milkshakes',
-      'milkshake': 'milkshakes',
-      
-      // Lemonades
       'лимонады': 'lemonades',
       'lemonades': 'lemonades',
-      'lemonade': 'lemonades',
-      
-      // Cocktails
       'коктейли': 'cocktails',
       'cocktails': 'cocktails',
-      'cocktail': 'cocktails',
-      
-      // Drinks (Софты)
       'напитки': 'drinks',
       'drinks': 'drinks',
-      'drink': 'drinks',
       'софты': 'drinks',
-      'soft-drink': 'drinks',
-      
-      // Legacy mappings for backward compatibility
-      'обед': 'main-courses',
-      'lunch': 'main-courses',
-      'sides': 'salads-appetizers',
-      'iced-tea': 'hot-drinks',
-      'fruit-herbal-tea': 'signature-tea',
-      'soft-drink': 'drinks',
-      'pp-desserts': 'desserts',
-      'kids_menu': 'desserts'
+      'домашние настойки': 'tinctures',
+      'tinctures': 'tinctures',
+      'пиво': 'beer',
+      'beer': 'beer',
     };
 
     const normalized = categoryName?.toLowerCase()?.trim();
-    return categoryMap[normalized] || categoryName || 'all';
+    return categoryMap[normalized] || normalized || 'all';
   }
 
   clearCache(branchId) {
@@ -316,9 +252,10 @@ class MenuScraper {
       this.cache.delete(branchId);
     } else {
       this.cache.clear();
+      this._externalMenuList = null;
+      this._externalMenuListFetchedAt = null;
     }
   }
 }
 
 export default new MenuScraper();
-

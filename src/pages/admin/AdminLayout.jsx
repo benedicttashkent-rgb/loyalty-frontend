@@ -94,8 +94,8 @@ const AdminLayout = () => {
   const menuItems = [
     { path: '/admin/dashboard', label: 'Дашборд', icon: 'LayoutDashboard' },
     { path: '/admin/customers', label: 'Клиенты', icon: 'Users' },
-    { path: '/admin/menu-items', label: 'Блюда', icon: 'Utensils' },
-    { path: '/admin/categories', label: 'Категории', icon: 'Folder' },
+    // { path: '/admin/menu-items', label: 'Блюда', icon: 'Utensils' },   // hidden: menu now comes from iiko
+    // { path: '/admin/categories', label: 'Категории', icon: 'Folder' }, // hidden: menu now comes from iiko
     { path: '/admin/news', label: 'Баннеры Новостей', icon: 'Newspaper' },
     { path: '/admin/rewards', label: 'Награды', icon: 'Gift' },
     { path: '/admin/events', label: 'События', icon: 'Calendar' },

@@ -9,6 +9,7 @@ export const iikoLoyaltyConfig = {
   organizationId: import.meta.env?.VITE_IIKO_ORGANIZATION_ID,
   apiLogin: import.meta.env?.VITE_IIKO_API_LOGIN,
 
+
   // API endpoints
   endpoints: {
     // Authentication
@@ -41,6 +42,8 @@ export const iikoLoyaltyConfig = {
       getMenu: '/api/1/nomenclature',
       getCategories: '/api/1/nomenclature/categories',
       getProducts: '/api/1/nomenclature/products',
+      listExternalMenus: '/api/2/menu',
+      getExternalMenu: '/api/2/menu/by_id',
     },
     
     // Rewards
