@@ -6,6 +6,7 @@ import Button from '../../components/ui/Button';
 import Image from '../../components/AppImage';
 import { formatPrice } from '../../utils/formatPrice';
 import { getApiUrl } from '../../config/api';
+import menuScraper from '../../services/menu/menuScraper';
 
 const STORAGE_KEY = 'benedictCheckoutData';
 
@@ -17,6 +18,7 @@ const CheckoutPage = () => {
   const [submitError, setSubmitError] = useState('');
   const [successOpen, setSuccessOpen] = useState(false);
   const [orderResult, setOrderResult] = useState({ orderNumber: '', estimatedTime: '' });
+  const [addOnItems, setAddOnItems] = useState([]);
 
   const menuPath = '/food-ordering-menu';
 
@@ -46,6 +48,35 @@ const CheckoutPage = () => {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
   }, [location.state, location.pathname, navigate, menuPath]);
+
+  // Fetch add-on suggestions from the branch menu (uses cached data if already loaded)
+  useEffect(() => {
+    const branchId = checkoutData?.selectedBranch?.id;
+    if (!branchId) return;
+    menuScraper.fetchMenu(branchId)
+      .then(data => {
+        const items = menuScraper.transformMenuData(data);
+        const additions = items.filter(item => item.category === 'additions').slice(0, 12);
+        setAddOnItems(additions);
+      })
+      .catch(() => {});
+  }, [checkoutData?.selectedBranch?.id]);
+
+  const handleAddAddon = (item) => {
+    setCheckoutData(prev => {
+      const existing = prev.cartItems.find(ci => (ci.cartItemId || ci.id) === item.id);
+      const newCartItems = existing
+        ? prev.cartItems.map(ci =>
+            (ci.cartItemId || ci.id) === item.id
+              ? { ...ci, quantity: ci.quantity + 1 }
+              : ci
+          )
+        : [...prev.cartItems, { ...item, quantity: 1, cartItemId: item.id, selectedModifier: null }];
+      const updated = { ...prev, cartItems: newCartItems };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const handleConfirmOrder = async () => {
     if (!checkoutData || isSubmitting) return;
@@ -234,6 +265,52 @@ const CheckoutPage = () => {
                 ))}
               </div>
             </div>
+
+            {/* Add-ons / Recommendations */}
+            {addOnItems.length > 0 && (
+              <div className="bg-card rounded-2xl border border-border p-4">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                    <Icon name="Sparkles" size={16} className="text-accent" />
+                  </div>
+                  <h2 className="font-semibold text-foreground text-sm">Добавить к заказу</h2>
+                </div>
+                <div
+                  className="flex gap-2.5 overflow-x-auto pb-1"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {addOnItems.map(item => {
+                    const addedQty = checkoutData?.cartItems?.filter(ci => ci.id === item.id).reduce((s, ci) => s + (ci.quantity || 0), 0) || 0;
+                    return (
+                      <div
+                        key={item.id}
+                        className="flex-shrink-0 w-28 bg-muted/60 rounded-xl overflow-hidden border border-border/60 flex flex-col"
+                      >
+                        <div className="w-full h-20 overflow-hidden bg-muted flex-shrink-0">
+                          <Image
+                            src={item.image}
+                            alt={item.imageAlt || item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="p-2 flex flex-col flex-1">
+                          <p className="text-xs font-medium text-foreground leading-tight line-clamp-2 flex-1 mb-1.5">{item.name}</p>
+                          <p className="text-xs font-bold text-primary mb-2">{formatPrice(item.price)}</p>
+                          <button
+                            onClick={() => handleAddAddon(item)}
+                            style={{ touchAction: 'manipulation' }}
+                            className="w-full flex items-center justify-center gap-1 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold transition-all active:scale-95 cursor-pointer"
+                          >
+                            <Icon name="Plus" size={12} />
+                            {addedQty > 0 ? `×${addedQty + 1}` : 'Добавить'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Comments */}
             {hasComments && (

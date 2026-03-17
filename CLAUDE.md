@@ -56,6 +56,18 @@ Heavy use of `localStorage` (no Redux store despite redux being a dependency):
 - `benedictSelectedBranch` — selected branch
 - Cart items — managed in food-ordering page
 
+### Food Ordering Flow
+Cart state lives in `food-ordering-menu/index.jsx` (in-memory, not persisted). Proceeding to checkout navigates to `/checkout` (route → `CheckoutPage.jsx`) passing cart data via `location.state`, with a `sessionStorage` fallback keyed `benedictCheckoutData`. The checkout page is a focused flow with no bottom tab bar.
+
+### Key Libraries
+- `framer-motion` — animations
+- `lucide-react` — icons (used via `AppIcon` wrapper)
+- `recharts` + `d3` — admin charts/analytics
+- `react-hook-form` — forms
+- `axios` — available but most API calls use the custom `apiClient.js`/`adminApiClient.js` fetch wrappers
+- `date-fns` — date formatting
+- `formatPrice` utility at `src/utils/formatPrice.js`
+
 ### Deployment
 - Frontend → Vercel (`vercel.json` rewrites all paths to `/index.html`)
 - Backend → Railway (`https://github.com/azamoviich/loyaltyback.git`)

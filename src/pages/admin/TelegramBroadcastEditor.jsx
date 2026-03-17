@@ -4,7 +4,6 @@ import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
 
 const TelegramBroadcastEditor = () => {
-  const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [sending, setSending] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,7 +24,6 @@ const TelegramBroadcastEditor = () => {
   }, []);
 
   const fetchStats = async () => {
-    setLoading(true);
     try {
       const response = await adminApiRequest('admin/broadcast/stats', {
         method: 'GET',
@@ -39,8 +37,6 @@ const TelegramBroadcastEditor = () => {
       }
     } catch (error) {
       console.error('Fetch stats error:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -164,175 +160,14 @@ const TelegramBroadcastEditor = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Загрузка статистики...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Рассылки через Telegram</h1>
-          <p className="text-muted-foreground mt-1">
-            Отправка сообщений клиентам через Telegram бот
-          </p>
-        </div>
-        <button
-          onClick={fetchStats}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
-        >
-          <Icon name="RefreshCw" size={18} />
-          Обновить статистику
-        </button>
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Рассылки через Telegram</h1>
+        <p className="text-muted-foreground mt-1">
+          Отправка сообщений клиентам через Telegram бот
+        </p>
       </div>
-
-      {/* Statistics */}
-      {stats && (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-card border border-border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Всего клиентов</span>
-                <Icon name="Users" size={20} className="text-muted-foreground" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">{stats.totalCustomers}</p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">С Telegram</span>
-                <Icon name="MessageCircle" size={20} className="text-primary" />
-              </div>
-              <p className="text-2xl font-bold text-primary">{stats.telegramCustomers}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.percentage}% от общего числа
-              </p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Без Telegram</span>
-                <Icon name="UserX" size={20} className="text-muted-foreground" />
-              </div>
-              <p className="text-2xl font-bold text-muted-foreground">{stats.withoutTelegram}</p>
-            </div>
-
-            <div className="bg-card border border-border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Статус бота</span>
-                {stats.botConfigured ? (
-                  <Icon name="CheckCircle" size={20} className="text-green-500" />
-                ) : (
-                  <Icon name="XCircle" size={20} className="text-red-500" />
-                )}
-              </div>
-              <p className={`text-lg font-semibold ${stats.botConfigured ? 'text-green-500' : 'text-red-500'}`}>
-                {stats.botConfigured ? 'Настроен' : 'Не настроен'}
-              </p>
-              {stats.botInfo && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  @{stats.botInfo.username}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Visit Frequency Statistics */}
-          {stats.visitFrequency && (
-            <div className="bg-card border border-border rounded-lg p-4">
-              <h3 className="font-semibold text-foreground mb-3">Частота посещений</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <span className="text-sm text-muted-foreground">Каждую неделю</span>
-                  <p className="text-xl font-bold text-foreground">{stats.visitFrequency.weekly || 0}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-muted-foreground">Раз в месяц</span>
-                  <p className="text-xl font-bold text-foreground">{stats.visitFrequency.monthly || 0}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-muted-foreground">Меньше</span>
-                  <p className="text-xl font-bold text-foreground">{stats.visitFrequency.less || 0}</p>
-                </div>
-                <div>
-                  <span className="text-sm text-muted-foreground">Не вернулись</span>
-                  <p className="text-xl font-bold text-foreground">{stats.visitFrequency.never || 0}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {!stats?.botConfigured && (
-        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <Icon name="AlertTriangle" size={24} className="text-yellow-500 mt-0.5" />
-            <div>
-              <h3 className="font-semibold text-foreground mb-1">Telegram бот не настроен</h3>
-              <p className="text-sm text-muted-foreground">
-                Для отправки рассылок необходимо настроить Telegram бот. Убедитесь, что в переменных окружения указан TELEGRAM_BOT_TOKEN.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Info: Why customers don't have telegram_chat_id */}
-      {stats?.botConfigured && stats?.withoutTelegram > 0 && (
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <Icon name="Info" size={24} className="text-blue-500 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-foreground mb-2">Почему у клиентов нет Telegram Chat ID?</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Клиенты получают <code className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">telegram_chat_id</code> только когда они открывают приложение через Telegram бот. 
-                Если клиент зарегистрировался через обычный браузер, у него не будет Chat ID до тех пор, пока он не откроет приложение через бот.
-              </p>
-              <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-                <p className="text-sm font-medium text-foreground">Как клиенты могут подключить Telegram:</p>
-                <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                  <li>Открыть Telegram бот: {stats.botInfo?.username ? (
-                    <a 
-                      href={`https://t.me/${stats.botInfo.username}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline font-mono"
-                    >
-                      @{stats.botInfo.username}
-                    </a>
-                  ) : 'бот не найден'}</li>
-                  <li>Нажать кнопку "Открыть приложение" или перейти по ссылке бота</li>
-                  <li>Войти в приложение через Telegram Web App</li>
-                  <li>Chat ID будет автоматически сохранен при первом открытии</li>
-                </ol>
-              </div>
-              {stats.botInfo?.username && (
-                <div className="mt-3">
-                  <a
-                    href={`https://t.me/${stats.botInfo.username}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
-                  >
-                    <Icon name="ExternalLink" size={16} />
-                    Открыть бота в Telegram
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Last Result */}
       {lastResult && (
