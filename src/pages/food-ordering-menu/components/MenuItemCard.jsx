@@ -1,25 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Image from '../../../components/AppImage';
 import Icon from '../../../components/AppIcon';
 import { formatPrice } from '../../../utils/formatPrice';
 
 const MenuItemCard = ({ item, onAddToCart, cartQuantity, onItemClick }) => {
-  const [quantity, setQuantity] = useState(1);
-
-  const handleIncrement = (e) => {
-    e.stopPropagation();
-    setQuantity(prev => prev + 1);
-  };
-
-  const handleDecrement = (e) => {
-    e.stopPropagation();
-    if (quantity > 1) setQuantity(prev => prev - 1);
-  };
-
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    onAddToCart(item, quantity, null);
-    setQuantity(1);
+    onAddToCart(item, 1, null);
   };
 
   const cleanDescription = item?.description
@@ -70,42 +57,23 @@ const MenuItemCard = ({ item, onAddToCart, cartQuantity, onItemClick }) => {
             )}
           </div>
 
-          {/* Price + Controls */}
-          <div className="flex items-center justify-between mt-2 gap-2">
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm font-bold text-foreground">{formatPrice(item?.price)}</span>
+          {/* Price + Add button */}
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-baseline gap-1 min-w-0 mr-2">
+              <span className="text-sm font-bold text-foreground whitespace-nowrap">{formatPrice(item?.price)}</span>
               {item?.weight && (
-                <span className="text-xs text-muted-foreground">{item?.weight}</span>
+                <span className="text-xs text-muted-foreground truncate">{item?.weight}</span>
               )}
             </div>
 
-            <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-              <button
-                onClick={handleDecrement}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer select-none"
-                style={{ touchAction: 'manipulation' }}
-                aria-label="Уменьшить количество"
-              >
-                <Icon name="Minus" size={13} />
-              </button>
-              <span className="text-sm font-semibold min-w-[20px] text-center select-none">{quantity}</span>
-              <button
-                onClick={handleIncrement}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer select-none"
-                style={{ touchAction: 'manipulation' }}
-                aria-label="Увеличить количество"
-              >
-                <Icon name="Plus" size={13} />
-              </button>
-              <button
-                onClick={handleAddToCart}
-                className="h-9 px-3 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-semibold transition-all duration-200 hover:bg-primary/90 active:scale-95 ml-0.5 whitespace-nowrap cursor-pointer select-none"
-                style={{ touchAction: 'manipulation' }}
-                aria-label="Добавить в корзину"
-              >
-                В корзину
-              </button>
-            </div>
+            <button
+              onClick={handleAddToCart}
+              style={{ touchAction: 'manipulation' }}
+              className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-primary text-primary-foreground transition-all duration-200 hover:bg-primary/90 active:scale-95 cursor-pointer select-none"
+              aria-label="Добавить в корзину"
+            >
+              <Icon name="Plus" size={16} />
+            </button>
           </div>
         </div>
       </div>
