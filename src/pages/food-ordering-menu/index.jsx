@@ -409,10 +409,7 @@ const FoodOrderingMenu = () => {
 
   const handleProceedToCheckout = (comments) => {
     if (orderType === 'takeaway' && !selectedBranch) return;
-    if (orderType === 'delivery' && !deliveryAddress?.address) {
-      alert('Пожалуйста, укажите адрес доставки');
-      return;
-    }
+    if (orderType === 'delivery' && !deliveryAddress?.address) return;
     const mergedComments = { ...itemComments, ...comments };
     setIsCartModalOpen(false);
     navigate('/checkout', {
@@ -474,10 +471,11 @@ const FoodOrderingMenu = () => {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full bg-muted hover:bg-muted/70 transition-colors cursor-pointer"
                 aria-label="Очистить поиск"
               >
-                <Icon name="X" size={12} />
+                <Icon name="X" size={13} />
               </button>
             )}
           </div>
@@ -525,7 +523,16 @@ const FoodOrderingMenu = () => {
                       <Icon name="Search" size={22} className="text-muted-foreground/60" />
                     </div>
                     <p className="text-sm font-medium text-foreground mb-1">Ничего не найдено</p>
-                    <p className="text-xs text-muted-foreground">Попробуйте другой запрос или категорию</p>
+                    <p className="text-xs text-muted-foreground mb-3">Попробуйте другой запрос или категорию</p>
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery('')}
+                        style={{ touchAction: 'manipulation' }}
+                        className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer"
+                      >
+                        Сбросить поиск
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -537,7 +544,15 @@ const FoodOrderingMenu = () => {
               <Icon name="Store" size={28} className="text-muted-foreground/60" />
             </div>
             <p className="text-base font-semibold text-foreground mb-1">Выберите филиал</p>
-            <p className="text-sm text-muted-foreground">Выберите ближайший филиал, чтобы увидеть меню</p>
+            <p className="text-sm text-muted-foreground mb-5">Выберите ближайший филиал, чтобы увидеть меню</p>
+            <button
+              onClick={() => setIsBranchModalOpen(true)}
+              style={{ touchAction: 'manipulation' }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold transition-all duration-200 hover:bg-primary/90 active:scale-95 cursor-pointer"
+            >
+              <Icon name="MapPin" size={15} />
+              Выбрать филиал
+            </button>
           </div>
         )}
       </div>

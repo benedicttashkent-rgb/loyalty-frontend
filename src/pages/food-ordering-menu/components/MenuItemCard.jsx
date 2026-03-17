@@ -31,16 +31,21 @@ const MenuItemCard = ({ item, onAddToCart, cartQuantity, onItemClick }) => {
 
   return (
     <div
-      className="bg-card rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md active:scale-[0.99] border border-border/60 hover:border-accent/30"
+      className={`bg-card rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md active:scale-[0.99] border ${
+        cartQuantity > 0
+          ? 'border-primary/40 shadow-sm'
+          : 'border-border/60 hover:border-accent/30'
+      }`}
       onClick={() => onItemClick?.(item)}
     >
       <div className="flex gap-3 p-3">
         {/* Image */}
-        <div className="relative w-[88px] h-[88px] rounded-xl overflow-hidden flex-shrink-0 bg-muted">
+        <div className="relative w-[88px] h-[88px] rounded-xl overflow-hidden flex-shrink-0 bg-muted flex items-center justify-center">
+          <Icon name="UtensilsCrossed" size={26} className="text-muted-foreground/25" />
           <Image
             src={item?.image}
             alt={item?.imageAlt || item?.name}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
           {item?.isNew && (
             <span className="absolute top-1.5 left-1.5 bg-accent text-white text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full">
