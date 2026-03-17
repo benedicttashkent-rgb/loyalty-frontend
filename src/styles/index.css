@@ -11,6 +11,11 @@ body {
   margin: unset;
 }
 
+/* Prevent iOS Safari auto-zoom on input focus (triggered when font-size < 16px) */
+input, textarea, select {
+  font-size: max(16px, 1em);
+}
+
 .logo-loader-bar {
   width: 4px;
   border-radius: 3px;
