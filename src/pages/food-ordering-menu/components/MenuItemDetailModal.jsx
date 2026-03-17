@@ -65,20 +65,20 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
       className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50"
       onClick={onClose}
     >
+      {/* Sheet container — flex column, fixed max height, no overflow here */}
       <div
-        className="bg-card w-full sm:max-w-lg sm:mx-4 sm:rounded-2xl rounded-t-2xl max-h-[92vh] overflow-y-auto shadow-2xl animate-slide-up"
-        style={{ overscrollBehavior: 'contain' }}
+        className="bg-card w-full sm:max-w-lg sm:mx-4 sm:rounded-2xl rounded-t-2xl flex flex-col shadow-2xl animate-slide-up"
+        style={{ maxHeight: '92dvh', overscrollBehavior: 'contain' }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Image header */}
-        <div className="relative h-56 overflow-hidden sm:rounded-t-2xl rounded-t-2xl flex-shrink-0">
+        {/* ── Fixed image header ── */}
+        <div className="relative h-52 flex-shrink-0 overflow-hidden sm:rounded-t-2xl rounded-t-2xl">
           <Image
             src={item?.image}
             alt={item?.imageAlt || item?.name}
             className="w-full h-full object-cover"
           />
-          {/* Gradient overlay at bottom */}
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
           <button
             onClick={onClose}
             className="absolute top-3 right-3 w-9 h-9 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors cursor-pointer"
@@ -98,88 +98,92 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
           )}
         </div>
 
-        {/* Content */}
-        <div className="p-5 space-y-4">
-          {/* Name + price */}
-          <div className="flex items-start justify-between gap-3">
-            <h2 className="text-xl font-bold text-foreground leading-tight flex-1">{item?.name}</h2>
-            <span className="text-xl font-bold text-primary whitespace-nowrap">{formatPrice(item?.price)}</span>
+        {/* ── Scrollable content ── */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="p-5 space-y-4">
+            {/* Name + price */}
+            <div className="flex items-start justify-between gap-3">
+              <h2 className="text-xl font-bold text-foreground leading-tight flex-1">{item?.name}</h2>
+              <span className="text-xl font-bold text-primary whitespace-nowrap">{formatPrice(item?.price)}</span>
+            </div>
+
+            {/* Description */}
+            {cleanDescription && (
+              <p className="text-sm text-muted-foreground leading-relaxed">{cleanDescription}</p>
+            )}
+
+            {/* Nutritional info */}
+            {hasNutritionalInfo && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">КБЖУ</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { label: 'Ккал', value: calories },
+                    { label: 'Белки', value: proteins },
+                    { label: 'Жиры', value: fats },
+                    { label: 'Углев.', value: carbohydrates },
+                  ].filter(n => n.value).map(({ label, value }) => (
+                    <div key={label} className="bg-muted rounded-xl p-2.5 text-center">
+                      <div className="text-xs text-muted-foreground mb-0.5">{label}</div>
+                      <div className="text-sm font-bold text-foreground">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Modifiers */}
+            {hasModifiers && (
+              <div>
+                <p className="text-sm font-semibold text-foreground mb-2">Выберите вариант</p>
+                <div className="flex flex-wrap gap-2">
+                  {modifiers.map((modifier) => (
+                    <button
+                      key={modifier.id}
+                      onClick={() => {
+                        setSelectedModifierId(modifier.id);
+                        setModifierError('');
+                      }}
+                      className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border ${
+                        selectedModifierId === modifier.id
+                          ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                          : 'bg-card text-foreground border-border hover:border-primary/40'
+                      }`}
+                    >
+                      <span>{modifier.name}</span>
+                      {modifier.price > 0 && (
+                        <span className={`text-xs ${selectedModifierId === modifier.id ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+                          +{formatPrice(modifier.price)}
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {modifierError && (
+                  <p className="text-xs text-destructive mt-2">{modifierError}</p>
+                )}
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Description */}
-          {cleanDescription && (
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {cleanDescription}
-            </p>
-          )}
-
-          {/* Nutritional info */}
-          {hasNutritionalInfo && (
-            <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">КБЖУ</p>
-              <div className="grid grid-cols-4 gap-2">
-                {[
-                  { label: 'Ккал', value: calories },
-                  { label: 'Белки', value: proteins },
-                  { label: 'Жиры', value: fats },
-                  { label: 'Углев.', value: carbohydrates },
-                ].filter(n => n.value).map(({ label, value }) => (
-                  <div key={label} className="bg-muted rounded-xl p-2.5 text-center">
-                    <div className="text-xs text-muted-foreground mb-0.5">{label}</div>
-                    <div className="text-sm font-bold text-foreground">{value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Modifiers */}
-          {hasModifiers && (
-            <div>
-              <p className="text-sm font-semibold text-foreground mb-2">Выберите вариант</p>
-              <div className="flex flex-wrap gap-2">
-                {modifiers.map((modifier) => (
-                  <button
-                    key={modifier.id}
-                    onClick={() => {
-                      setSelectedModifierId(modifier.id);
-                      setModifierError('');
-                    }}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer border ${
-                      selectedModifierId === modifier.id
-                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                        : 'bg-card text-foreground border-border hover:border-primary/40'
-                    }`}
-                  >
-                    <span>{modifier.name}</span>
-                    {modifier.price > 0 && (
-                      <span className={`text-xs ${selectedModifierId === modifier.id ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-                        +{formatPrice(modifier.price)}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-              {modifierError && (
-                <p className="text-xs text-destructive mt-2">{modifierError}</p>
-              )}
-            </div>
-          )}
-
-          {/* Qty + Add */}
-          <div className="flex items-center gap-3 pt-1">
+        {/* ── Sticky footer — always visible ── */}
+        <div className="flex-shrink-0 px-5 pt-3 pb-5 border-t border-border bg-card">
+          <div className="flex items-center gap-3">
             <div className="flex items-center bg-muted rounded-xl overflow-hidden">
               <button
                 onClick={handleDecrement}
-                className="w-11 h-11 flex items-center justify-center hover:bg-muted/70 transition-colors cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
+                className="w-11 h-11 flex items-center justify-center hover:bg-muted/70 transition-colors cursor-pointer select-none"
                 aria-label="Уменьшить количество"
               >
                 <Icon name="Minus" size={16} />
               </button>
-              <span className="w-10 text-center text-base font-semibold">{quantity}</span>
+              <span className="w-10 text-center text-base font-semibold select-none">{quantity}</span>
               <button
                 onClick={handleIncrement}
-                className="w-11 h-11 flex items-center justify-center hover:bg-muted/70 transition-colors cursor-pointer"
+                style={{ touchAction: 'manipulation' }}
+                className="w-11 h-11 flex items-center justify-center hover:bg-muted/70 transition-colors cursor-pointer select-none"
                 aria-label="Увеличить количество"
               >
                 <Icon name="Plus" size={16} />
