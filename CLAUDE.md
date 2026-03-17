@@ -17,7 +17,12 @@ No test runner is configured — `@testing-library` packages are installed but t
 This is a React 18 + Vite SPA (loyalty/food-ordering app for Benedict Cafe) styled with Tailwind CSS. JavaScript only (no TypeScript), with path aliases rooted at `src/` via `jsconfig.json`.
 
 ### Routing (`src/Routes.jsx`)
-11 public routes + 7 admin routes, all defined in one file. The admin section (`/admin/*`) has its own auth flow and layout (`AdminLayout.jsx`).
+11 public routes + 8 admin routes (including `/admin/login`), all defined in one file. The admin section (`/admin/*`) uses `AdminLayout.jsx` as a nested layout. Every route transition shows a `LogoLoader` fullscreen overlay for 500ms.
+
+### Shared Components (`src/components/`)
+- `navigation/` — `BottomTabNavigation`, `FloatingCartButton`, `ProfileButton`, `PromotionsModal`, `ModalOverlay`, `BrandLogo`
+- `ui/` — primitive form controls: `Button`, `Input`, `Select`, `Checkbox`
+- `AppIcon`, `AppImage`, `LogoLoader`, `ErrorBoundary`, `ScrollToTop`
 
 ### Pages (`src/pages/`)
 Feature-based folders, each containing all components for that feature. Main sections: `home-dashboard`, `food-ordering-menu`, `user-profile-management`, `rewards-catalog`, `promotions-page`, `about-branch-locations`, `admin/`, `signup/`.

@@ -99,7 +99,7 @@ const MenuItemDetailModal = ({ item, isOpen, onClose, onAddToCart }) => {
         </div>
 
         {/* ── Scrollable content ── */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
           <div className="p-5 space-y-4">
             {/* Name + price */}
             <div className="flex items-start justify-between gap-3">
