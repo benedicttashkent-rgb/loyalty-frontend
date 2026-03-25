@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/multicard/:path*",
+      "destination": "https://dev-mesh.multicard.uz/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
