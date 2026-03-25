@@ -7,6 +7,7 @@ import Image from '../../components/AppImage';
 import { formatPrice } from '../../utils/formatPrice';
 import { getApiUrl } from '../../config/api';
 import menuScraper from '../../services/menu/menuScraper';
+import multicardService from '../../services/payment/multicardService';
 
 const STORAGE_KEY = 'benedictCheckoutData';
 
@@ -19,6 +20,7 @@ const CheckoutPage = () => {
   const [successOpen, setSuccessOpen] = useState(false);
   const [orderResult, setOrderResult] = useState({ orderNumber: '', estimatedTime: '' });
   const [addOnItems, setAddOnItems] = useState([]);
+  const [paymentMethod, setPaymentMethod] = useState('cash'); // 'cash' | 'online'
 
   const menuPath = '/food-ordering-menu';
 
@@ -132,6 +134,7 @@ const CheckoutPage = () => {
         comments: itemComments,
         customerPhone,
         customerName,
+        paymentMethod,
         ...(orderType === 'delivery' && deliveryAddress ? { deliveryAddress: deliveryAddress.address, deliveryDetails: deliveryAddress.details } : {})
       };
 
@@ -164,6 +167,18 @@ const CheckoutPage = () => {
         deliveryAddress: deliveryAddress?.address || null
       };
       localStorage.setItem('benedictOrderDetails', JSON.stringify(newOrderDetails));
+
+      // TEST: call Multicard directly from frontend (move to backend for production)
+      if (paymentMethod === 'online') {
+        const checkoutUrl = await multicardService.createInvoice({
+          invoiceId: orderNumber,
+          amountUzs: totalAmount,
+          returnUrl: `${window.location.origin}/payment/return?result=success`,
+          returnErrorUrl: `${window.location.origin}/payment/return?result=error`,
+        });
+        window.location.href = checkoutUrl;
+        return;
+      }
 
       setOrderResult({ orderNumber, estimatedTime });
       setSuccessOpen(true);
@@ -347,6 +362,46 @@ const CheckoutPage = () => {
                 <span className="text-xl font-bold text-foreground">{formatPrice(totalAmount)}</span>
               </div>
             </div>
+
+            {/* Payment method */}
+            <div className="bg-card rounded-2xl border border-border p-4">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Icon name="CreditCard" size={16} className="text-primary" />
+                </div>
+                <h2 className="font-semibold text-foreground text-sm">Способ оплаты</h2>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setPaymentMethod('cash')}
+                  style={{ touchAction: 'manipulation' }}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                    paymentMethod === 'cash'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border bg-muted/30'
+                  }`}
+                >
+                  <Icon name="Banknote" size={20} className={paymentMethod === 'cash' ? 'text-primary' : 'text-muted-foreground'} />
+                  <span className={`text-xs font-medium ${paymentMethod === 'cash' ? 'text-primary' : 'text-muted-foreground'}`}>
+                    При получении
+                  </span>
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('online')}
+                  style={{ touchAction: 'manipulation' }}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all cursor-pointer ${
+                    paymentMethod === 'online'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border bg-muted/30'
+                  }`}
+                >
+                  <Icon name="Smartphone" size={20} className={paymentMethod === 'online' ? 'text-primary' : 'text-muted-foreground'} />
+                  <span className={`text-xs font-medium ${paymentMethod === 'online' ? 'text-primary' : 'text-muted-foreground'}`}>
+                    Онлайн
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -376,9 +431,12 @@ const CheckoutPage = () => {
             {isSubmitting ? (
               <span className="flex items-center gap-2">
                 <Icon name="Loader2" size={16} className="animate-spin" />
-                Отправка...
+                {paymentMethod === 'online' ? 'Переход к оплате...' : 'Отправка...'}
               </span>
-            ) : `Подтвердить · ${formatPrice(totalAmount)}`}
+            ) : paymentMethod === 'online'
+              ? `Оплатить онлайн · ${formatPrice(totalAmount)}`
+              : `Подтвердить · ${formatPrice(totalAmount)}`
+            }
           </Button>
         </div>
       </div>

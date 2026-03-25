@@ -22,6 +22,7 @@ import TelegramBroadcastEditor from './pages/admin/TelegramBroadcastEditor';
 import MenuItemsEditor from './pages/admin/MenuItemsEditor';
 import CategoriesEditor from './pages/admin/CategoriesEditor';
 import TelegramTest from './pages/telegram-test';
+import PaymentReturn from './pages/payment-return';
 import LogoLoader from './components/LogoLoader';
 
 const AppRoutes = () => {
@@ -56,6 +57,7 @@ const AppRoutes = () => {
         <Route path="/telegram-test" element={<TelegramTest />} />
         <Route path="/food-ordering-menu" element={<FoodOrderingMenu />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/payment/return" element={<PaymentReturn />} />
         <Route path="/about-branch-locations" element={<AboutBranchLocations />} />
         <Route path="/user-profile-management" element={<UserProfileManagement />} />
         <Route path="/rewards-catalog" element={<RewardsCatalog />} />

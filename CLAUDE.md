@@ -17,7 +17,7 @@ No test runner is configured — `@testing-library` packages are installed but t
 This is a React 18 + Vite SPA (loyalty/food-ordering app for Benedict Cafe) styled with Tailwind CSS. JavaScript only (no TypeScript), with path aliases rooted at `src/` via `jsconfig.json`.
 
 ### Routing (`src/Routes.jsx`)
-11 public routes + 8 admin routes (including `/admin/login`), all defined in one file. The admin section (`/admin/*`) uses `AdminLayout.jsx` as a nested layout. Every route transition shows a `LogoLoader` fullscreen overlay for 500ms.
+11 public routes + 10 admin routes (including `/admin/login`), all defined in one file. Admin routes include: dashboard, customers, news, menu-items, categories, rewards, events, broadcast. The admin section (`/admin/*`) uses `AdminLayout.jsx` as a nested layout. Every route transition shows a `LogoLoader` fullscreen overlay for 500ms.
 
 ### Shared Components (`src/components/`)
 - `navigation/` — `BottomTabNavigation`, `FloatingCartButton`, `ProfileButton`, `PromotionsModal`, `ModalOverlay`, `BrandLogo`
@@ -29,15 +29,20 @@ Feature-based folders, each containing all components for that feature. Main sec
 
 ### Services (`src/services/`)
 Business logic lives here, separated by domain:
-- `menu/menuService.js` — fetches and caches menu data (5-min TTL), wraps `menuFetcher.js` and `menuScraper.js`
+- `menu/menuService.js` — fetches and caches menu data (5-min TTL), wraps `menuFetcher.js` and `menuScraper.js`. **Important:** pages (`food-ordering-menu/index.jsx`, `CheckoutPage.jsx`) import `menuScraper` directly and bypass this cache wrapper.
 - `auth/tokenRefreshService.js` — auto-refreshes JWT tokens (hourly + on tab visibility change, 7-day threshold)
 - `auth/telegramService.js` — extracts Telegram WebApp `initDataUnsafe` chat ID for mobile auth
-- `loyalty/loyaltyService.js`, `rewards/rewardService.js`, `orders/orderService.js`
+- `auth/smsService.js` — SMS-based auth
+- `loyalty/loyaltyService.js`, `rewards/rewardService.js` — loyalty/reward operations
+- `orders/orderService.js` — class-based service wrapping `iikoLoyaltyAPI`. **Not used in the checkout flow** — `CheckoutPage.jsx` submits orders via `fetch(getApiUrl('orders/takeaway|delivery'))` directly.
 - `api/iikoLoyaltyAPI.js` — direct iiko POS API integration
 - `api/geminiAI.js` — Google Gemini AI integration
 
+### Models (`src/models/`)
+- `iikoLoyalty.types.js` — validation helpers (`validateOrder`, `transformOrderToAPI`) used only by `orderService.js`.
+
 ### Utils (`src/utils/`)
-- `apiClient.js` — fetch-based wrapper for public API calls
+- `apiClient.js` — fetch-based wrapper for public API calls. Many pages (including `CheckoutPage.jsx`) bypass this and call `fetch(getApiUrl(...))` directly.
 - `adminApiClient.js` — fetch-based wrapper for admin API calls (different auth)
 - `cn.js` — `clsx` + `tailwind-merge` helper for className composition
 
