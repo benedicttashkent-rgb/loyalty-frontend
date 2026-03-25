@@ -18,6 +18,12 @@ export default defineConfig({
     strictPort: false,
     allowedHosts: ['.amazonaws.com', '.builtwithrocket.new'],
     proxy: {
+      '/multicard': {
+        target: 'https://dev-mesh.multicard.uz',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/multicard/, ''),
+      },
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,

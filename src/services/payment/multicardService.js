@@ -14,7 +14,9 @@
  * Test card:  8600533364098829  expiry: 06/28  OTP: 112233
  */
 
-const BASE_URL = 'https://dev-mesh.multicard.uz';
+// In dev, requests go through Vite proxy (/multicard → https://dev-mesh.multicard.uz)
+// In production, move this logic to the backend entirely
+const BASE_URL = import.meta.env.DEV ? '/multicard' : 'https://dev-mesh.multicard.uz';
 const APPLICATION_ID = 'rhmt_test';
 const SECRET = 'Pw18axeBFo8V7NamKHXX';
 const STORE_ID = '6';
