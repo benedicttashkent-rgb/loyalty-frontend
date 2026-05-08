@@ -448,6 +448,12 @@ const FoodOrderingMenu = () => {
         <p className="mt-2 text-gray-500 text-center max-w-xs text-sm">
           Онлайн-заказ временно недоступен. Мы работаем над этим — совсем скоро всё будет готово!
         </p>
+        <button
+          onClick={() => navigate('/')}
+          className="mt-8 px-6 py-3 bg-gray-900 text-white rounded-2xl text-sm font-medium active:scale-95 transition-transform"
+        >
+          Вернуться на главную
+        </button>
       </div>
       <div className="main-content max-w-md mx-auto">
         <div className="mb-6">
