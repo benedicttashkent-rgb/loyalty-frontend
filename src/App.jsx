@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Routes from "./Routes";
 import tokenRefreshService from "./services/auth/tokenRefreshService";
 import OrderStatusButton from "./pages/food-ordering-menu/components/OrderStatusButton";
@@ -113,65 +113,74 @@ function App() {
     }
   };
 
+  const statusIntervalRef = useRef(null);
+  const orderNumberRef = useRef(orderDetails.orderNumber);
+
+  // Keep ref in sync so the interval callback always has the latest orderNumber
+  useEffect(() => {
+    orderNumberRef.current = orderDetails.orderNumber;
+  }, [orderDetails.orderNumber]);
+
   useEffect(() => {
     // Start automatic token refresh service on app mount
     const cleanup = tokenRefreshService.start();
-    
-    // Listen for order updates from localStorage (when order is placed on order page)
+
+    // Cross-tab sync via storage event — no API call, just state update
     const handleStorageChange = (e) => {
       if (e.key === 'benedictOrderDetails') {
         try {
-          const newOrder = e.newValue ? JSON.parse(e.newValue) : { orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null };
+          const newOrder = e.newValue
+            ? JSON.parse(e.newValue)
+            : { orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null };
           setOrderDetails(newOrder);
-          // Check status when order is loaded
-          if (newOrder.orderNumber) {
-            checkOrderStatus(newOrder.orderNumber);
-          }
         } catch (error) {
           console.error('Error parsing order details:', error);
         }
       }
     };
-
-    // Listen for storage events (when localStorage changes in other tabs/components)
     window.addEventListener('storage', handleStorageChange);
-    
-    // Check order status periodically if order exists
-    const statusCheckInterval = orderDetails?.orderNumber ? setInterval(() => {
-      checkOrderStatus(orderDetails.orderNumber);
-    }, 5000) : null; // Check every 5 seconds
-    
-    // Also check localStorage periodically (for same-tab updates)
+
+    // Same-tab localStorage poll — only syncs state, never calls API
     const checkInterval = setInterval(() => {
       try {
         const saved = localStorage.getItem('benedictOrderDetails');
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed.orderNumber && parsed.orderNumber !== orderDetails.orderNumber) {
+          if (parsed.orderNumber && parsed.orderNumber !== orderNumberRef.current) {
             setOrderDetails(parsed);
-            checkOrderStatus(parsed.orderNumber);
           }
-        } else if (orderDetails.orderNumber) {
-          // Order was cleared
+        } else if (orderNumberRef.current) {
           setOrderDetails({ orderNumber: '', estimatedTime: '', branch: null, comments: {}, status: null });
         }
-      } catch (error) {
+      } catch {
         // Ignore parsing errors
       }
-    }, 500); // Check every 500ms for immediate updates
+    }, 500);
 
-    // Initial status check if order exists
-    if (orderDetails?.orderNumber) {
-      checkOrderStatus(orderDetails.orderNumber);
-    }
-    
-    // Cleanup on unmount
     return () => {
       tokenRefreshService.stop();
       if (cleanup) cleanup();
       window.removeEventListener('storage', handleStorageChange);
-      if (statusCheckInterval) clearInterval(statusCheckInterval);
       clearInterval(checkInterval);
+    };
+  }, []); // runs once on mount
+
+  // Separate effect for API polling — recreates interval only when orderNumber changes
+  useEffect(() => {
+    if (statusIntervalRef.current) clearInterval(statusIntervalRef.current);
+
+    if (!orderDetails.orderNumber) return;
+
+    // Initial check immediately
+    checkOrderStatus(orderDetails.orderNumber);
+
+    // Poll every 15s instead of 5s — reduces backend load by 3×
+    statusIntervalRef.current = setInterval(() => {
+      checkOrderStatus(orderDetails.orderNumber);
+    }, 15000);
+
+    return () => {
+      if (statusIntervalRef.current) clearInterval(statusIntervalRef.current);
     };
   }, [orderDetails.orderNumber]);
 

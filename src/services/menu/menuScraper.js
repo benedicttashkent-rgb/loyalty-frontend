@@ -17,7 +17,15 @@ class MenuScraper {
     if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
       return cached.data;
     }
+    // Deduplicate concurrent fetches for the same branch
+    if (cached?.promise) return cached.promise;
 
+    const promise = this._doFetch(branchId);
+    this.cache.set(branchId, { ...(cached || {}), promise });
+    return promise;
+  }
+
+  async _doFetch(branchId) {
     const response = await fetch(getApiUrl(`menu/iiko/${branchId}`), {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -41,7 +49,6 @@ class MenuScraper {
     };
 
     this.cache.set(branchId, { data: result, timestamp: Date.now() });
-    console.log(`✅ Loaded ${data.items.length} items from iiko for ${branchId}`);
     return result;
   }
 
