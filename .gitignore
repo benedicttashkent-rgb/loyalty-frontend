@@ -11,3 +11,5 @@ vite.config.*s.*
 .env.production
 *.log
 dist/
+
+\

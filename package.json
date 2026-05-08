@@ -13,7 +13,7 @@
     ],
     "devDependencies": [
       "@vitejs/plugin-react",
-      "vite",
+      "vite", 
       "vite-tsconfig-paths",
       "tailwindcss",
       "autoprefixer",

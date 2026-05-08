@@ -435,7 +435,20 @@ const FoodOrderingMenu = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Under Development Overlay */}
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm pointer-events-auto select-none">
+        <img
+          src="/Gemini_Generated_Image_awa0o0awa0o0awa0-removebg-preview.png"
+          alt="Under Development"
+          className="w-64 h-auto drop-shadow-lg"
+          draggable={false}
+        />
+        <h1 className="mt-6 text-2xl font-bold text-gray-800 tracking-tight">Скоро открытие!</h1>
+        <p className="mt-2 text-gray-500 text-center max-w-xs text-sm">
+          Онлайн-заказ временно недоступен. Мы работаем над этим — совсем скоро всё будет готово!
+        </p>
+      </div>
       <div className="main-content max-w-md mx-auto">
         <div className="mb-6">
           <BrandLogo />
