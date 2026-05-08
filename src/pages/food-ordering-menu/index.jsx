@@ -439,7 +439,7 @@ const FoodOrderingMenu = () => {
       {/* Under Development Overlay */}
       <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm pointer-events-auto select-none">
         <img
-          src="/Gemini_Generated_Image_awa0o0awa0o0awa0-removebg-preview.png"
+          src="/mascot-dev.webp"
           alt="Under Development"
           className="w-64 h-auto drop-shadow-lg"
           draggable={false}
