@@ -450,7 +450,7 @@ const FoodOrderingMenu = () => {
         </p>
         <button
           onClick={() => navigate('/')}
-          className="mt-8 px-6 py-3 bg-gray-900 text-white rounded-2xl text-sm font-medium active:scale-95 transition-transform"
+          className="mt-8 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-sm font-medium active:scale-95 transition-transform"
         >
           Вернуться на главную
         </button>

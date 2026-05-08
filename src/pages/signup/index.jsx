@@ -613,6 +613,8 @@ const SignupPage = () => {
                   error={errors.otp}
                   placeholder="000000"
                   maxLength={6}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
                   required
                 />
                 <div className="text-center text-sm text-muted-foreground">
