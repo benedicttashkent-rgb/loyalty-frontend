@@ -134,24 +134,26 @@ const TelegramBroadcastEditor = () => {
       return;
     }
 
-    if (!formData.message || formData.message.trim() === '') {
-      alert('Введите сообщение для тестовой отправки');
+    if ((!formData.message || formData.message.trim() === '') && !photoFile) {
+      alert('Введите сообщение или загрузите фото');
       return;
     }
 
     setTestSending(true);
     try {
+      const fd = new FormData();
+      fd.append('chatId', testChatId.trim());
+      if (formData.message) fd.append('message', formData.message.trim());
+      fd.append('includeWebAppButton', formData.includeWebAppButton ? 'true' : 'false');
+      fd.append('buttonText', formData.buttonText || 'Открыть приложение');
+      fd.append('includeCustomButton', formData.includeCustomButton ? 'true' : 'false');
+      fd.append('customButtonText', formData.customButtonText || '');
+      fd.append('customButtonUrl', formData.customButtonUrl || '');
+      if (photoFile) fd.append('photo', photoFile);
+
       const response = await adminApiRequest('admin/broadcast/test', {
         method: 'POST',
-        body: JSON.stringify({
-          chatId: testChatId.trim(),
-          message: formData.message.trim(),
-          includeWebAppButton: formData.includeWebAppButton,
-          buttonText: formData.buttonText || 'Открыть приложение',
-          includeCustomButton: formData.includeCustomButton,
-          customButtonText: formData.customButtonText,
-          customButtonUrl: formData.customButtonUrl,
-        }),
+        body: fd,
       });
 
       const data = await response.json();
@@ -390,16 +392,14 @@ const TelegramBroadcastEditor = () => {
 
       {/* Test Send */}
       <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-xl font-bold text-foreground mb-4">Тестовая отправка</h2>
+        <h2 className="text-xl font-bold text-foreground mb-1">Тестовая отправка</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Отправьте сообщение на конкретный Chat ID для тестирования перед массовой рассылкой
+          Отправляет то же сообщение, фото и кнопки на конкретный Chat ID
         </p>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Telegram Chat ID *
-            </label>
+            <label className="block text-sm font-medium mb-2">Telegram Chat ID *</label>
             <input
               type="text"
               value={testChatId}
@@ -408,13 +408,44 @@ const TelegramBroadcastEditor = () => {
               className="w-full px-3 py-2 border border-input rounded-lg bg-background"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Chat ID пользователя, которому нужно отправить тестовое сообщение
+              Chat ID пользователя для теста
             </p>
           </div>
 
+          {/* Preview what will be sent */}
+          {(formData.message || photoPreview || formData.includeWebAppButton || formData.includeCustomButton) && (
+            <div className="rounded-lg p-3 space-y-1.5" style={{ background: 'var(--color-muted)' }}>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Будет отправлено:</p>
+              {photoPreview && (
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Icon name="Image" size={14} className="text-muted-foreground" />
+                  Фото прикреплено
+                </div>
+              )}
+              {formData.message && (
+                <div className="flex items-start gap-2 text-sm text-foreground">
+                  <Icon name="MessageSquare" size={14} className="text-muted-foreground mt-0.5" />
+                  <span className="truncate">{formData.message.slice(0, 60)}{formData.message.length > 60 ? '…' : ''}</span>
+                </div>
+              )}
+              {formData.includeWebAppButton && (
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Icon name="AppWindow" size={14} className="text-muted-foreground" />
+                  Кнопка: {formData.buttonText || 'Открыть приложение'}
+                </div>
+              )}
+              {formData.includeCustomButton && formData.customButtonText && (
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                  <Icon name="Link" size={14} className="text-muted-foreground" />
+                  Кнопка: {formData.customButtonText} → {formData.customButtonUrl || '(нет URL)'}
+                </div>
+              )}
+            </div>
+          )}
+
           <button
             onClick={handleTestSend}
-            disabled={testSending || !stats?.botConfigured || !testChatId || !formData.message}
+            disabled={testSending || !stats?.botConfigured || !testChatId || (!formData.message && !photoFile)}
             className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {testSending ? (
@@ -425,7 +456,7 @@ const TelegramBroadcastEditor = () => {
             ) : (
               <>
                 <Icon name="MessageSquare" size={18} />
-                Отправить тестовое сообщение
+                Отправить тест
               </>
             )}
           </button>
