@@ -25,7 +25,7 @@ const BookTableModal = ({ isOpen, onClose }) => {
   ];
 
   const handleCallClick = (phone) => {
-    window.location.href = `tel:${phone}`;
+    window.location.href = `tel:${phone.replace(/\s/g, '')}`;
   };
 
   const handleLocationClick = (coordinates) => {
@@ -72,7 +72,7 @@ const BookTableModal = ({ isOpen, onClose }) => {
                     <div className="flex items-center gap-3">
                       <Icon name="Phone" size={18} className="text-muted-foreground" />
                       <a
-                        href={`tel:${branch.phone}`}
+                        href={`tel:${branch.phone.replace(/\s/g, '')}`}
                         className="text-primary hover:underline font-medium"
                       >
                         {branch.phone}
