@@ -10,6 +10,9 @@ const TelegramBroadcastEditor = () => {
     message: '',
     includeWebAppButton: false,
     buttonText: 'Открыть приложение',
+    includeCustomButton: false,
+    customButtonText: '',
+    customButtonUrl: '',
     visitFrequency: 'all',
     sendToAll: false,
   });
@@ -91,6 +94,9 @@ const TelegramBroadcastEditor = () => {
       }
       formDataToSend.append('includeWebAppButton', formData.includeWebAppButton ? 'true' : 'false');
       formDataToSend.append('buttonText', formData.buttonText || 'Открыть приложение');
+      formDataToSend.append('includeCustomButton', formData.includeCustomButton ? 'true' : 'false');
+      formDataToSend.append('customButtonText', formData.customButtonText || '');
+      formDataToSend.append('customButtonUrl', formData.customButtonUrl || '');
       formDataToSend.append('visitFrequency', formData.visitFrequency || 'all');
       formDataToSend.append('sendToAll', formData.sendToAll ? 'true' : 'false');
       
@@ -142,6 +148,9 @@ const TelegramBroadcastEditor = () => {
           message: formData.message.trim(),
           includeWebAppButton: formData.includeWebAppButton,
           buttonText: formData.buttonText || 'Открыть приложение',
+          includeCustomButton: formData.includeCustomButton,
+          customButtonText: formData.customButtonText,
+          customButtonUrl: formData.customButtonUrl,
         }),
       });
 
@@ -282,24 +291,23 @@ const TelegramBroadcastEditor = () => {
             </div>
           </div>
 
+          {/* WebApp button */}
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               id="includeWebAppButton"
               checked={formData.includeWebAppButton}
-              onChange={(e) => setFormData({ ...formData, includeWebAppButton: e.target.checked })}
+              onChange={(e) => setFormData({ ...formData, includeWebAppButton: e.target.checked, includeCustomButton: false })}
               className="w-4 h-4"
             />
             <label htmlFor="includeWebAppButton" className="text-sm font-medium cursor-pointer">
-              Добавить кнопку "Открыть приложение"
+              Добавить кнопку "Открыть приложение" (Mini App)
             </label>
           </div>
 
           {formData.includeWebAppButton && (
             <div>
-              <label className="block text-sm font-medium mb-2">
-                Текст кнопки
-              </label>
+              <label className="block text-sm font-medium mb-2">Текст кнопки</label>
               <input
                 type="text"
                 value={formData.buttonText}
@@ -307,6 +315,45 @@ const TelegramBroadcastEditor = () => {
                 placeholder="Открыть приложение"
                 className="w-full px-3 py-2 border border-input rounded-lg bg-background"
               />
+            </div>
+          )}
+
+          {/* Custom URL button */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="includeCustomButton"
+              checked={formData.includeCustomButton}
+              onChange={(e) => setFormData({ ...formData, includeCustomButton: e.target.checked, includeWebAppButton: false })}
+              className="w-4 h-4"
+            />
+            <label htmlFor="includeCustomButton" className="text-sm font-medium cursor-pointer">
+              Добавить кнопку с ссылкой
+            </label>
+          </div>
+
+          {formData.includeCustomButton && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium mb-2">Текст кнопки *</label>
+                <input
+                  type="text"
+                  value={formData.customButtonText}
+                  onChange={(e) => setFormData({ ...formData, customButtonText: e.target.value })}
+                  placeholder="Перейти на сайт"
+                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Ссылка (URL) *</label>
+                <input
+                  type="url"
+                  value={formData.customButtonUrl}
+                  onChange={(e) => setFormData({ ...formData, customButtonUrl: e.target.value })}
+                  placeholder="https://example.com"
+                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                />
+              </div>
             </div>
           )}
 
