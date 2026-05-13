@@ -179,10 +179,9 @@ const AdminDashboard = () => {
           </div>
           {stats?.customersByTier && Object.keys(stats.customersByTier).length > 0 ? (
             <div className="space-y-3">
-              {['Platinum', 'Gold', 'Silver', 'Bronze'].map(tier => {
-                const count = stats.customersByTier[tier] || 0;
+              {Object.entries(stats.customersByTier).map(([tier, count]) => {
                 const pct = totalByTier > 0 ? (count / totalByTier) * 100 : 0;
-                const cfg = TIER_CONFIG[tier];
+                const cfg = TIER_CONFIG[tier] || { label: tier, color: '#99836c', bg: '#f5f0eb' };
                 return (
                   <div key={tier}>
                     <div className="flex items-center justify-between text-sm mb-1">
