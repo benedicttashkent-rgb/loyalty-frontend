@@ -19,7 +19,6 @@ const HomeDashboard = () => {
   const [showLoyaltyDetails, setShowLoyaltyDetails] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [showBookTable, setShowBookTable] = useState(false);
-  const [showNewsBanner, setShowNewsBanner] = useState(true);
   const [cartCount, setCartCount] = useState(0);
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -198,10 +197,6 @@ const HomeDashboard = () => {
           // This ensures correctness even if backend sends wrong value
           const remaining = nextThreshold ? Math.max(0, nextThreshold - totalSpent) : 0;
 
-          // Hide news banner after first purchase
-          const hasMadePurchase = totalSpent > 0 || !!data.customer.lastProcessedOrderDate;
-          setShowNewsBanner(!hasMadePurchase);
-          
           // CRITICAL: Ensure totalSpent is a number and not null/undefined
           const safeTotalSpent = typeof totalSpent === 'number' && !isNaN(totalSpent) ? totalSpent : 0;
           const safeRemaining = nextThreshold ? Math.max(0, nextThreshold - safeTotalSpent) : 0;
@@ -352,9 +347,7 @@ const HomeDashboard = () => {
 
           <QRCodeButton onClick={() => setShowQRCode(true)} />
 
-          {showNewsBanner &&
-          <NewsBanner onClose={() => setShowNewsBanner(false)} />
-          }
+          <NewsBanner />
 
           <OrderSection onBookTableClick={() => setShowBookTable(true)} />
         </div>

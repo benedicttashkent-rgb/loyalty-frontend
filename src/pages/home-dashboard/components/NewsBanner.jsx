@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import { getApiUrl } from '../../../config/api';
 
-const NewsBanner = ({ onClose }) => {
+const NewsBanner = () => {
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
