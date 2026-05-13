@@ -33,7 +33,7 @@ const AdminDashboard = () => {
       const response = await adminApiRequest('admin/dashboard/stats', { method: 'GET' });
       if (response.ok) {
         const data = await response.json();
-        if (data.success) { setStats(data.stats); setError(''); }
+        if (data.success) { setStats(data.stats); setError(''); console.log('📊 Dashboard stats:', data.stats); }
       } else {
         const errorData = await response.json().catch(() => ({}));
         setError(errorData.error || 'Ошибка загрузки');
