@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
 
+const serif = { fontFamily: "'Marcellus', serif" };
+
+const TIER_CONFIG = {
+  Bronze:   { label: 'Bronze',   color: '#cd7f32', bg: '#fdf3e7' },
+  Silver:   { label: 'Silver',   color: '#9ca3af', bg: '#f3f4f6' },
+  Gold:     { label: 'Gold',     color: '#d4a574', bg: '#fef9f0' },
+  Platinum: { label: 'Platinum', color: '#8b6a4e', bg: '#f8efe0' },
+};
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
@@ -12,7 +21,6 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchStats();
-    // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
       fetchStats();
       setRefreshTime(new Date());
@@ -22,102 +30,42 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await adminApiRequest('admin/dashboard/stats', {
-        method: 'GET',
-      });
-
+      const response = await adminApiRequest('admin/dashboard/stats', { method: 'GET' });
       if (response.ok) {
         const data = await response.json();
-        if (data.success) {
-          setStats(data.stats);
-          setError('');
-        }
+        if (data.success) { setStats(data.stats); setError(''); }
       } else {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to fetch statistics' }));
-        setError(errorData.error || 'Failed to fetch statistics');
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.error || 'Ошибка загрузки');
       }
-    } catch (err) {
-      console.error('Stats error:', err);
-      setError('Failed to connect to server');
+    } catch {
+      setError('Нет соединения с сервером');
     } finally {
       setLoading(false);
     }
   };
 
-  const formatNumber = (num) => {
-    if (num === null || num === undefined) return '0';
-    return num.toLocaleString('ru-RU');
-  };
+  const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString('ru-RU'));
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) : '';
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
-  };
+  const totalByTier = stats?.customersByTier
+    ? Object.values(stats.customersByTier).reduce((s, v) => s + v, 0)
+    : 0;
 
-  const statCards = [
-    {
-      title: 'Всего Клиентов',
-      value: stats?.totalCustomers || 0,
-      change: stats?.newCustomers7d ? `+${stats.newCustomers7d} за 7 дней` : null,
-      icon: 'Users',
-      color: 'bg-blue-500',
-      hoverColor: 'hover:bg-blue-600',
-      link: null,
-    },
-    {
-      title: 'Новых за 30 дней',
-      value: stats?.newCustomers30d || 0,
-      change: stats?.newCustomers7d ? `+${stats.newCustomers7d} за неделю` : null,
-      icon: 'UserPlus',
-      color: 'bg-green-500',
-      hoverColor: 'hover:bg-green-600',
-      link: null,
-    },
-    {
-      title: 'Активных Баннеров',
-      value: stats?.activeNewsBanners || 0,
-      change: stats?.totalNewsBanners ? `Всего: ${stats.totalNewsBanners}` : null,
-      icon: 'Newspaper',
-      color: 'bg-purple-500',
-      hoverColor: 'hover:bg-purple-600',
-      link: '/admin/news',
-    },
-    {
-      title: 'Активных Наград',
-      value: stats?.activeRewards || 0,
-      change: stats?.featuredRewards ? `${stats.featuredRewards} рекомендуемых` : null,
-      icon: 'Gift',
-      color: 'bg-pink-500',
-      hoverColor: 'hover:bg-pink-600',
-      link: '/admin/rewards',
-    },
-    {
-      title: 'События (7 дней)',
-      value: stats?.upcomingEvents7d || 0,
-      change: stats?.upcomingEvents30d ? `${stats.upcomingEvents30d} за месяц` : null,
-      icon: 'Calendar',
-      color: 'bg-orange-500',
-      hoverColor: 'hover:bg-orange-600',
-      link: '/admin/events',
-    },
-    {
-      title: 'Всего Заказов',
-      value: stats?.totalOrders || 0,
-      change: stats?.orders7d ? `${stats.orders7d} за неделю` : null,
-      icon: 'ShoppingCart',
-      color: 'bg-teal-500',
-      hoverColor: 'hover:bg-teal-600',
-      link: null,
-    },
-  ];
+  const maxReg = stats?.recentRegistrations
+    ? Math.max(...stats.recentRegistrations.map(r => r.count), 1)
+    : 1;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Загрузка статистики...</p>
+      <div className="space-y-4 animate-pulse">
+        <div className="h-8 w-48 bg-muted rounded-lg" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <div key={i} className="h-28 bg-muted rounded-2xl" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="h-48 bg-muted rounded-2xl" />
+          <div className="h-48 bg-muted rounded-2xl" />
         </div>
       </div>
     );
@@ -125,16 +73,11 @@ const AdminDashboard = () => {
 
   if (error && !stats) {
     return (
-      <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-6">
-        <div className="flex items-center gap-2 text-destructive mb-4">
-          <Icon name="AlertCircle" size={24} />
-          <h3 className="font-semibold">Ошибка</h3>
-        </div>
-        <p className="text-muted-foreground mb-4">{error}</p>
-        <button
-          onClick={fetchStats}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-        >
+      <div className="py-20 text-center rounded-2xl" style={{ background: '#fff5f5' }}>
+        <Icon name="AlertCircle" size={32} className="mx-auto mb-3 text-destructive" />
+        <p className="text-foreground font-medium mb-1">Ошибка загрузки</p>
+        <p className="text-sm text-muted-foreground mb-5">{error}</p>
+        <button onClick={fetchStats} className="px-5 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors">
           Попробовать снова
         </button>
       </div>
@@ -143,256 +86,220 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-6">
+
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Дашборд</h1>
-          <p className="text-muted-foreground">
-            Обзор программы лояльности • Обновлено: {refreshTime.toLocaleTimeString('ru-RU')}
+          <h1 className="text-3xl font-bold text-foreground" style={serif}>Дашборд</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Обновлено в {refreshTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
           </p>
         </div>
         <button
           onClick={fetchStats}
-          disabled={loading}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
         >
-          <Icon name={loading ? 'Loader2' : 'RefreshCw'} size={20} className={loading ? 'animate-spin' : ''} />
+          <Icon name="RefreshCw" size={15} className={loading ? 'animate-spin' : ''} />
           Обновить
         </button>
       </div>
 
       {error && (
-        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
-          <Icon name="AlertTriangle" size={20} />
-          <span className="text-sm">{error}</span>
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm" style={{ background: '#fef9f0', color: '#92600a' }}>
+          <Icon name="AlertTriangle" size={16} />
+          {error}
         </div>
       )}
 
-      {/* Main Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {statCards.map((card, index) => {
-          const CardContent = (
-            <div
-              className={`bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-all cursor-pointer ${
-                card.link ? 'hover:border-primary/50' : ''
-              }`}
-              onClick={() => card.link && navigate(card.link)}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className={`${card.color} ${card.hoverColor} p-3 rounded-lg transition-colors`}>
-                  <Icon name={card.icon} size={24} className="text-white" />
+      {/* Key metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          {
+            label: 'Клиентов',
+            value: fmt(stats?.totalCustomers),
+            sub: stats?.newCustomers7d ? `+${stats.newCustomers7d} за неделю` : null,
+            icon: 'Users',
+            accent: '#8b6a4e',
+            bg: '#f8efe0',
+          },
+          {
+            label: 'Новых за месяц',
+            value: fmt(stats?.newCustomers30d),
+            sub: stats?.newCustomers7d ? `${stats.newCustomers7d} за 7 дней` : null,
+            icon: 'UserPlus',
+            accent: '#7c9885',
+            bg: '#f0f7f3',
+          },
+          {
+            label: 'Событий (7 дней)',
+            value: fmt(stats?.upcomingEvents7d),
+            sub: stats?.upcomingEvents30d ? `${stats.upcomingEvents30d} за месяц` : null,
+            icon: 'Calendar',
+            accent: '#9d7bb5',
+            bg: '#f5f0fb',
+            link: '/admin/events',
+          },
+          {
+            label: 'Активных наград',
+            value: fmt(stats?.activeRewards),
+            sub: stats?.featuredRewards ? `${stats.featuredRewards} рекомендуемых` : null,
+            icon: 'Gift',
+            accent: '#c17b7b',
+            bg: '#fdf0f0',
+            link: '/admin/rewards',
+          },
+        ].map(({ label, value, sub, icon, accent, bg, link }) => (
+          <div
+            key={label}
+            onClick={() => link && navigate(link)}
+            className={`rounded-2xl p-5 transition-all ${link ? 'cursor-pointer hover:shadow-md' : ''}`}
+            style={{ background: bg }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${accent}20` }}>
+                <Icon name={icon} size={18} style={{ color: accent }} />
+              </div>
+              {link && <Icon name="ChevronRight" size={16} className="text-muted-foreground" />}
+            </div>
+            <div className="text-2xl font-bold text-foreground" style={serif}>{value}</div>
+            <div className="text-xs text-muted-foreground mt-0.5 font-medium">{label}</div>
+            {sub && <div className="text-xs mt-1" style={{ color: accent }}>{sub}</div>}
+          </div>
+        ))}
+      </div>
+
+      {/* Tiers + Recent regs */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        {/* Customer tiers */}
+        <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-base font-semibold text-foreground" style={serif}>Клиенты по статусу</h2>
+            <span className="text-xs text-muted-foreground">{fmt(stats?.totalCustomers)} всего</span>
+          </div>
+          {stats?.customersByTier && Object.keys(stats.customersByTier).length > 0 ? (
+            <div className="space-y-3">
+              {['Platinum', 'Gold', 'Silver', 'Bronze'].map(tier => {
+                const count = stats.customersByTier[tier] || 0;
+                const pct = totalByTier > 0 ? (count / totalByTier) * 100 : 0;
+                const cfg = TIER_CONFIG[tier];
+                return (
+                  <div key={tier}>
+                    <div className="flex items-center justify-between text-sm mb-1">
+                      <span className="font-medium text-foreground">{cfg.label}</span>
+                      <span className="text-muted-foreground">{fmt(count)}</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-muted)' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%`, background: cfg.color }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Нет данных</p>
+          )}
+        </div>
+
+        {/* Registrations chart */}
+        {stats?.recentRegistrations && stats.recentRegistrations.length > 0 ? (
+          <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
+            <h2 className="text-base font-semibold text-foreground mb-5" style={serif}>Регистрации за 7 дней</h2>
+            <div className="flex items-end justify-between gap-2" style={{ height: 80 }}>
+              {stats.recentRegistrations.map((reg, i) => {
+                const h = maxReg > 0 ? Math.max(8, (reg.count / maxReg) * 80) : 8;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
+                    <span className="text-xs font-semibold text-foreground">{reg.count > 0 ? reg.count : ''}</span>
+                    <div
+                      className="w-full rounded-t-md transition-all duration-500"
+                      style={{ height: h, background: reg.count > 0 ? '#c89864' : 'var(--color-muted)' }}
+                    />
+                    <span className="text-[10px] text-muted-foreground">{fmtDate(reg.date)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          /* Banners + rewards summary if no reg data */
+          <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
+            <h2 className="text-base font-semibold text-foreground mb-5" style={serif}>Контент</h2>
+            <div className="space-y-3">
+              {[
+                { label: 'Активных баннеров', value: stats?.activeNewsBanners, total: stats?.totalNewsBanners, link: '/admin/news' },
+                { label: 'Активных наград', value: stats?.activeRewards, total: stats?.totalRewards, link: '/admin/rewards' },
+                { label: 'Предстоящих событий', value: stats?.upcomingEvents30d, total: stats?.totalEvents, link: '/admin/events' },
+              ].map(({ label, value, total, link }) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between py-2 cursor-pointer hover:text-primary transition-colors"
+                  style={{ borderBottom: '1px solid var(--color-border)' }}
+                  onClick={() => navigate(link)}
+                >
+                  <span className="text-sm text-muted-foreground">{label}</span>
+                  <span className="text-sm font-semibold text-foreground">{fmt(value)} <span className="text-muted-foreground font-normal">/ {fmt(total)}</span></span>
                 </div>
-                {card.link && (
-                  <Icon name="ChevronRight" size={20} className="text-muted-foreground" />
-                )}
-              </div>
-              <h3 className="text-3xl font-bold text-foreground mb-1">{formatNumber(card.value)}</h3>
-              <p className="text-sm font-medium text-foreground mb-1">{card.title}</p>
-              {card.change && (
-                <p className="text-xs text-muted-foreground">{card.change}</p>
-              )}
+              ))}
             </div>
-          );
-
-          return <div key={index}>{CardContent}</div>;
-        })}
+          </div>
+        )}
       </div>
 
-      {/* Detailed Stats Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Customers Statistics */}
-        <div className="bg-card border border-border rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Icon name="Users" size={24} className="text-blue-500" />
-              Статистика Клиентов
-            </h2>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Всего клиентов</span>
-              <span className="font-bold text-foreground">{formatNumber(stats?.totalCustomers || 0)}</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">С интеграцией iiko</span>
-              <span className="font-bold text-foreground">{formatNumber(stats?.iikoCustomers || 0)}</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Новых за 7 дней</span>
-              <span className="font-bold text-green-600">{formatNumber(stats?.newCustomers7d || 0)}</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Новых за 30 дней</span>
-              <span className="font-bold text-green-600">{formatNumber(stats?.newCustomers30d || 0)}</span>
-            </div>
-            {stats?.customersByTier && Object.keys(stats.customersByTier).length > 0 && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <p className="text-sm font-medium text-foreground mb-2">По статусу:</p>
-                {Object.entries(stats.customersByTier).map(([tier, count]) => (
-                  <div key={tier} className="flex items-center justify-between py-1">
-                    <span className="text-sm text-muted-foreground">{tier}</span>
-                    <span className="text-sm font-medium text-foreground">{formatNumber(count)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Content Statistics */}
-        <div className="bg-card border border-border rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Icon name="FileText" size={24} className="text-purple-500" />
-              Контент
-            </h2>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Баннеры (активных/всего)</span>
-              <span className="font-bold text-foreground">
-                {formatNumber(stats?.activeNewsBanners || 0)} / {formatNumber(stats?.totalNewsBanners || 0)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Награды (активных/всего)</span>
-              <span className="font-bold text-foreground">
-                {formatNumber(stats?.activeRewards || 0)} / {formatNumber(stats?.totalRewards || 0)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Рекомендуемых наград</span>
-              <span className="font-bold text-pink-600">{formatNumber(stats?.featuredRewards || 0)}</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">События (всего)</span>
-              <span className="font-bold text-foreground">{formatNumber(stats?.totalEvents || 0)}</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b border-border">
-              <span className="text-muted-foreground">Предстоящих (30 дней)</span>
-              <span className="font-bold text-orange-600">{formatNumber(stats?.upcomingEvents30d || 0)}</span>
-            </div>
-            {stats?.eventsByType && Object.keys(stats.eventsByType).length > 0 && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <p className="text-sm font-medium text-foreground mb-2">События по типам:</p>
-                {Object.entries(stats.eventsByType).map(([type, count]) => (
-                  <div key={type} className="flex items-center justify-between py-1">
-                    <span className="text-sm text-muted-foreground capitalize">{type}</span>
-                    <span className="text-sm font-medium text-foreground">{formatNumber(count)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Activity & Recent Registrations */}
+      {/* Content summary (when reg chart is shown) */}
       {stats?.recentRegistrations && stats.recentRegistrations.length > 0 && (
-        <div className="bg-card border border-border rounded-lg p-6">
-          <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-            <Icon name="TrendingUp" size={24} className="text-green-500" />
-            Регистрации за последние 7 дней
-          </h2>
-          <div className="grid grid-cols-7 gap-2">
-            {stats.recentRegistrations.map((reg, index) => (
-              <div key={index} className="text-center">
-                <div className="bg-primary/10 rounded-lg p-3 mb-2">
-                  <p className="text-2xl font-bold text-primary">{reg.count}</p>
+        <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
+          <h2 className="text-base font-semibold text-foreground mb-4" style={serif}>Контент</h2>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: 'Баннеров', value: stats?.activeNewsBanners, total: stats?.totalNewsBanners, icon: 'Megaphone', link: '/admin/news', accent: '#9d7bb5' },
+              { label: 'Наград', value: stats?.activeRewards, total: stats?.totalRewards, icon: 'Gift', link: '/admin/rewards', accent: '#c17b7b' },
+              { label: 'Событий', value: stats?.upcomingEvents30d, total: stats?.totalEvents, icon: 'Calendar', link: '/admin/events', accent: '#8b6a4e' },
+            ].map(({ label, value, total, icon, link, accent }) => (
+              <div
+                key={label}
+                onClick={() => navigate(link)}
+                className="flex flex-col gap-1 cursor-pointer group"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon name={icon} size={15} style={{ color: accent }} />
+                  <span className="text-xs text-muted-foreground">{label}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">{formatDate(reg.date)}</p>
+                <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors" style={serif}>
+                  {fmt(value)}
+                </span>
+                <span className="text-xs text-muted-foreground">из {fmt(total)}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-xl font-bold text-foreground mb-4">Быстрые действия</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {[
+          { label: 'Добавить баннер', icon: 'Megaphone', link: '/admin/news', accent: '#9d7bb5', bg: '#f5f0fb' },
+          { label: 'Добавить награду', icon: 'Gift', link: '/admin/rewards', accent: '#c17b7b', bg: '#fdf0f0' },
+          { label: 'Добавить событие', icon: 'Calendar', link: '/admin/events', accent: '#8b6a4e', bg: '#f8efe0' },
+        ].map(({ label, icon, link, accent, bg }) => (
           <button
-            onClick={() => navigate('/admin/news')}
-            className="p-4 border border-border rounded-lg hover:bg-muted transition-colors text-left group"
+            key={label}
+            onClick={() => navigate(link)}
+            className="flex items-center gap-3 px-5 py-4 rounded-2xl text-left transition-all hover:shadow-md active:scale-[0.98]"
+            style={{ background: bg }}
           >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-purple-500 p-2 rounded-lg group-hover:bg-purple-600 transition-colors">
-                <Icon name="Plus" size={20} className="text-white" />
-              </div>
-              <h3 className="font-semibold text-foreground">Добавить Баннер</h3>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${accent}20` }}>
+              <Icon name={icon} size={18} style={{ color: accent }} />
             </div>
-            <p className="text-sm text-muted-foreground">Создать новый баннер новостей</p>
+            <span className="text-sm font-semibold text-foreground">{label}</span>
+            <Icon name="ArrowRight" size={15} className="ml-auto text-muted-foreground" />
           </button>
-          <button
-            onClick={() => navigate('/admin/rewards')}
-            className="p-4 border border-border rounded-lg hover:bg-muted transition-colors text-left group"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-pink-500 p-2 rounded-lg group-hover:bg-pink-600 transition-colors">
-                <Icon name="Gift" size={20} className="text-white" />
-              </div>
-              <h3 className="font-semibold text-foreground">Добавить Награду</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">Создать новую награду</p>
-          </button>
-          <button
-            onClick={() => navigate('/admin/events')}
-            className="p-4 border border-border rounded-lg hover:bg-muted transition-colors text-left group"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-orange-500 p-2 rounded-lg group-hover:bg-orange-600 transition-colors">
-                <Icon name="Calendar" size={20} className="text-white" />
-              </div>
-              <h3 className="font-semibold text-foreground">Добавить Событие</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">Создать новое событие</p>
-          </button>
-        </div>
+        ))}
       </div>
 
-      {/* Activity Stats */}
-      {(stats?.otpUsage > 0 || stats?.qrScans > 0 || stats?.orders7d > 0) && (
-        <div className="bg-card border border-border rounded-lg p-6">
-          <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-            <Icon name="Activity" size={24} className="text-blue-500" />
-            Активность
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {stats.otpUsage > 0 && (
-              <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon name="MessageSquare" size={20} className="text-blue-500" />
-                  <span className="text-sm font-medium text-foreground">SMS подтверждений</span>
-                </div>
-                <p className="text-2xl font-bold text-blue-600">{formatNumber(stats.otpUsage)}</p>
-                <p className="text-xs text-muted-foreground mt-1">За последние 7 дней</p>
-              </div>
-            )}
-            {stats.qrScans > 0 && (
-              <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon name="QrCode" size={20} className="text-green-500" />
-                  <span className="text-sm font-medium text-foreground">QR сканирований</span>
-                </div>
-                <p className="text-2xl font-bold text-green-600">{formatNumber(stats.qrScans)}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stats.qrScans7d > 0 ? `${formatNumber(stats.qrScans7d)} за неделю` : 'Всего'}
-                </p>
-              </div>
-            )}
-            {stats.orders7d > 0 && (
-              <div className="p-4 bg-teal-500/10 rounded-lg border border-teal-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon name="ShoppingCart" size={20} className="text-teal-500" />
-                  <span className="text-sm font-medium text-foreground">Заказов за неделю</span>
-                </div>
-                <p className="text-2xl font-bold text-teal-600">{formatNumber(stats.orders7d)}</p>
-                <p className="text-xs text-muted-foreground mt-1">Из {formatNumber(stats.totalOrders)} всего</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
