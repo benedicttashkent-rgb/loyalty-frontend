@@ -33,7 +33,7 @@ const AdminDashboard = () => {
       const response = await adminApiRequest('admin/dashboard/stats', { method: 'GET' });
       if (response.ok) {
         const data = await response.json();
-        if (data.success) { setStats(data.stats); setError(''); console.log('📊 Dashboard stats:', data.stats); }
+        if (data.success) { setStats(data.stats); setError(''); }
       } else {
         const errorData = await response.json().catch(() => ({}));
         setError(errorData.error || 'Ошибка загрузки');
@@ -48,9 +48,11 @@ const AdminDashboard = () => {
   const fmt = (n) => (n == null ? '0' : Number(n).toLocaleString('ru-RU'));
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' }) : '';
 
-  const totalByTier = stats?.customersByTier
-    ? Object.values(stats.customersByTier).reduce((s, v) => s + v, 0)
-    : 0;
+  const KNOWN_TIERS = ['bronze', 'silver', 'gold', 'platinum'];
+  const tierEntries = stats?.customersByTier
+    ? Object.entries(stats.customersByTier).filter(([k]) => KNOWN_TIERS.includes(k.toLowerCase()))
+    : [];
+  const totalByTier = tierEntries.reduce((s, [, v]) => s + v, 0);
 
   const maxReg = stats?.recentRegistrations
     ? Math.max(...stats.recentRegistrations.map(r => r.count), 1)
@@ -177,11 +179,12 @@ const AdminDashboard = () => {
             <h2 className="text-base font-semibold text-foreground" style={serif}>Клиенты по статусу</h2>
             <span className="text-xs text-muted-foreground">{fmt(stats?.totalCustomers)} всего</span>
           </div>
-          {stats?.customersByTier && Object.keys(stats.customersByTier).length > 0 ? (
+          {tierEntries.length > 0 ? (
             <div className="space-y-3">
-              {Object.entries(stats.customersByTier).map(([tier, count]) => {
+              {tierEntries.map(([tier, count]) => {
                 const pct = totalByTier > 0 ? (count / totalByTier) * 100 : 0;
-                const cfg = TIER_CONFIG[tier] || { label: tier, color: '#99836c', bg: '#f5f0eb' };
+                const key = tier.charAt(0).toUpperCase() + tier.slice(1).toLowerCase();
+                const cfg = TIER_CONFIG[key] || { label: key, color: '#99836c' };
                 return (
                   <div key={tier}>
                     <div className="flex items-center justify-between text-sm mb-1">
@@ -199,7 +202,7 @@ const AdminDashboard = () => {
               })}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Нет данных</p>
+            <p className="text-sm text-muted-foreground">Данные о статусах не поступают с сервера</p>
           )}
         </div>
 
