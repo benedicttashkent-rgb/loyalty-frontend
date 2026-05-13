@@ -5,6 +5,11 @@ import BottomTabNavigation from '../../components/navigation/BottomTabNavigation
 import { formatDateWithMonth } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
 
+const serif = { fontFamily: "'Marcellus', serif" };
+const sans = { fontFamily: "'Raleway', sans-serif" };
+
+const monthNames = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
+
 const PromotionsPage = () => {
   const navigate = useNavigate();
   const { newsId } = useParams();
@@ -15,7 +20,6 @@ const PromotionsPage = () => {
   const isDetailView = Boolean(newsId);
   const detailEvent = location.state?.event || (newsId && events.find(e => String(e.id) === String(newsId)));
 
-  // Fetch events from API
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -23,11 +27,9 @@ const PromotionsPage = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.events) {
-            // Map API data to component format
             const mappedEvents = data.events.map(event => {
               const eventDate = event.date ? new Date(event.date) : null;
               const dateFormatted = eventDate ? formatDateWithMonth(eventDate) : { dayMonth: '', month: '' };
-              
               return {
                 id: event.id,
                 date: dateFormatted.dayMonth,
@@ -38,6 +40,7 @@ const PromotionsPage = () => {
                 highlighted: event.is_highlighted || false,
                 location: event.location || 'Мирабад',
                 description: event.description || event.details || '',
+                imageUrl: event.image_url || null,
               };
             });
             setEvents(mappedEvents);
@@ -45,264 +48,328 @@ const PromotionsPage = () => {
         }
       } catch (error) {
         console.error('Error fetching events:', error);
-        // Fallback: empty array if API fails
         setEvents([]);
       } finally {
         setLoading(false);
       }
     };
-
     fetchEvents();
   }, []);
 
-  const handleBack = () => {
-    navigate(-1);
-  };
-
-  const getPerformerIcon = (type) => {
+  const getTypeIcon = (type) => {
     if (type === 'pianist') return 'Music';
     if (type === 'singer') return 'Mic';
-    return 'Calendar'; // Default icon for custom types
+    return 'Sparkles';
   };
 
-  const getPerformerColor = (type, highlighted) => {
-    if (highlighted) {
-      if (type === 'pianist') return 'from-[#99836c] to-[#7a6857]';
-      if (type === 'singer') return 'from-[#d4a574] to-[#b8956a]';
-      return 'from-primary to-primary/80';
-    }
-    if (type === 'pianist') return 'bg-[#99836c]/10 border-[#99836c]/20';
-    if (type === 'singer') return 'bg-[#d4a574]/10 border-[#d4a574]/20';
-    return 'bg-primary/10 border-primary/20';
-  };
-
-  const getPerformerLabel = (type) => {
+  const getTypeLabel = (type) => {
     if (type === 'pianist') return 'Пианист';
     if (type === 'singer') return 'Вокалист';
-    return type; // Return custom type as is
+    return type;
+  };
+
+  const getDayFromDate = (date) => {
+    if (!date) return '–';
+    const parts = date.split('.');
+    return parts[0] || '–';
+  };
+
+  const getMonthFromDate = (date, month) => {
+    if (month) return month;
+    if (!date) return '';
+    const parts = date.split('.');
+    const idx = parseInt(parts[1]) - 1;
+    return monthNames[idx] || '';
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pb-20">
-      {/* Header with gradient */}
-      <div className="sticky top-0 shadow-lg z-10 bg-gradient-to-r from-[#b07c45] via-[#c89864] to-[#8b6a4e]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
+    <div className="min-h-screen bg-background pb-24" style={sans}>
+
+      {/* Header */}
+      <div
+        className="sticky top-0 z-10"
+        style={{ background: 'linear-gradient(135deg, #8b6a4e 0%, #99836c 50%, #c89864 100%)' }}
+      >
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="flex items-center gap-4 py-4">
             <button
-              onClick={handleBack}
-              className="p-2 rounded-full transition-all bg-white/20 hover:bg-white/30 hover:scale-110 active:scale-95"
-              aria-label="Вернуться назад"
+              onClick={() => navigate(-1)}
+              className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.18)' }}
+              aria-label="Назад"
             >
-              <Icon name="ArrowLeft" size={24} className="text-white" />
+              <Icon name="ArrowLeft" size={20} className="text-white" />
             </button>
-            <div className="text-center flex-1">
-              <h1 className="text-2xl font-bold text-white drop-shadow-lg">Новости</h1>
-              <p className="text-sm text-white/80">{isDetailView ? 'Подробнее' : 'Актуальные новости и события'}</p>
+            <div className="flex-1">
+              <h1 className="text-2xl text-white leading-none" style={{ ...serif, letterSpacing: '0.02em' }}>
+                {isDetailView ? 'Событие' : 'Афиша'}
+              </h1>
+              <p className="text-xs text-white/70 mt-0.5 tracking-widest uppercase" style={sans}>
+                Benedict Cafe
+              </p>
             </div>
-            <div className="w-10" />
           </div>
         </div>
       </div>
 
-      {/* Detail view for one news item */}
+      {/* Detail view */}
       {isDetailView && (
-        <>
+        <div className="max-w-2xl mx-auto px-4 py-8">
           {loading && !location.state?.event && (
-            <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-              <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Загрузка...</p>
+            <div className="py-16 text-center">
+              <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-sm text-muted-foreground">Загрузка...</p>
             </div>
           )}
           {!loading && !detailEvent && (
-            <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-              <p className="text-muted-foreground">Новость не найдена</p>
-              <button type="button" onClick={() => navigate('/promotions-page')} className="mt-4 text-primary font-medium">Вернуться к списку</button>
+            <div className="py-16 text-center">
+              <p className="text-muted-foreground mb-4">Событие не найдено</p>
+              <button
+                type="button"
+                onClick={() => navigate('/promotions-page')}
+                className="text-primary font-medium text-sm"
+              >
+                Вернуться к афише
+              </button>
             </div>
           )}
           {detailEvent && (
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <article className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
-            <div className={`p-6 ${detailEvent.highlighted ? 'bg-gradient-to-r from-[#99836c] to-[#7a6857]' : 'bg-muted/30'}`}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-lg bg-white/20">
-                  <Icon name={getPerformerIcon(detailEvent.type)} size={24} className="text-foreground" />
+            <article>
+              {/* Date & meta header */}
+              <div className="flex items-start gap-6 mb-8">
+                <div className="text-center" style={{ minWidth: 56 }}>
+                  <div
+                    className="text-5xl leading-none text-foreground"
+                    style={{ ...serif }}
+                  >
+                    {getDayFromDate(detailEvent.date)}
+                  </div>
+                  <div className="text-xs tracking-widest text-muted-foreground mt-1 uppercase">
+                    {getMonthFromDate(detailEvent.date, detailEvent.month)}
+                  </div>
                 </div>
+                <div
+                  className="w-px self-stretch"
+                  style={{ background: 'var(--color-border)', marginTop: 6 }}
+                />
+                <div className="flex-1 pt-1">
+                  <h2 className="text-2xl font-semibold text-foreground leading-tight mb-1" style={serif}>
+                    {detailEvent.performer}
+                  </h2>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className="text-xs tracking-widest uppercase px-2 py-0.5 rounded"
+                      style={{ background: 'var(--color-muted)', color: 'var(--color-muted-foreground)' }}
+                    >
+                      {getTypeLabel(detailEvent.type)}
+                    </span>
+                    {detailEvent.highlighted && (
+                      <span
+                        className="text-xs tracking-widest uppercase px-2 py-0.5 rounded"
+                        style={{ background: '#f5ead8', color: '#8b6a4e' }}
+                      >
+                        Рекомендуем
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {detailEvent.imageUrl && (
+                <div className="mb-6 rounded-xl overflow-hidden">
+                  <img
+                    src={detailEvent.imageUrl}
+                    alt={detailEvent.performer}
+                    className="w-full object-cover"
+                    style={{ maxHeight: 280 }}
+                  />
+                </div>
+              )}
+
+              {/* Info grid */}
+              <div
+                className="grid grid-cols-2 gap-px mb-8"
+                style={{ background: 'var(--color-border)', borderRadius: 12, overflow: 'hidden' }}
+              >
+                {[
+                  { icon: 'Clock', label: 'Время', value: detailEvent.time || '—' },
+                  { icon: 'MapPin', label: 'Филиал', value: detailEvent.location || 'Мирабад' },
+                ].map(({ icon, label, value }) => (
+                  <div key={label} className="bg-background p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Icon name={icon} size={14} className="text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground tracking-wider uppercase">{label}</span>
+                    </div>
+                    <div className="font-semibold text-foreground">{value}</div>
+                  </div>
+                ))}
+              </div>
+
+              {detailEvent.description && (
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">{detailEvent.performer}</h2>
-                  <p className="text-sm text-muted-foreground">{getPerformerLabel(detailEvent.type)}</p>
+                  <p className="text-xs text-muted-foreground tracking-widest uppercase mb-3">О событии</p>
+                  <p className="text-foreground leading-relaxed whitespace-pre-wrap" style={{ lineHeight: 1.7 }}>
+                    {detailEvent.description}
+                  </p>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-3 text-sm">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <Icon name="Calendar" size={16} /> {detailEvent.date} {detailEvent.month && `· ${detailEvent.month}`}
-                </span>
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <Icon name="Clock" size={16} /> {detailEvent.time}
-                </span>
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <Icon name="MapPin" size={16} /> {detailEvent.location}
-                </span>
-              </div>
-            </div>
-            {detailEvent.description && (
-              <div className="p-6 pt-0">
-                <p className="text-foreground whitespace-pre-wrap">{detailEvent.description}</p>
-              </div>
-            )}
-            {!detailEvent.description && (
-              <div className="p-6 pt-0 text-muted-foreground text-sm">
-                {detailEvent.time && <p>Время: {detailEvent.time}</p>}
-                <p>Филиал: {detailEvent.location}</p>
-              </div>
-            )}
-          </article>
+              )}
+            </article>
+          )}
           <BottomTabNavigation />
         </div>
-          )}
-        </>
       )}
 
       {/* List view */}
       {!isDetailView && (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Загрузка событий...</p>
-          </div>
-        )}
+        <div className="max-w-2xl mx-auto px-4 py-6">
 
-        {/* Events Schedule */}
-        {!loading && (
-          <div className="space-y-3">
-            {events.length > 0 ? (
-              events.map((event, index) => {
-                const isHighlighted = event.highlighted;
-                const colorClass = getPerformerColor(event.type, isHighlighted);
-                
-                return (
-                  <button
-                    type="button"
-                    key={event.id || index}
-                    onClick={() => {
-                      const base = '/promotions-page';
-                      navigate(`${base}/${event.id}`, { state: { event } });
-                    }}
-                    className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 hover:scale-[1.01] hover:shadow-lg animate-slide-up w-full text-left ${
-                      isHighlighted
-                        ? `bg-gradient-to-r ${colorClass} border-primary/40 shadow-md`
-                        : `${colorClass} hover:border-primary/30`
-                    }`}
-                    style={{
-                      animationDelay: `${index * 50}ms`,
-                      animationFillMode: 'both'
-                    }}
-                  >
-                    {/* Shimmer effect for highlighted events */}
-                    {isHighlighted && (
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    )}
-                    
-                    <div className="relative p-5 flex items-center justify-between gap-4">
-                      {/* Date Badge */}
-                  <div className={`flex-shrink-0 ${
-                    isHighlighted 
-                      ? 'bg-white/30 backdrop-blur-sm' 
-                      : 'bg-white/50 backdrop-blur-sm'
-                  } rounded-lg px-4 py-2 min-w-[70px] text-center border ${
-                    isHighlighted ? 'border-white/40' : 'border-white/30'
-                  }`}>
-                    <div className={`text-xs font-semibold ${
-                      isHighlighted ? 'text-white' : 'text-foreground'
-                    }`}>
-                      {event.date ? event.date.split('.')[0] : '-'}
-                    </div>
-                    <div className={`text-[10px] font-medium ${
-                      isHighlighted ? 'text-white/80' : 'text-muted-foreground'
-                    }`}>
-                      {event.month || (event.date && event.date.includes('.') ? (() => {
-                        const [day, month] = event.date.split('.');
-                        const monthNames = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
-                        return monthNames[parseInt(month) - 1] || '';
-                      })() : '') || 'ДЕК'}
-                    </div>
+          {/* Loading skeleton */}
+          {loading && (
+            <div className="space-y-0">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="flex items-center gap-5 py-5" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <div className="text-center" style={{ minWidth: 48 }}>
+                    <div className="h-8 w-10 bg-muted rounded animate-pulse mx-auto mb-1" />
+                    <div className="h-3 w-8 bg-muted rounded animate-pulse mx-auto" />
                   </div>
-
-                  {/* Performer Info */}
-                  <div className="flex-1 flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      isHighlighted 
-                        ? 'bg-white/30 backdrop-blur-sm' 
-                        : event.type === 'pianist'
-                          ? 'bg-[#99836c]/20' 
-                          : event.type === 'singer'
-                          ? 'bg-[#d4a574]/20'
-                          : 'bg-primary/20'
-                    }`}>
-                      <Icon 
-                        name={getPerformerIcon(event.type)} 
-                        size={20} 
-                        className={
-                          isHighlighted 
-                            ? 'text-white' 
-                            : event.type === 'pianist'
-                              ? 'text-[#99836c]' 
-                              : event.type === 'singer'
-                              ? 'text-[#d4a574]'
-                              : 'text-primary'
-                        } 
-                      />
+                  <div className="flex-1">
+                    <div className="h-5 w-36 bg-muted rounded animate-pulse mb-2" />
+                    <div className="h-3 w-20 bg-muted rounded animate-pulse" />
+                  </div>
+                  <div className="h-5 w-14 bg-muted rounded animate-pulse" />
                 </div>
-                <div className="flex-1">
-                      <div className={`font-semibold text-lg ${
-                        isHighlighted ? 'text-white' : 'text-foreground'
-                      }`}>
-                        {event.performer}
+              ))}
+            </div>
+          )}
+
+          {/* Events program */}
+          {!loading && events.length > 0 && (
+            <div>
+              <p className="text-xs tracking-widest uppercase text-muted-foreground mb-6">
+                {events.length} {events.length === 1 ? 'событие' : events.length < 5 ? 'события' : 'событий'}
+              </p>
+              <div>
+                {events.map((event, index) => {
+                  const day = getDayFromDate(event.date);
+                  const month = getMonthFromDate(event.date, event.month);
+                  const isHighlighted = event.highlighted;
+
+                  return (
+                    <button
+                      type="button"
+                      key={event.id || index}
+                      onClick={() => navigate(`/promotions-page/${event.id}`, { state: { event } })}
+                      className="w-full text-left transition-all duration-200 active:scale-[0.99]"
+                      style={{
+                        display: 'block',
+                        padding: isHighlighted ? 0 : 0,
+                        marginBottom: isHighlighted ? 2 : 0,
+                        animationDelay: `${index * 40}ms`,
+                        animationFillMode: 'both',
+                      }}
+                    >
+                      <div
+                        className={`flex items-center gap-5 py-5 transition-colors duration-150 ${
+                          isHighlighted ? 'rounded-xl px-4 my-1' : 'hover:bg-muted/40 rounded-lg px-2 -mx-2'
+                        }`}
+                        style={isHighlighted
+                          ? { background: '#f8efe0', borderBottom: 'none' }
+                          : { borderBottom: '1px solid var(--color-border)' }
+                        }
+                      >
+                        {/* Date column */}
+                        <div className="text-center flex-shrink-0" style={{ minWidth: 48 }}>
+                          <div
+                            className="text-3xl leading-none"
+                            style={{
+                              ...serif,
+                              color: isHighlighted ? '#8b6a4e' : 'var(--color-foreground)',
+                            }}
+                          >
+                            {day}
+                          </div>
+                          <div
+                            className="text-[10px] tracking-widest uppercase mt-0.5"
+                            style={{ color: isHighlighted ? '#b07c45' : 'var(--color-muted-foreground)' }}
+                          >
+                            {month}
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div
+                          className="self-stretch w-px flex-shrink-0"
+                          style={{ background: isHighlighted ? '#d4a574' : 'var(--color-border)' }}
+                        />
+
+                        {/* Performer */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span
+                              className="font-semibold text-base leading-tight truncate"
+                              style={{ color: isHighlighted ? '#3d2810' : 'var(--color-foreground)' }}
+                            >
+                              {event.performer}
+                            </span>
+                            {isHighlighted && (
+                              <Icon name="Star" size={12} style={{ color: '#b07c45', flexShrink: 0 }} />
+                            )}
+                          </div>
+                          <div
+                            className="text-xs tracking-widest uppercase"
+                            style={{ color: isHighlighted ? '#b07c45' : 'var(--color-muted-foreground)' }}
+                          >
+                            {getTypeLabel(event.type)}
+                          </div>
+                        </div>
+
+                        {/* Time + location */}
+                        <div className="text-right flex-shrink-0">
+                          <div
+                            className="font-semibold text-base"
+                            style={{ ...serif, color: isHighlighted ? '#3d2810' : 'var(--color-foreground)' }}
+                          >
+                            {event.time}
+                          </div>
+                          <div
+                            className="text-[10px] tracking-wider mt-0.5"
+                            style={{ color: isHighlighted ? '#b07c45' : 'var(--color-muted-foreground)' }}
+                          >
+                            {event.location}
+                          </div>
+                        </div>
+
+                        <Icon
+                          name="ChevronRight"
+                          size={16}
+                          style={{ color: isHighlighted ? '#b07c45' : 'var(--color-border)', flexShrink: 0 }}
+                        />
                       </div>
-                      <div className={`text-sm mt-0.5 ${
-                        isHighlighted ? 'text-white/80' : 'text-muted-foreground'
-                      }`}>
-                        {getPerformerLabel(event.type)}
-                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
+          )}
 
-                  {/* Time Badge */}
-                  <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                    isHighlighted 
-                      ? 'bg-white/30 backdrop-blur-sm' 
-                      : 'bg-white/60 backdrop-blur-sm'
-                  } border ${
-                    isHighlighted ? 'border-white/40' : 'border-white/40'
-                  }`}>
-                    <Icon 
-                      name="Clock" 
-                      size={16} 
-                      className={
-                        isHighlighted ? 'text-white' : 'text-foreground'
-                      } 
-                    />
-                    <span className={`text-sm font-bold ${
-                      isHighlighted ? 'text-white' : 'text-foreground'
-                    }`}>
-                      {event.time}
-                    </span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })
-            ) : (
-              <div className="text-center py-12 bg-card border border-border rounded-lg">
-                <Icon name="Calendar" size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
-                <p className="text-lg font-medium text-foreground mb-2">Нет событий</p>
-                <p className="text-sm text-muted-foreground">События появятся здесь позже</p>
+          {/* Empty state */}
+          {!loading && events.length === 0 && (
+            <div className="py-20 text-center">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+                style={{ background: '#f8efe0' }}
+              >
+                <Icon name="Music" size={28} style={{ color: '#b07c45' }} />
               </div>
-            )}
-          </div>
-        )}
-      </div>
+              <h3 className="text-lg text-foreground mb-2" style={serif}>
+                Событий пока нет
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Следите за обновлениями афиши
+              </p>
+            </div>
+          )}
+        </div>
       )}
 
       {!isDetailView && <BottomTabNavigation />}

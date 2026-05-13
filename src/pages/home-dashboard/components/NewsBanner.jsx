@@ -18,7 +18,6 @@ const NewsBanner = ({ onClose }) => {
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.banners && data.banners.length > 0) {
-            // Map API data to component format
             const mappedBanners = data.banners.map(banner => ({
               id: banner.id,
               type: banner.type || 'coffee',
@@ -33,31 +32,10 @@ const NewsBanner = ({ onClose }) => {
               buttonAction: banner.button_action
             }));
             setNewsItems(mappedBanners);
-          } else {
-            // Fallback: default banner if no banners from API
-            setNewsItems([{
-              id: 1,
-              type: 'coffee',
-              icon: 'Coffee',
-              title: 'Дарим Кофе За Регистрацию',
-              description: 'Подойдите к любому сотруднику ресторана и покажите QR-код для получения бесплатного кофе на выбор.',
-              gradient: 'from-[#d4a574] via-[#c89864] to-[#8a7560]',
-              showButton: false
-            }]);
           }
         }
       } catch (error) {
         console.error('Error fetching news banners:', error);
-        // Fallback: default banner on error
-        setNewsItems([{
-          id: 1,
-          type: 'coffee',
-          icon: 'Coffee',
-          title: 'Дарим Кофе За Регистрацию',
-          description: 'Подойдите к любому сотруднику ресторана и покажите QR-код для получения бесплатного кофе на выбор.',
-          gradient: 'from-[#d4a574] via-[#c89864] to-[#8a7560]',
-          showButton: false
-        }]);
       } finally {
         setLoading(false);
       }

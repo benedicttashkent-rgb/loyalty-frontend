@@ -5,6 +5,8 @@ import { formatDateDDMMYYYY, formatDateForInput, parseDateDDMMYYYY, getMonthAbbr
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
 
+const serif = { fontFamily: "'Marcellus', serif" };
+
 const EventsEditor = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
@@ -18,7 +20,7 @@ const EventsEditor = () => {
     performer: '',
     time: '',
     type: 'pianist',
-    customType: '', // For custom event types
+    customType: '',
     isHighlighted: false,
     description: '',
     location: 'Мирабад',
@@ -39,16 +41,10 @@ const EventsEditor = () => {
       if (filter.month) params.append('month', filter.month);
       const queryString = params.toString();
       const endpoint = queryString ? `admin/events?${queryString}` : 'admin/events';
-
-      const response = await adminApiRequest(endpoint, {
-        method: 'GET',
-      });
-
+      const response = await adminApiRequest(endpoint, { method: 'GET' });
       if (response.ok) {
         const data = await response.json();
-        if (data.success) {
-          setEvents(data.events || []);
-        }
+        if (data.success) setEvents(data.events || []);
       }
     } catch (error) {
       console.error('Fetch events error:', error);
@@ -58,116 +54,57 @@ const EventsEditor = () => {
   };
 
   useEffect(() => {
-    if (filter.type || filter.month) {
-      fetchEvents();
-    } else {
-      fetchEvents(); // Always fetch when filters are cleared
-    }
+    fetchEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter.type, filter.month]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validate required fields
-    if (!formData.date) {
-      alert('Дата обязательна. Введите дату в формате dd/mm/yyyy (например: 15/12/2024)');
-      return;
-    }
-
-    if (!formData.performer) {
-      alert('Исполнитель обязателен. Введите имя исполнителя или название события.');
-      return;
-    }
-
-    if (!formData.time) {
-      alert('Время обязательно. Введите время события (например: 20:00)');
-      return;
-    }
-
-    if (formData.type === 'custom' && !formData.customType) {
-      alert('Тип события обязателен. Введите тип события (например: DJ, Музыкант, и т.д.)');
-      return;
-    }
+    if (!formData.date) { alert('Дата обязательна. Формат: dd/mm/yyyy'); return; }
+    if (!formData.performer) { alert('Исполнитель обязателен.'); return; }
+    if (!formData.time) { alert('Время обязательно.'); return; }
+    if (formData.type === 'custom' && !formData.customType) { alert('Введите тип события.'); return; }
 
     try {
-      const endpoint = editingEvent
-        ? `admin/events/${editingEvent.id}`
-        : 'admin/events';
-      
+      const endpoint = editingEvent ? `admin/events/${editingEvent.id}` : 'admin/events';
       const method = editingEvent ? 'PUT' : 'POST';
-
-      // Use FormData for file uploads
       const formDataToSend = new FormData();
 
-      // Validate and send date in dd/mm/yyyy format as entered by user
-      // Backend will parse it to yyyy-mm-dd
       const parsedDate = parseDateDDMMYYYY(formData.date);
-      if (!parsedDate) {
-        alert('Неверный формат даты. Используйте формат dd/mm/yyyy (например: 15/12/2024)');
-        return;
-      }
-      
-      // Extract month abbreviation if not provided
-      if (!formData.month) {
-        const monthAbbr = getMonthAbbr(parsedDate);
-        formDataToSend.append('month', monthAbbr);
-      } else {
-        formDataToSend.append('month', formData.month);
-      }
-      
-      // Send date in dd/mm/yyyy format - backend will parse it
+      if (!parsedDate) { alert('Неверный формат даты. Используйте dd/mm/yyyy'); return; }
+
+      formDataToSend.append('month', formData.month || getMonthAbbr(parsedDate));
       formDataToSend.append('date', formData.date.trim());
       formDataToSend.append('performer', formData.performer.trim());
       formDataToSend.append('time', formData.time.trim());
-      
-      // Use custom type if type is 'custom', otherwise use type
+
       if (formData.type === 'custom' && formData.customType) {
         formDataToSend.append('customType', formData.customType.trim());
         formDataToSend.append('type', 'custom');
       } else {
         formDataToSend.append('type', formData.type || 'pianist');
       }
-      
+
       formDataToSend.append('isHighlighted', formData.isHighlighted ? 'true' : 'false');
       formDataToSend.append('description', (formData.description || '').trim());
       formDataToSend.append('location', (formData.location || 'Мирабад').trim());
       formDataToSend.append('isActive', formData.isActive !== false ? 'true' : 'false');
       formDataToSend.append('displayOrder', String(parseInt(formData.displayOrder) || 0));
 
-      console.log('[EventsEditor] Sending FormData:', {
-        date: formData.date,
-        month: formData.month,
-        performer: formData.performer,
-        time: formData.time,
-        type: formData.type,
-        customType: formData.customType
-      });
+      if (eventImageFile) formDataToSend.append('eventImage', eventImageFile);
 
-      // Add event image file if selected
-      if (eventImageFile) {
-        formDataToSend.append('eventImage', eventImageFile);
-      }
-
-      const response = await adminApiRequest(endpoint, {
-        method,
-        body: formDataToSend,
-      });
-
+      const response = await adminApiRequest(endpoint, { method, body: formDataToSend });
       const responseData = await response.json();
-      
+
       if (response.ok) {
         await fetchEvents();
         setShowModal(false);
         resetForm();
       } else {
-        const errorMessage = responseData.error || responseData.message || 'Failed to save event';
-        alert(`Ошибка: ${errorMessage}`);
-        console.error('Event save error:', responseData);
+        alert(`Ошибка: ${responseData.error || responseData.message || 'Failed to save event'}`);
       }
     } catch (error) {
-      console.error('Submit error:', error);
-      alert(`Ошибка соединения: ${error.message || 'Failed to save event'}`);
+      alert(`Ошибка соединения: ${error.message}`);
     }
   };
 
@@ -175,29 +112,19 @@ const EventsEditor = () => {
     const file = e.target.files[0];
     if (file) {
       setEventImageFile(file);
-      // Create preview URL
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setEventImagePreview(reader.result);
-      };
+      reader.onloadend = () => setEventImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this event?')) return;
-
+    if (!confirm('Удалить это событие?')) return;
     try {
-      const response = await adminApiRequest(`admin/events/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        await fetchEvents();
-      }
+      const response = await adminApiRequest(`admin/events/${id}`, { method: 'DELETE' });
+      if (response.ok) await fetchEvents();
     } catch (error) {
-      console.error('Delete error:', error);
-      alert('Failed to delete event');
+      alert('Ошибка при удалении');
     }
   };
 
@@ -217,12 +144,7 @@ const EventsEditor = () => {
       isActive: event.is_active !== undefined ? event.is_active : true,
       displayOrder: event.display_order || 0,
     });
-    // Set preview if image exists
-    if (event.image_url) {
-      setEventImagePreview(event.image_url);
-    } else {
-      setEventImagePreview(null);
-    }
+    setEventImagePreview(event.image_url || null);
     setEventImageFile(null);
     setShowModal(true);
   };
@@ -230,17 +152,9 @@ const EventsEditor = () => {
   const resetForm = () => {
     setEditingEvent(null);
     setFormData({
-      date: '',
-      month: '',
-      performer: '',
-      time: '',
-      type: 'pianist',
-      customType: '',
-      isHighlighted: false,
-      description: '',
-      location: 'Мирабад',
-      isActive: true,
-      displayOrder: 0,
+      date: '', month: '', performer: '', time: '', type: 'pianist',
+      customType: '', isHighlighted: false, description: '',
+      location: 'Мирабад', isActive: true, displayOrder: 0,
     });
     setEventImageFile(null);
     setEventImagePreview(null);
@@ -249,12 +163,11 @@ const EventsEditor = () => {
   const eventTypes = [
     { value: 'pianist', label: 'Пианист', icon: 'Music' },
     { value: 'singer', label: 'Вокалист', icon: 'Mic' },
-    { value: 'custom', label: 'Другой (ввести свой)', icon: 'User' },
+    { value: 'custom', label: 'Другой тип', icon: 'Sparkles' },
   ];
 
   const months = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
 
-  // Group events by date
   const groupedEvents = events.reduce((acc, event) => {
     const date = event.date ? event.date.split('T')[0] : 'no-date';
     if (!acc[date]) acc[date] = [];
@@ -264,152 +177,175 @@ const EventsEditor = () => {
 
   const sortedDates = Object.keys(groupedEvents).sort();
 
+  const getTypeInfo = (type) => {
+    const known = { pianist: { label: 'Пианист', icon: 'Music' }, singer: { label: 'Вокалист', icon: 'Mic' } };
+    return known[type] || { label: type, icon: 'Sparkles' };
+  };
+
+  const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
+  const labelClass = "block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5";
+
   if (loading) {
-    return <div className="text-center p-8">Loading...</div>;
+    return (
+      <div className="space-y-4 animate-pulse">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-16 bg-muted rounded-xl" />
+        ))}
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
+
+      {/* Header */}
+      <div className="flex items-end justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">События</h1>
-          <p className="text-muted-foreground">Управление дайджестом событий</p>
+          <h1 className="text-3xl font-bold text-foreground" style={serif}>События</h1>
+          <p className="text-sm text-muted-foreground mt-1">{events.length} записей в афише</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <select
             value={filter.type}
             onChange={(e) => setFilter({ ...filter, type: e.target.value })}
-            className="px-3 py-2 border border-input rounded-lg bg-background"
+            className="px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             <option value="">Все типы</option>
-            {eventTypes.map(type => (
-              <option key={type.value} value={type.value}>{type.label}</option>
-            ))}
+            {eventTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
           </select>
           <select
             value={filter.month}
             onChange={(e) => setFilter({ ...filter, month: e.target.value })}
-            className="px-3 py-2 border border-input rounded-lg bg-background"
+            className="px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
           >
             <option value="">Все месяцы</option>
-            {months.map(month => (
-              <option key={month} value={month}>{month}</option>
-            ))}
+            {months.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
           <button
-            onClick={() => {
-              resetForm();
-              setShowModal(true);
-            }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+            onClick={() => { resetForm(); setShowModal(true); }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
           >
-            <Icon name="Plus" size={20} />
-            Добавить Событие
+            <Icon name="Plus" size={16} />
+            Добавить
           </button>
         </div>
       </div>
 
-      {sortedDates.length === 0 ? (
-        <div className="text-center py-12 bg-card border border-border rounded-lg">
-          <Icon name="Calendar" size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
-          <p className="text-lg font-medium text-foreground mb-2">Нет событий</p>
-          <p className="text-sm text-muted-foreground mb-4">Создайте первое событие для дайджеста</p>
+      {/* Empty state */}
+      {sortedDates.length === 0 && (
+        <div
+          className="py-20 text-center rounded-2xl"
+          style={{ background: '#f8efe0' }}
+        >
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#eedcbe' }}>
+            <Icon name="Calendar" size={24} style={{ color: '#b07c45' }} />
+          </div>
+          <p className="text-lg text-foreground mb-1" style={serif}>Нет событий</p>
+          <p className="text-sm text-muted-foreground mb-5">Создайте первое событие для афиши</p>
           <button
-            onClick={() => {
-              resetForm();
-              setShowModal(true);
-            }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+            onClick={() => { resetForm(); setShowModal(true); }}
+            className="px-5 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
           >
-            Добавить Событие
+            Добавить событие
           </button>
         </div>
-      ) : (
-        <div className="space-y-6">
+      )}
+
+      {/* Events timeline */}
+      {sortedDates.length > 0 && (
+        <div className="space-y-8">
           {sortedDates.map(date => (
-            <div key={date} className="bg-card border border-border rounded-lg p-4">
-              <h3 className="font-bold text-lg text-foreground mb-4">
-                {date === 'no-date' ? 'Без даты' : formatDateDDMMYYYY(date)}
-              </h3>
-              <div className="space-y-3">
+            <div key={date}>
+              {/* Date group header */}
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-sm font-semibold text-foreground" style={serif}>
+                  {date === 'no-date' ? 'Без даты' : formatDateDDMMYYYY(date)}
+                </span>
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground">{groupedEvents[date].length}</span>
+              </div>
+
+              {/* Event rows */}
+              <div className="space-y-2">
                 {groupedEvents[date].map((event) => {
-                  // Determine event type display
-                  const isKnownType = ['pianist', 'singer'].includes(event.type);
-                  const eventType = isKnownType ? eventTypes.find(t => t.value === event.type) : null;
-                  const typeLabel = eventType ? eventType.label : event.type;
-                  const typeIcon = eventType ? eventType.icon : 'Calendar';
-                  const typeColor = event.type === 'pianist' ? 'bg-[#99836c]/20 text-[#99836c]' : 
-                                   event.type === 'singer' ? 'bg-[#d4a574]/20 text-[#d4a574]' :
-                                   'bg-primary/20 text-primary';
-                  
+                  const { label: typeLabel, icon: typeIcon } = getTypeInfo(event.type);
+
                   return (
                     <div
                       key={event.id}
-                      className={`p-4 rounded-lg border-2 transition-all ${
-                        event.is_highlighted
-                          ? 'bg-gradient-to-r from-primary/20 to-primary/10 border-primary/40'
-                          : 'bg-background border-border'
-                      }`}
+                      className="group flex items-center gap-4 p-4 rounded-xl transition-all duration-150"
+                      style={{
+                        background: event.is_highlighted ? '#f8efe0' : 'var(--color-card)',
+                        border: `1px solid ${event.is_highlighted ? '#e8cfa0' : 'var(--color-border)'}`,
+                      }}
                     >
+                      {/* Type icon */}
+                      <div
+                        className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: event.is_highlighted ? '#eedcbe' : 'var(--color-muted)',
+                          color: event.is_highlighted ? '#8b6a4e' : 'var(--color-muted-foreground)',
+                        }}
+                      >
+                        <Icon name={typeIcon} size={16} />
+                      </div>
+
+                      {/* Thumbnail */}
                       {event.image_url && (
-                        <div className="mb-3">
-                          <img 
-                            src={event.image_url} 
-                            alt={event.performer} 
-                            className="w-full max-w-xs h-32 object-cover rounded-lg border border-border"
-                          />
-                        </div>
+                        <img
+                          src={event.image_url}
+                          alt={event.performer}
+                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-border"
+                        />
                       )}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className={`p-2 rounded-lg ${typeColor}`}>
-                            <Icon 
-                              name={typeIcon} 
-                              size={20} 
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h4 className="font-bold text-foreground">{event.performer}</h4>
-                              {event.is_highlighted && (
-                                <span className="px-2 py-0.5 bg-primary/20 text-primary rounded text-xs font-medium">
-                                  Рекомендуется
-                                </span>
-                              )}
-                              <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                event.is_active ? 'bg-green-500/20 text-green-600' : 'bg-gray-500/20 text-gray-600'
-                              }`}>
-                                {event.is_active ? 'Активно' : 'Неактивно'}
-                              </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              {typeLabel} • {event.location || 'Мирабад'}
-                            </p>
-                            {event.description && (
-                              <p className="text-xs text-muted-foreground mt-1">{event.description}</p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-foreground">{event.time}</div>
-                            {event.month && (
-                              <div className="text-xs text-muted-foreground">{event.month}</div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <button
-                            onClick={() => handleEdit(event)}
-                            className="p-2 hover:bg-muted rounded-lg transition-colors"
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-sm text-foreground truncate">{event.performer}</span>
+                          {event.is_highlighted && (
+                            <span className="text-[10px] tracking-widest uppercase px-1.5 py-0.5 rounded" style={{ background: '#eedcbe', color: '#8b6a4e' }}>
+                              Рекомендуем
+                            </span>
+                          )}
+                          <span
+                            className={`text-[10px] tracking-widest uppercase px-1.5 py-0.5 rounded ${
+                              event.is_active
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-muted text-muted-foreground'
+                            }`}
                           >
-                            <Icon name="Edit" size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(event.id)}
-                            className="p-2 hover:bg-destructive/10 rounded-lg transition-colors text-destructive"
-                          >
-                            <Icon name="Trash2" size={18} />
-                          </button>
+                            {event.is_active ? 'Активно' : 'Скрыто'}
+                          </span>
                         </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {typeLabel} · {event.location || 'Мирабад'}
+                          {event.description && ` · ${event.description.slice(0, 40)}${event.description.length > 40 ? '…' : ''}`}
+                        </div>
+                      </div>
+
+                      {/* Time */}
+                      <div className="text-right flex-shrink-0">
+                        <div className="font-semibold text-sm text-foreground" style={serif}>{event.time}</div>
+                        {event.month && <div className="text-xs text-muted-foreground">{event.month}</div>}
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleEdit(event)}
+                          className="p-2 rounded-lg hover:bg-muted transition-colors"
+                          title="Редактировать"
+                        >
+                          <Icon name="Pencil" size={15} className="text-muted-foreground" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(event.id)}
+                          className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
+                          title="Удалить"
+                        >
+                          <Icon name="Trash2" size={15} className="text-destructive" />
+                        </button>
                       </div>
                     </div>
                   );
@@ -420,227 +356,209 @@ const EventsEditor = () => {
         </div>
       )}
 
+      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">
-              {editingEvent ? 'Редактировать Событие' : 'Добавить Событие'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Фото События (Загрузить) - Для извлечения текста из фото (OCR)</label>
-                <div className="space-y-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleEventImageChange}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                  />
-                  {eventImagePreview && (
-                    <div className="mt-2">
-                      <img 
-                        src={eventImagePreview} 
-                        alt="Event preview" 
-                        className="w-full max-w-md object-cover rounded-lg border border-border"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">Preview - Text extraction from image will be processed on backend</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+          <div
+            className="bg-card w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl overflow-hidden shadow-2xl"
+            style={{ maxHeight: '92vh' }}
+          >
+            {/* Modal header */}
+            <div
+              className="px-6 py-5 flex items-center justify-between"
+              style={{ borderBottom: '1px solid var(--color-border)' }}
+            >
+              <h2 className="text-xl text-foreground" style={serif}>
+                {editingEvent ? 'Редактировать событие' : 'Новое событие'}
+              </h2>
+              <button
+                onClick={() => { setShowModal(false); resetForm(); }}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-muted transition-colors"
+              >
+                <Icon name="X" size={16} className="text-muted-foreground" />
+              </button>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Дата (dd/mm/yyyy) *</label>
-                  <input
-                    type="text"
-                    value={formData.date}
-                    onChange={(e) => {
-                      let value = e.target.value.replace(/[^\d/]/g, ''); // Only allow digits and /
-                      
-                      // Auto-format as user types: dd/mm/yyyy
-                      if (value.length === 2 && !value.includes('/')) {
-                        value = value + '/';
-                      } else if (value.length === 5 && value.split('/').length === 2) {
-                        value = value + '/';
-                      }
-                      
-                      // Limit to 10 characters (dd/mm/yyyy)
-                      if (value.length <= 10) {
-                        setFormData({ ...formData, date: value });
-                      }
-                    }}
-                    onBlur={(e) => {
-                      // Validate date format on blur
-                      const value = e.target.value.trim();
-                      if (value && !parseDateDDMMYYYY(value)) {
-                        // Don't clear, but show hint
-                        console.warn('Invalid date format:', value);
-                      }
-                    }}
-                    placeholder="15/12/2024"
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                    required
-                    maxLength={10}
-                    pattern="\d{2}/\d{2}/\d{4}"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Формат: dd/mm/yyyy (например: 15/12/2024)</p>
-                  {formData.date && !parseDateDDMMYYYY(formData.date) && (
-                    <p className="text-xs text-red-500 mt-1">⚠️ Неверный формат даты</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Время *</label>
-                  <input
-                    type="time"
-                    value={formData.time}
-                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                    required
-                  />
-                </div>
-              </div>
+            <form onSubmit={handleSubmit} className="overflow-y-auto" style={{ maxHeight: 'calc(92vh - 80px)' }}>
+              <div className="px-6 py-5 space-y-5">
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Месяц (для отображения)</label>
-                <select
-                  value={formData.month}
-                  onChange={(e) => setFormData({ ...formData, month: e.target.value })}
-                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                >
-                  <option value="">Авто (из даты)</option>
-                  {months.map(month => (
-                    <option key={month} value={month}>{month}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-muted-foreground mt-1">Месяц будет автоматически извлечен из даты, если не указан</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Photo upload */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Локация</label>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                    placeholder="Мирабад"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Порядок отображения</label>
-                  <input
-                    type="number"
-                    value={formData.displayOrder}
-                    onChange={(e) => setFormData({ ...formData, displayOrder: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Исполнитель/Название События *</label>
-                <input
-                  type="text"
-                  value={formData.performer}
-                  onChange={(e) => setFormData({ ...formData, performer: e.target.value })}
-                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                  placeholder="Например: Самед (пианист), Сильвия (вокал), или любое другое событие"
-                  required
-                />
-                <p className="text-xs text-muted-foreground mt-1">Можно ввести любое название события, не только пианиста/вокалиста</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Тип События *</label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => {
-                      setFormData({ 
-                        ...formData, 
-                        type: e.target.value,
-                        customType: e.target.value === 'custom' ? formData.customType : ''
-                      });
-                    }}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                    required
+                  <label className={labelClass}>Фото (OCR-извлечение текста)</label>
+                  <div
+                    className="relative rounded-xl overflow-hidden"
+                    style={{ border: '1px dashed var(--color-border)' }}
                   >
-                    {eventTypes.map(type => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
+                    {eventImagePreview ? (
+                      <div className="relative">
+                        <img src={eventImagePreview} alt="Preview" className="w-full object-cover" style={{ maxHeight: 160 }} />
+                        <button
+                          type="button"
+                          onClick={() => { setEventImagePreview(null); setEventImageFile(null); }}
+                          className="absolute top-2 right-2 w-7 h-7 bg-black/50 rounded-full flex items-center justify-center"
+                        >
+                          <Icon name="X" size={14} className="text-white" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center gap-2 py-6 cursor-pointer hover:bg-muted/50 transition-colors">
+                        <Icon name="ImagePlus" size={22} className="text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Нажмите для загрузки</span>
+                        <input type="file" accept="image/*" onChange={handleEventImageChange} className="hidden" />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Date + Time */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Дата *</label>
+                    <input
+                      type="text"
+                      value={formData.date}
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/[^\d/]/g, '');
+                        if (value.length === 2 && !value.includes('/')) value = value + '/';
+                        else if (value.length === 5 && value.split('/').length === 2) value = value + '/';
+                        if (value.length <= 10) setFormData({ ...formData, date: value });
+                      }}
+                      placeholder="15/12/2024"
+                      className={inputClass}
+                      required
+                      maxLength={10}
+                    />
+                    {formData.date && !parseDateDDMMYYYY(formData.date) && (
+                      <p className="text-xs text-destructive mt-1">Неверный формат</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className={labelClass}>Время *</label>
+                    <input
+                      type="time"
+                      value={formData.time}
+                      onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                      className={inputClass}
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Performer */}
+                <div>
+                  <label className={labelClass}>Исполнитель / Название *</label>
+                  <input
+                    type="text"
+                    value={formData.performer}
+                    onChange={(e) => setFormData({ ...formData, performer: e.target.value })}
+                    placeholder="Самед, Сильвия, DJ Bacho..."
+                    className={inputClass}
+                    required
+                  />
+                </div>
+
+                {/* Type */}
+                <div>
+                  <label className={labelClass}>Тип события *</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {eventTypes.map(t => (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, type: t.value, customType: t.value === 'custom' ? formData.customType : '' })}
+                        className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl text-xs font-medium transition-all"
+                        style={{
+                          background: formData.type === t.value ? 'var(--color-primary)' : 'var(--color-muted)',
+                          color: formData.type === t.value ? 'var(--color-primary-foreground)' : 'var(--color-muted-foreground)',
+                        }}
+                      >
+                        <Icon name={t.icon} size={16} />
+                        {t.label}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                   {formData.type === 'custom' && (
                     <input
                       type="text"
                       value={formData.customType}
                       onChange={(e) => setFormData({ ...formData, customType: e.target.value })}
-                      placeholder="Введите тип события (например: DJ, Музыкант, и т.д.)"
-                      className="w-full mt-2 px-3 py-2 border border-input rounded-lg bg-background"
-                      required={formData.type === 'custom'}
+                      placeholder="DJ, Акустика, Стенд-ап..."
+                      className={`${inputClass} mt-2`}
+                      required
                     />
                   )}
                 </div>
+
+                {/* Location */}
                 <div>
-                  <label className="block text-sm font-medium mb-1">Порядок отображения</label>
+                  <label className={labelClass}>Локация</label>
                   <input
-                    type="number"
-                    value={formData.displayOrder}
-                    onChange={(e) => setFormData({ ...formData, displayOrder: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                    min="0"
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    placeholder="Мирабад"
+                    className={inputClass}
                   />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className={labelClass}>Описание</label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Дополнительная информация о событии"
+                    className={inputClass}
+                    rows={3}
+                    style={{ resize: 'none' }}
+                  />
+                </div>
+
+                {/* Toggles */}
+                <div
+                  className="flex items-center gap-6 py-4 px-4 rounded-xl"
+                  style={{ background: 'var(--color-muted)' }}
+                >
+                  {[
+                    { key: 'isActive', label: 'Активно', icon: 'Eye' },
+                    { key: 'isHighlighted', label: 'Рекомендуем', icon: 'Star' },
+                  ].map(({ key, label, icon }) => (
+                    <label key={key} className="flex items-center gap-2.5 cursor-pointer flex-1">
+                      <div
+                        className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
+                        style={{ background: formData[key] ? 'var(--color-primary)' : 'var(--color-border)' }}
+                        onClick={() => setFormData({ ...formData, [key]: !formData[key] })}
+                      >
+                        <div
+                          className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all"
+                          style={{ left: formData[key] ? 22 : 4 }}
+                        />
+                      </div>
+                      <div>
+                        <div className="text-xs font-medium text-foreground">{label}</div>
+                      </div>
+                    </label>
+                  ))}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Описание</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-                  rows={2}
-                  placeholder="Дополнительная информация о событии"
-                />
-              </div>
-
-              <div className="flex items-center gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm font-medium">Активно</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.isHighlighted}
-                    onChange={(e) => setFormData({ ...formData, isHighlighted: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm font-medium">Рекомендуемое (выделено)</span>
-                </label>
-              </div>
-
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-                >
-                  {editingEvent ? 'Обновить' : 'Создать'}
-                </button>
+              {/* Modal footer */}
+              <div
+                className="px-6 py-4 flex gap-3"
+                style={{ borderTop: '1px solid var(--color-border)' }}
+              >
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                  className="px-4 py-2 border border-input rounded-lg hover:bg-muted"
+                  onClick={() => { setShowModal(false); resetForm(); }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
                 >
                   Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                >
+                  {editingEvent ? 'Сохранить' : 'Создать'}
                 </button>
               </div>
             </form>
@@ -652,4 +570,3 @@ const EventsEditor = () => {
 };
 
 export default EventsEditor;
-
