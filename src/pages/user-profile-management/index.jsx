@@ -301,11 +301,6 @@ const UserProfileManagement = () => {
         return;
       }
 
-      const confirmed = window.confirm('Вы уверены, что хотите удалить аккаунт? Это действие необратимо. Все ваши данные, кешбэк и история будут удалены навсегда.');
-      if (!confirmed) {
-        return;
-      }
-
       const response = await fetch(getApiUrl('customers/me'), {
         method: 'DELETE',
         headers: {
@@ -316,16 +311,19 @@ const UserProfileManagement = () => {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          // Clear local storage
           localStorage.removeItem('authToken');
-          // Redirect to signup
-          navigate('/signup');
-          alert('Аккаунт успешно удален');
+          localStorage.removeItem('customerId');
+          localStorage.removeItem('customerPhone');
+          localStorage.removeItem('customerName');
+          localStorage.removeItem('isNewCustomer');
+          localStorage.removeItem('benedictOrderDetails');
+          localStorage.removeItem('benedictSelectedBranch');
+          navigate('/signup', { replace: true });
         } else {
           alert('Ошибка удаления аккаунта: ' + (data.error || 'Неизвестная ошибка'));
         }
       } else {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         alert('Ошибка удаления аккаунта: ' + (errorData.error || 'Неизвестная ошибка'));
       }
     } catch (error) {

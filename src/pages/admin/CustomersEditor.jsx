@@ -27,6 +27,8 @@ const CustomersEditor = () => {
   const [detailTab, setDetailTab] = useState('info');
   const [insights, setInsights] = useState(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchCustomers();
@@ -103,6 +105,35 @@ const CustomersEditor = () => {
       console.error('Fetch insights error:', e);
     } finally {
       setInsightsLoading(false);
+    }
+  };
+
+  const handleDeleteCustomer = async () => {
+    if (!selectedCustomer) return;
+    setDeleting(true);
+    try {
+      const response = await adminApiRequest(`admin/customers/${selectedCustomer.id}`, { method: 'DELETE' });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setShowDetails(false);
+          setSelectedCustomer(null);
+          setInsights(null);
+          setDeleteConfirm(false);
+          fetchCustomers();
+          fetchStats();
+        } else {
+          alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        }
+      } else {
+        const err = await response.json().catch(() => ({}));
+        alert('Ошибка: ' + (err.error || 'Неизвестная ошибка'));
+      }
+    } catch (e) {
+      console.error('Delete customer error:', e);
+      alert('Ошибка удаления: ' + e.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -452,7 +483,7 @@ const CustomersEditor = () => {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(0,0,0,0.45)' }}
-          onClick={(e) => { if (e.target === e.currentTarget) { setShowDetails(false); setSelectedCustomer(null); setInsights(null); } }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); } }}
         >
           <div className="bg-card rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl" style={{ border: '1px solid var(--color-border)' }}>
 
@@ -492,7 +523,7 @@ const CustomersEditor = () => {
                 </div>
               </div>
               <button
-                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); }}
+                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); }}
                 className="p-2 rounded-lg hover:bg-muted transition-colors flex-shrink-0 text-muted-foreground hover:text-foreground"
               >
                 <Icon name="X" size={20} />
@@ -521,6 +552,37 @@ const CustomersEditor = () => {
                   {tab.label}
                 </button>
               ))}
+            </div>
+
+            {/* Delete footer */}
+            <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-3" style={{ background: 'var(--color-muted)' }}>
+              {!deleteConfirm ? (
+                <button
+                  onClick={() => setDeleteConfirm(true)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <Icon name="Trash2" size={14} />
+                  Удалить клиента
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-sm text-red-600 font-medium flex-1">Удалить без возможности восстановления?</span>
+                  <button
+                    onClick={handleDeleteCustomer}
+                    disabled={deleting}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                  >
+                    {deleting ? <Icon name="Loader2" size={13} className="animate-spin" /> : <Icon name="Trash2" size={13} />}
+                    Да, удалить
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(false)}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
+                  >
+                    Отмена
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Tab content */}
