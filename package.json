@@ -17,6 +17,7 @@
       "vite-tsconfig-paths",
       "tailwindcss",
       "autoprefixer",
+      
       "postcss"
     ],
     "scripts": [
