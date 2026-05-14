@@ -120,13 +120,39 @@ const CustomersEditor = () => {
     return balance.toLocaleString('ru-RU', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   };
 
-  const getVisitFrequency = (lastVisitDate) => {
-    if (!lastVisitDate) return { label: 'Не вернулся', color: '#ef4444', bg: '#fef2f2' };
-    const days = Math.floor((Date.now() - new Date(lastVisitDate)) / 86400000);
-    if (days <= 7)  return { label: 'Каждую неделю', color: '#22c55e', bg: '#f0fdf4' };
-    if (days <= 30) return { label: 'Раз в месяц',   color: '#3b82f6', bg: '#eff6ff' };
-    if (days <= 90) return { label: 'Изредка',        color: '#f59e0b', bg: '#fffbeb' };
-    return             { label: 'Не вернулся',        color: '#ef4444', bg: '#fef2f2' };
+  const getVisitFrequency = (lastVisitDate, visitCount, createdAt) => {
+    if (!visitCount || visitCount === 0) {
+      return { label: 'Нет визитов', color: '#9ca3af', bg: '#f3f4f6' };
+    }
+
+    const daysSinceLast = lastVisitDate
+      ? Math.floor((Date.now() - new Date(lastVisitDate)) / 86400000)
+      : null;
+
+    if (visitCount === 1) {
+      if (daysSinceLast === null || daysSinceLast > 90)
+        return { label: 'Не вернулся', color: '#ef4444', bg: '#fef2f2' };
+      return { label: 'Зашёл однажды', color: '#5b7fa6', bg: '#eef3fa' };
+    }
+
+    // avgInterval = days between first registration and last visit / (visits - 1)
+    const spanDays = Math.max(1, Math.floor(
+      (new Date(lastVisitDate) - new Date(createdAt || lastVisitDate)) / 86400000
+    ));
+    const avgInterval = spanDays / (visitCount - 1);
+    const overdueRatio = daysSinceLast / avgInterval;
+
+    // Health status takes priority — is this customer overdue vs their own pattern?
+    if (overdueRatio >= 3)   return { label: 'Перестал ходить', color: '#ef4444', bg: '#fef2f2' };
+    if (overdueRatio >= 1.5) return { label: 'Под угрозой',     color: '#f97316', bg: '#fff7ed' };
+    if (overdueRatio >= 1.0) return { label: 'Скоро ожидается', color: '#f59e0b', bg: '#fffbeb' };
+
+    // Within normal window — show their frequency pattern
+    if (avgInterval <= 7)  return { label: 'Каждую неделю',  color: '#16a34a', bg: '#f0fdf4' };
+    if (avgInterval <= 14) return { label: 'Раз в 2 недели', color: '#22c55e', bg: '#f0fdf4' };
+    if (avgInterval <= 35) return { label: 'Раз в месяц',    color: '#3b82f6', bg: '#eff6ff' };
+    if (avgInterval <= 70) return { label: 'Раз в 2 месяца', color: '#f59e0b', bg: '#fffbeb' };
+    return                        { label: 'Изредка',         color: '#9ca3af', bg: '#f3f4f6' };
   };
 
   const getInitials = (name, surname) => {
@@ -300,7 +326,7 @@ const CustomersEditor = () => {
                 </tr>
               ) : (
                 customers.map((customer) => {
-                  const freq = getVisitFrequency(customer.last_visit_date);
+                  const freq = getVisitFrequency(customer.last_visit_date, customer.visit_count, customer.created_at);
                   const tier = TIER_CONFIG[customer.tier];
                   const initials = getInitials(customer.name, customer.sur_name);
                   const avatarBg = getAvatarColor(customer.id);
