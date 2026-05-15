@@ -9,6 +9,7 @@ import SocialMediaSection from './components/SocialMediaSection';
 import AboutSection from './components/AboutSection';
 import MapModal from './components/MapModal';
 import { useNavigate } from 'react-router-dom';
+import { openPhoneDialer } from '../../utils/openPhoneDialer';
 
 const AboutBranchLocations = () => {
   const navigate = useNavigate();
@@ -84,7 +85,7 @@ const AboutBranchLocations = () => {
   };
 
   const handleCallClick = (phone) => {
-    window.location.href = `tel:${phone}`;
+    openPhoneDialer(phone);
   };
 
   const handleMapClick = (coordinates, branchName) => {
