@@ -24,12 +24,17 @@ const BookTableModal = ({ isOpen, onClose }) => {
     },
   ];
 
-  const handleCallClick = (e, phone) => {
-    // Prevent the event from bubbling up if necessary
-    if (e && e.preventDefault) e.preventDefault();
-    
-    const cleanPhone = phone.replace(/[^\d+]/g, ''); // More robust regex
+  const handleCallClick = (phone) => {
+    const cleanPhone = phone.replace(/[^\d+]/g, '');
     window.location.href = `tel:${cleanPhone}`;
+  };
+
+  const handleLocationClick = (coordinates) => {
+    window.open(
+      `https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
   };
 
   return (
