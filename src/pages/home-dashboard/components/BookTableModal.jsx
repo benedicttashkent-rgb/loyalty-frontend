@@ -10,7 +10,7 @@ const BookTableModal = ({ isOpen, onClose }) => {
       id: 1,
       name: "Benedict Нукус",
       address: "ул. Нукус 31/2",
-      phone: "+998338888807",
+      phone: "+998 33 8888807",
       hours: "Ежедневно: 08:00 - 00:00",
     coordinates: { lat: 41.293115, lng: 69.281112 },
     },
@@ -18,19 +18,18 @@ const BookTableModal = ({ isOpen, onClose }) => {
       id: 2,
       name: "Benedict Мирабад",
       address: "ул. Мирабад 60B",
-      phone: "+998335556601",
+      phone: "+998 33 5556601",
       hours: "Ежедневно: 08:00 - 00:00",
     coordinates: { lat: 41.293377, lng: 69.268479 },
     },
   ];
 
-  const handleCallClick = (phone) => {
-    window.location.href = `tel:${phone.replace(/\s/g, '')}`;
-  };
-
-  const handleLocationClick = (coordinates) => {
-    const url = `https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`;
-    window.open(url, '_blank');
+  const handleCallClick = (e, phone) => {
+    // Prevent the event from bubbling up if necessary
+    if (e && e.preventDefault) e.preventDefault();
+    
+    const cleanPhone = phone.replace(/[^\d+]/g, ''); // More robust regex
+    window.location.href = `tel:${cleanPhone}`;
   };
 
   return (
