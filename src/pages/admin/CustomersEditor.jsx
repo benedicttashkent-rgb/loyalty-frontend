@@ -29,6 +29,10 @@ const CustomersEditor = () => {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [balanceAction, setBalanceAction] = useState(null); // 'add' | 'subtract'
+  const [balanceAmount, setBalanceAmount] = useState('');
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  const [balanceError, setBalanceError] = useState('');
 
   useEffect(() => {
     fetchCustomers();
@@ -84,6 +88,9 @@ const CustomersEditor = () => {
           setSelectedCustomer(data.customer);
           setDetailTab('info');
           setInsights(null);
+          setBalanceAction(null);
+          setBalanceAmount('');
+          setBalanceError('');
           setShowDetails(true);
         }
       }
@@ -134,6 +141,33 @@ const CustomersEditor = () => {
       alert('Ошибка удаления: ' + e.message);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleBalanceAdjust = async () => {
+    const amount = parseFloat(balanceAmount);
+    if (!amount || amount <= 0) { setBalanceError('Введите сумму больше 0'); return; }
+    setBalanceLoading(true);
+    setBalanceError('');
+    try {
+      const response = await adminApiRequest(`admin/customers/${selectedCustomer.id}/balance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, operation: balanceAction }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        setSelectedCustomer(prev => ({ ...prev, balance: data.balance ?? (balanceAction === 'add' ? prev.balance + amount : prev.balance - amount) }));
+        setBalanceAction(null);
+        setBalanceAmount('');
+        fetchCustomers();
+      } else {
+        setBalanceError(data.error || 'Ошибка операции');
+      }
+    } catch (e) {
+      setBalanceError('Ошибка: ' + e.message);
+    } finally {
+      setBalanceLoading(false);
     }
   };
 
@@ -483,7 +517,7 @@ const CustomersEditor = () => {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(0,0,0,0.45)' }}
-          onClick={(e) => { if (e.target === e.currentTarget) { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); } }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); } }}
         >
           <div className="bg-card rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl" style={{ border: '1px solid var(--color-border)' }}>
 
@@ -523,7 +557,7 @@ const CustomersEditor = () => {
                 </div>
               </div>
               <button
-                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); }}
+                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); }}
                 className="p-2 rounded-lg hover:bg-muted transition-colors flex-shrink-0 text-muted-foreground hover:text-foreground"
               >
                 <Icon name="X" size={20} />
@@ -592,16 +626,82 @@ const CustomersEditor = () => {
               {detailTab === 'info' && (
                 <div className="space-y-5">
                   {/* Balance hero */}
-                  <div className="rounded-2xl p-5 flex items-center justify-between" style={{ background: '#f8efe0' }}>
-                    <div>
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Баланс лояльности</div>
-                      <div className="text-3xl font-bold" style={{ color: '#8b6a4e', ...serif }}>
-                        {formatBalance(selectedCustomer.balance)} <span className="text-lg font-normal">сум</span>
+                  <div className="rounded-2xl p-5 space-y-4" style={{ background: '#f8efe0' }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Баланс лояльности</div>
+                        <div className="text-3xl font-bold" style={{ color: '#8b6a4e', ...serif }}>
+                          {formatBalance(selectedCustomer.balance)} <span className="text-lg font-normal">сум</span>
+                        </div>
+                      </div>
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: '#8b6a4e20' }}>
+                        <Icon name="Wallet" size={22} style={{ color: '#8b6a4e' }} />
                       </div>
                     </div>
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: '#8b6a4e20' }}>
-                      <Icon name="Wallet" size={22} style={{ color: '#8b6a4e' }} />
-                    </div>
+
+                    {/* Balance action buttons */}
+                    {!balanceAction && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => { setBalanceAction('add'); setBalanceAmount(''); setBalanceError(''); }}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium text-white transition-colors"
+                          style={{ background: '#7c9885' }}
+                        >
+                          <Icon name="Plus" size={15} />
+                          Пополнить
+                        </button>
+                        <button
+                          onClick={() => { setBalanceAction('subtract'); setBalanceAmount(''); setBalanceError(''); }}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium text-white transition-colors"
+                          style={{ background: '#c17b7b' }}
+                        >
+                          <Icon name="Minus" size={15} />
+                          Списать
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Inline balance form */}
+                    {balanceAction && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-semibold" style={{ color: balanceAction === 'add' ? '#7c9885' : '#c17b7b' }}>
+                          {balanceAction === 'add' ? '+ Пополнение баланса' : '− Списание с баланса'}
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            value={balanceAmount}
+                            onChange={(e) => { setBalanceAmount(e.target.value); setBalanceError(''); }}
+                            placeholder="Сумма в сумах"
+                            className="flex-1 px-3 py-2 rounded-xl text-sm bg-white border focus:outline-none focus:ring-2 transition-colors"
+                            style={{ borderColor: '#8b6a4e40', fontSize: 'max(16px, 1em)' }}
+                            autoFocus
+                          />
+                          <button
+                            onClick={handleBalanceAdjust}
+                            disabled={balanceLoading}
+                            className="px-4 py-2 rounded-xl text-sm font-medium text-white flex items-center gap-1.5 disabled:opacity-50 transition-colors"
+                            style={{ background: balanceAction === 'add' ? '#7c9885' : '#c17b7b' }}
+                          >
+                            {balanceLoading
+                              ? <Icon name="Loader2" size={14} className="animate-spin" />
+                              : <Icon name="Check" size={14} />}
+                            ОК
+                          </button>
+                          <button
+                            onClick={() => { setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); }}
+                            className="px-3 py-2 rounded-xl text-sm font-medium border transition-colors"
+                            style={{ borderColor: '#8b6a4e40', color: '#8b6a4e' }}
+                          >
+                            Отмена
+                          </button>
+                        </div>
+                        {balanceError && (
+                          <p className="text-xs text-red-600">{balanceError}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Quick stats */}

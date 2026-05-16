@@ -41,14 +41,14 @@ const BirthdayPartyModal = ({ isOpen, onClose }) => {
           <div className="relative z-10">
             <div className="flex justify-center mb-4">
               <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Icon name="Coffee" size={40} className="text-white" />
+                <Icon name="Gift" size={40} className="text-white" />
               </div>
             </div>
             <h2
               id="birthday-party-modal-title"
               className="text-3xl font-bold text-white text-center drop-shadow-md"
             >
-              Дарим Кофе За Регистрацию!
+              30 000 сум за регистрацию!
             </h2>
           </div>
         </div>
@@ -67,19 +67,19 @@ const BirthdayPartyModal = ({ isOpen, onClose }) => {
           {/* Main description */}
           <div className="space-y-4">
             <p className="text-gray-700 text-base leading-relaxed">
-              Зарегистрируйтесь в нашей программе лояльности и получите бесплатный кофе на выбор! 
-              Просто зарегистрируйтесь с фото и наслаждайтесь любым кофейным напитком из нашего меню совершенно бесплатно.
+              Зарегистрируйтесь в нашей программе лояльности и получите 30 000 сум на счёт в подарок!
+              Просто зарегистрируйтесь и используйте бонус при следующем заказе.
             </p>
 
             {/* Event Details Cards */}
             <div className="space-y-3">
               <div className="flex items-center gap-3 bg-gradient-to-r from-[#d4a574]/10 to-[#8a7560]/10 rounded-xl px-4 py-3 border border-[#d4a574]/20">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#d4a574] to-[#8a7560] flex items-center justify-center flex-shrink-0 shadow-md">
-                  <Icon name="Coffee" size={24} className="text-white" />
+                  <Icon name="Gift" size={24} className="text-white" />
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-gray-600 font-medium">Что вы получите</p>
-                  <p className="text-sm font-semibold text-gray-900">Бесплатный кофе на выбор</p>
+                  <p className="text-sm font-semibold text-gray-900">30 000 сум на счёт</p>
                 </div>
               </div>
 
@@ -113,7 +113,7 @@ const BirthdayPartyModal = ({ isOpen, onClose }) => {
               <ul className="space-y-2">
                 <li className="flex items-start gap-2 text-gray-700 text-sm">
                   <Icon name="Check" size={18} className="mt-0.5 flex-shrink-0 text-[#99836c]" />
-                  <span>Бесплатный кофе при регистрации</span>
+                  <span>30 000 сум бонус при регистрации</span>
                 </li>
                 <li className="flex items-start gap-2 text-gray-700 text-sm">
                   <Icon name="Check" size={18} className="mt-0.5 flex-shrink-0 text-[#99836c]" />
@@ -134,31 +134,20 @@ const BirthdayPartyModal = ({ isOpen, onClose }) => {
             <div className="bg-gradient-to-br from-[#d4a574]/20 to-[#8a7560]/20 rounded-xl p-5 border border-[#d4a574]/30">
               <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <Icon name="Info" size={20} className="text-[#99836c]" />
-                Как получить бесплатный кофе
+                Как получить бонус
               </h3>
               <ol className="space-y-3 text-sm text-gray-700">
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#99836c] text-white flex items-center justify-center font-bold text-xs">1</span>
-                  <span>Зарегистрируйтесь в приложении с фото профиля</span>
+                  <span>Зарегистрируйтесь в приложении</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#99836c] text-white flex items-center justify-center font-bold text-xs">2</span>
-                  <span>Придите в любой филиал Benedict Café</span>
+                  <span>30 000 сум автоматически зачисляются на ваш счёт</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#99836c] text-white flex items-center justify-center font-bold text-xs">3</span>
-                  <div>
-                    <span>Скажите сотруднику ресторана:</span>
-                    <div className="mt-1 bg-white rounded-lg p-3 border border-[#d4a574]/30">
-                      <p className="text-[#99836c] font-semibold italic">
-                        "Я зарегистрировался в приложении, хочу получить бесплатный кофе"
-                      </p>
-                    </div>
-                  </div>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-[#99836c] text-white flex items-center justify-center font-bold text-xs">4</span>
-                  <span>Выберите любой кофе из меню и наслаждайтесь!</span>
+                  <span>Используйте бонус при следующем заказе в любом филиале Benedict Café</span>
                 </li>
               </ol>
             </div>
@@ -182,7 +171,7 @@ const BirthdayPartyModal = ({ isOpen, onClose }) => {
               </div>
 
               <p className="text-xs text-gray-600 italic">
-                Предложение действительно один раз при первой регистрации с фото профиля.
+                Бонус начисляется один раз при первой регистрации.
               </p>
             </div>
           </div>
