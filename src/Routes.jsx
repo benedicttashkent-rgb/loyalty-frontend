@@ -19,6 +19,7 @@ import NewsBannerEditor from './pages/admin/NewsBannerEditor';
 import RewardsEditor from './pages/admin/RewardsEditor';
 import EventsEditor from './pages/admin/EventsEditor';
 import TelegramBroadcastEditor from './pages/admin/TelegramBroadcastEditor';
+import SpecialOffersEditor from './pages/admin/SpecialOffersEditor';
 import MenuItemsEditor from './pages/admin/MenuItemsEditor';
 import CategoriesEditor from './pages/admin/CategoriesEditor';
 import TelegramTest from './pages/telegram-test';
@@ -76,6 +77,7 @@ const AppRoutes = () => {
           <Route path="rewards" element={<RewardsEditor />} />
           <Route path="events" element={<EventsEditor />} />
           <Route path="broadcast" element={<TelegramBroadcastEditor />} />
+          <Route path="special-offers" element={<SpecialOffersEditor />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />

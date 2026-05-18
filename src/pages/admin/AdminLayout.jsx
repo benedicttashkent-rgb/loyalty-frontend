@@ -100,6 +100,7 @@ const AdminLayout = () => {
     { path: '/admin/rewards', label: 'Награды', icon: 'Gift' },
     { path: '/admin/events', label: 'События', icon: 'Calendar' },
     { path: '/admin/broadcast', label: 'Рассылки Telegram', icon: 'Send' },
+    { path: '/admin/special-offers', label: 'Спецпредложения', icon: 'Tag' },
   ];
 
   if (loading) {

@@ -7,14 +7,10 @@ const SpecialOffersStrip = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(getApiUrl('content/news'));
+        const res = await fetch(getApiUrl('content/special-offers'));
         if (!res.ok) return;
         const data = await res.json();
-        if (data.success && data.banners?.length) {
-          // Only show banners that have an image — those are the "offer" cards
-          const withImages = data.banners.filter(b => b.icon_image_url);
-          setOffers(withImages);
-        }
+        if (data.success && data.offers?.length) setOffers(data.offers);
       } catch (_) {}
     };
     load();
@@ -34,12 +30,13 @@ const SpecialOffersStrip = () => {
             className="flex-shrink-0 w-56 h-36 rounded-2xl overflow-hidden relative"
             style={{ background: offer.background_color || '#1a1a1a' }}
           >
-            {/* Food photo — right side, fading into dark on left */}
-            <img
-              src={offer.icon_image_url}
-              alt={offer.title}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+            {offer.image_url && (
+              <img
+                src={offer.image_url}
+                alt={offer.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
             {/* Gradient overlay: dark on left for text, transparent on right for image */}
             <div
               className="absolute inset-0"
