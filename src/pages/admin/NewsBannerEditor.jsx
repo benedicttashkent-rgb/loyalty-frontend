@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
 import { RoutePicker } from './components/DetailFormSection';
+import VisibilityPicker from './components/VisibilityPicker';
 
 
 const NewsBannerEditor = () => {
@@ -22,6 +23,7 @@ const NewsBannerEditor = () => {
     detailTitle: '',
     detailBody: '',
     detailImages: '[]',
+    visibleTo: 'all',
   });
   const [iconImageFile, setIconImageFile] = useState(null);
   const [iconImagePreview, setIconImagePreview] = useState(null);
@@ -103,6 +105,7 @@ const NewsBannerEditor = () => {
       detailTitle: banner.detail_title || '',
       detailBody: banner.detail_body || '',
       detailImages: banner.detail_images || '[]',
+      visibleTo: banner.visible_to || 'all',
     });
     setIconImagePreview(banner.icon_image_url || null);
     setIconImageFile(null);
@@ -115,7 +118,7 @@ const NewsBannerEditor = () => {
       title: '', description: '', icon: 'Coffee',
       backgroundColor: '#c89864', showButton: false,
       buttonText: '', buttonAction: '', isActive: true, displayOrder: 0,
-      detailTitle: '', detailBody: '', detailImages: '[]',
+      detailTitle: '', detailBody: '', detailImages: '[]', visibleTo: 'all',
     });
     setIconImageFile(null);
     setIconImagePreview(null);
@@ -223,6 +226,11 @@ const NewsBannerEditor = () => {
                     {banner.show_button && (
                       <span className="text-[10px] tracking-widest uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
                         Кнопка
+                      </span>
+                    )}
+                    {banner.visible_to && banner.visible_to !== 'all' && (
+                      <span className="text-[10px] tracking-widest uppercase px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">
+                        {banner.visible_to}
                       </span>
                     )}
                   </div>
@@ -381,6 +389,15 @@ const NewsBannerEditor = () => {
                       </label>
                     )}
                   </div>
+                </div>
+
+                {/* Visibility */}
+                <div>
+                  <label className={labelClass}>Кому показывать</label>
+                  <VisibilityPicker
+                    value={formData.visibleTo}
+                    onChange={val => setFormData(f => ({ ...f, visibleTo: val }))}
+                  />
                 </div>
 
                 {/* Active toggle only */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
 import { RoutePicker } from './components/DetailFormSection';
+import VisibilityPicker from './components/VisibilityPicker';
 
 const SpecialOffersEditor = () => {
   const [offers, setOffers] = useState([]);
@@ -10,7 +11,7 @@ const SpecialOffersEditor = () => {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: 0, isActive: true, buttonAction: '', detailTitle: '', detailBody: '', detailImages: '[]' });
+  const [form, setForm] = useState({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: 0, isActive: true, buttonAction: '', detailTitle: '', detailBody: '', detailImages: '[]', visibleTo: 'all' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -30,7 +31,7 @@ const SpecialOffersEditor = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: offers.length, isActive: true, buttonAction: '', detailTitle: '', detailBody: '', detailImages: '[]' });
+    setForm({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: offers.length, isActive: true, buttonAction: '', detailTitle: '', detailBody: '', detailImages: '[]', visibleTo: 'all' });
     setImageFile(null);
     setImagePreview(null);
     setShowForm(true);
@@ -48,6 +49,7 @@ const SpecialOffersEditor = () => {
       detailTitle: offer.detail_title || '',
       detailBody: offer.detail_body || '',
       detailImages: offer.detail_images || '[]',
+      visibleTo: offer.visible_to || 'all',
     });
     setImageFile(null);
     setImagePreview(offer.image_url || null);
@@ -71,6 +73,7 @@ const SpecialOffersEditor = () => {
       fd.append('backgroundColor', form.backgroundColor);
       fd.append('displayOrder', form.displayOrder);
       fd.append('isActive', form.isActive);
+      fd.append('visibleTo', form.visibleTo || 'all');
       if (imageFile) fd.append('image', imageFile);
 
       const url = editing ? `admin/special-offers/${editing.id}` : 'admin/special-offers';
@@ -264,6 +267,14 @@ const SpecialOffersEditor = () => {
                   className="w-4 h-4 rounded accent-primary" />
                 <span className="text-sm text-foreground">Активно (показывать на главной)</span>
               </label>
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Кому показывать</label>
+                <VisibilityPicker
+                  value={form.visibleTo}
+                  onChange={val => setForm(f => ({ ...f, visibleTo: val }))}
+                />
+              </div>
 
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1">Действие кнопки</label>

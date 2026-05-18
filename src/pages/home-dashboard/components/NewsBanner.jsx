@@ -5,7 +5,13 @@ import { getApiUrl } from '../../../config/api';
 import DetailModal from './DetailModal';
 
 
-const NewsBanner = () => {
+const isVisibleToTier = (visibleTo, userTier) => {
+  if (!visibleTo || visibleTo === 'all') return true;
+  if (!userTier) return true;
+  return visibleTo.split(',').includes(userTier);
+};
+
+const NewsBanner = ({ userTier }) => {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -21,7 +27,8 @@ const NewsBanner = () => {
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.banners && data.banners.length > 0) {
-            setNewsItems(data.banners.map(banner => ({
+            const filtered = data.banners.filter(b => isVisibleToTier(b.visible_to, userTier));
+            setNewsItems(filtered.map(banner => ({
               id: banner.id,
               icon: banner.icon || 'Coffee',
               iconImageUrl: banner.icon_image_url || null,

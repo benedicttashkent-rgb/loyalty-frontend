@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
+import { TIER_OPTIONS } from './components/VisibilityPicker';
 
 const TelegramBroadcastEditor = () => {
   const [stats, setStats] = useState(null);
@@ -14,6 +15,7 @@ const TelegramBroadcastEditor = () => {
     customButtonText: '',
     customButtonUrl: '',
     visitFrequency: 'all',
+    loyaltyStatus: 'all',
     sendToAll: false,
   });
   const [photoFile, setPhotoFile] = useState(null);
@@ -98,6 +100,7 @@ const TelegramBroadcastEditor = () => {
       formDataToSend.append('customButtonText', formData.customButtonText || '');
       formDataToSend.append('customButtonUrl', formData.customButtonUrl || '');
       formDataToSend.append('visitFrequency', formData.visitFrequency || 'all');
+      formDataToSend.append('loyaltyStatus', formData.loyaltyStatus || 'all');
       formDataToSend.append('sendToAll', formData.sendToAll ? 'true' : 'false');
       
       if (photoFile) {
@@ -291,6 +294,45 @@ const TelegramBroadcastEditor = () => {
                 </select>
               )}
             </div>
+          </div>
+
+          {/* Loyalty status filter */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Статус лояльности</label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData(f => ({ ...f, loyaltyStatus: 'all' }))}
+                className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors"
+                style={formData.loyaltyStatus === 'all'
+                  ? { background: 'var(--color-primary)', color: 'var(--color-primary-foreground)', borderColor: 'var(--color-primary)' }
+                  : { background: 'var(--color-background)', color: 'var(--color-muted-foreground)', borderColor: 'var(--color-border)' }}
+              >
+                Все статусы
+              </button>
+              {TIER_OPTIONS.map(tier => {
+                const active = formData.loyaltyStatus === tier.id;
+                return (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => setFormData(f => ({ ...f, loyaltyStatus: active ? 'all' : tier.id }))}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors"
+                    style={active
+                      ? { background: tier.color, color: '#fff', borderColor: tier.color }
+                      : { background: 'var(--color-background)', color: 'var(--color-muted-foreground)', borderColor: 'var(--color-border)' }}
+                  >
+                    {tier.label}
+                    {stats?.loyaltyStatus?.[tier.id] != null && (
+                      <span className="ml-1 opacity-70">({stats.loyaltyStatus[tier.id]})</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              Фильтрует по уровню клиента в программе лояльности
+            </p>
           </div>
 
           {/* WebApp button */}

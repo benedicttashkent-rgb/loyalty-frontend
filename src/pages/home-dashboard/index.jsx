@@ -348,9 +348,9 @@ const HomeDashboard = () => {
 
           <QRCodeButton onClick={() => setShowQRCode(true)} />
 
-          <NewsBanner />
+          <NewsBanner userTier={userData?.tier} />
 
-          <SpecialOffersStrip />
+          <SpecialOffersStrip userTier={userData?.tier} />
 
           <OrderSection onBookTableClick={() => setShowBookTable(true)} />
         </div>

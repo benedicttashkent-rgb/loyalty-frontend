@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getApiUrl } from '../../../config/api';
 import DetailModal from './DetailModal';
 
-const SpecialOffersStrip = () => {
+const SpecialOffersStrip = ({ userTier }) => {
   const navigate = useNavigate();
   const [offers, setOffers] = useState([]);
   const [activeOffer, setActiveOffer] = useState(null);
@@ -14,17 +14,25 @@ const SpecialOffersStrip = () => {
         const res = await fetch(getApiUrl('content/special-offers'));
         if (!res.ok) return;
         const data = await res.json();
-        if (data.success && data.offers?.length) setOffers(data.offers);
+        if (data.success && data.offers?.length) {
+          const visible = data.offers.filter(o => {
+            if (!o.visible_to || o.visible_to === 'all') return true;
+            if (!userTier) return true;
+            return o.visible_to.split(',').includes(userTier);
+          });
+          setOffers(visible);
+        }
       } catch (_) {}
     };
     load();
-  }, []);
+  }, [userTier]);
 
   if (!offers.length) return null;
 
   const handleTap = (offer) => {
-    const hasDetail = offer.detail_title || offer.detail_body;
-    if (hasDetail) { setActiveOffer(offer); return; }
+    if (offer.button_action === '__detail__' || offer.detail_title || offer.detail_body) {
+      setActiveOffer(offer); return;
+    }
     if (!offer.button_action) return;
     if (offer.button_action.startsWith('/')) navigate(offer.button_action);
     else window.open(offer.button_action, '_blank');
