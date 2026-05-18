@@ -74,7 +74,7 @@ const SpecialOffersEditor = () => {
       fd.append('displayOrder', form.displayOrder);
       fd.append('isActive', form.isActive);
       fd.append('visibleTo', form.visibleTo || 'all');
-      if (imageFile) fd.append('image', imageFile);
+      if (imageFile) fd.append('iconImage', imageFile);
 
       const url = editing ? `admin/special-offers/${editing.id}` : 'admin/special-offers';
       const method = editing ? 'PUT' : 'POST';
