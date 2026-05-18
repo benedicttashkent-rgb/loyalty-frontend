@@ -383,34 +383,32 @@ const NewsBannerEditor = () => {
                   </div>
                 </div>
 
-                {/* Toggles */}
-                <div
-                  className="flex items-center gap-6 py-4 px-4 rounded-xl"
-                  style={{ background: 'var(--color-muted)' }}
-                >
-                  {[
-                    { key: 'isActive', label: 'Активен' },
-                    { key: 'showButton', label: 'Показать кнопку' },
-                  ].map(({ key, label }) => (
-                    <label key={key} className="flex items-center gap-2.5 cursor-pointer flex-1">
-                      <div
-                        className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
-                        style={{ background: formData[key] ? 'var(--color-primary)' : 'var(--color-border)' }}
-                        onClick={() => setFormData({ ...formData, [key]: !formData[key] })}
-                      >
-                        <div
-                          className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all"
-                          style={{ left: formData[key] ? 22 : 4 }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-foreground">{label}</span>
-                    </label>
-                  ))}
+                {/* Active toggle only */}
+                <div className="flex items-center gap-6 py-4 px-4 rounded-xl" style={{ background: 'var(--color-muted)' }}>
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <div
+                      className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
+                      style={{ background: formData.isActive ? 'var(--color-primary)' : 'var(--color-border)' }}
+                      onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
+                    >
+                      <div className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: formData.isActive ? 22 : 4 }} />
+                    </div>
+                    <span className="text-xs font-medium text-foreground">Активен</span>
+                  </label>
                 </div>
 
-                {/* Button fields */}
-                {formData.showButton && (
-                  <div className="grid grid-cols-1 gap-4">
+                {/* Button — only shown when an action is set */}
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className={labelClass}>Куда ведёт кнопка</label>
+                    <RoutePicker
+                      value={formData.buttonAction}
+                      onChange={val => {
+                        setFormData({ ...formData, buttonAction: val, showButton: !!val });
+                      }}
+                    />
+                  </div>
+                  {formData.buttonAction && (
                     <div>
                       <label className={labelClass}>Текст кнопки</label>
                       <input
@@ -421,15 +419,8 @@ const NewsBannerEditor = () => {
                         className={inputClass}
                       />
                     </div>
-                    <div>
-                      <label className={labelClass}>Куда ведёт кнопка</label>
-                      <RoutePicker
-                        value={formData.buttonAction}
-                        onChange={val => setFormData({ ...formData, buttonAction: val })}
-                      />
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
               {/* Detail modal section */}
