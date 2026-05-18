@@ -1,6 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+
+const faqs = [
+  {
+    q: 'Как накапливаются баллы?',
+    a: 'После каждого закрытого чека баллы зачисляются автоматически в течение 10 минут. Процент кешбэка зависит от вашего уровня: Bronze — 2%, Silver — 3%, Gold — 5%, Platinum — 10%.',
+  },
+  {
+    q: 'Как потратить баллы?',
+    a: 'Скажите кассиру, что хотите оплатить часть счёта баллами — он спишет нужную сумму с вашего бонусного счёта.',
+  },
+  {
+    q: 'Какую часть счёта можно оплатить баллами?',
+    a: 'До 50% от суммы чека. Оставшуюся часть нужно оплатить наличными или картой.',
+  },
+  {
+    q: 'Сколько хранятся баллы?',
+    a: 'Баллы сгорают, если в течение 6 месяцев не было ни одной покупки. Любой визит обнуляет этот таймер.',
+  },
+  {
+    q: 'Где можно тратить баллы?',
+    a: 'Пока только в заведениях Benedict Café при оплате на кассе.',
+  },
+];
+
+const FAQItem = ({ q, a }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-border rounded-xl overflow-hidden">
+      <button
+        className="w-full flex items-center justify-between px-4 py-3 text-left gap-3"
+        onClick={() => setOpen(o => !o)}
+      >
+        <span className="text-sm font-medium text-foreground">{q}</span>
+        <Icon name={open ? 'ChevronUp' : 'ChevronDown'} size={16} className="flex-shrink-0 text-muted-foreground" />
+      </button>
+      {open && (
+        <div className="px-4 pb-3 text-sm text-muted-foreground leading-relaxed border-t border-border pt-3">
+          {a}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const LoyaltyDetailsModal = ({ isOpen, onClose, userData }) => {
   if (!isOpen) return null;
@@ -107,6 +150,13 @@ const LoyaltyDetailsModal = ({ isOpen, onClose, userData }) => {
           </div>
         </div>
 
+
+        <div>
+          <h3 className="text-base font-semibold text-foreground mb-3">Частые вопросы</h3>
+          <div className="space-y-2">
+            {faqs.map((item, i) => <FAQItem key={i} {...item} />)}
+          </div>
+        </div>
 
         <Button variant="outline" fullWidth onClick={onClose}>
           Закрыть

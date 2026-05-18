@@ -7,6 +7,7 @@ import BrandLogo from '../../components/navigation/BrandLogo';
 import LoyaltyPointsCard from './components/LoyaltyPointsCard';
 import QRCodeButton from './components/QRCodeButton';
 import NewsBanner from './components/NewsBanner';
+import SpecialOffersStrip from './components/SpecialOffersStrip';
 import OrderSection from './components/OrderSection';
 import LoyaltyDetailsModal from './components/LoyaltyDetailsModal';
 import QRCodeModal from './components/QRCodeModal';
@@ -348,6 +349,8 @@ const HomeDashboard = () => {
           <QRCodeButton onClick={() => setShowQRCode(true)} />
 
           <NewsBanner />
+
+          <SpecialOffersStrip />
 
           <OrderSection onBookTableClick={() => setShowBookTable(true)} />
         </div>
