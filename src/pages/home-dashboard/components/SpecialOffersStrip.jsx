@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getApiUrl } from '../../../config/api';
 
-const serif = { fontFamily: "'Marcellus', serif" };
-
 const SpecialOffersStrip = () => {
   const [offers, setOffers] = useState([]);
 
@@ -26,7 +24,7 @@ const SpecialOffersStrip = () => {
 
   return (
     <div className="mb-6">
-      <h2 className="text-lg font-bold text-foreground mb-3" style={serif}>
+      <h2 className="text-lg font-bold text-foreground mb-3">
         Специальные предложения
       </h2>
       <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
@@ -55,7 +53,7 @@ const SpecialOffersStrip = () => {
                 Benedict Café
               </p>
               <div>
-                <p className="text-white text-sm font-bold leading-snug line-clamp-3 mb-1" style={serif}>
+                <p className="text-white text-sm font-bold leading-snug line-clamp-3 mb-1">
                   {offer.title}
                 </p>
                 {offer.description && (

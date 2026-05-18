@@ -2,8 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 
-const serif = { fontFamily: "'Marcellus', serif" };
-
 const OrderCard = ({ icon, title, description, label, onClick, gradient, decorIcon }) => (
   <button
     type="button"
@@ -30,7 +28,7 @@ const OrderCard = ({ icon, title, description, label, onClick, gradient, decorIc
               {label}
             </span>
           )}
-          <p className="text-white font-bold text-base leading-tight" style={serif}>{title}</p>
+          <p className="text-white font-bold text-base leading-tight">{title}</p>
           <p className="text-white/75 text-xs mt-0.5 leading-snug">{description}</p>
         </div>
       </div>
@@ -48,7 +46,7 @@ const OrderSection = ({ onBookTableClick }) => {
 
   return (
     <div className="space-y-3" data-section="order">
-      <h2 className="text-lg font-bold text-foreground" style={serif}>Что хотите сделать?</h2>
+      <h2 className="text-lg font-bold text-foreground">Что хотите сделать?</h2>
 
       <OrderCard
         icon="ShoppingBag"
