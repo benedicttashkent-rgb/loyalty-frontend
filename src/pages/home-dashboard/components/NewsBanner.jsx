@@ -74,6 +74,7 @@ const NewsBanner = () => {
   const bg = item.backgroundColor;
 
   return (
+    <>
     <div className="mb-6">
       <div
         onTouchStart={onTouchStart}
@@ -162,6 +163,7 @@ const NewsBanner = () => {
       body={item.detailBody}
       images={item.detailImages}
     />
+    </>
   );
 };
 
