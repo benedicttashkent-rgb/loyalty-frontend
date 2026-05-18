@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
+import DetailFormSection, { RoutePicker } from './components/DetailFormSection';
 
 const serif = { fontFamily: "'Marcellus', serif" };
 
@@ -19,6 +20,9 @@ const NewsBannerEditor = () => {
     buttonAction: '',
     isActive: true,
     displayOrder: 0,
+    detailTitle: '',
+    detailBody: '',
+    detailImages: '[]',
   });
   const [iconImageFile, setIconImageFile] = useState(null);
   const [iconImagePreview, setIconImagePreview] = useState(null);
@@ -97,6 +101,9 @@ const NewsBannerEditor = () => {
       buttonAction: banner.button_action || '',
       isActive: banner.is_active !== undefined ? banner.is_active : true,
       displayOrder: banner.display_order || 0,
+      detailTitle: banner.detail_title || '',
+      detailBody: banner.detail_body || '',
+      detailImages: banner.detail_images || '[]',
     });
     setIconImagePreview(banner.icon_image_url || null);
     setIconImageFile(null);
@@ -109,6 +116,7 @@ const NewsBannerEditor = () => {
       title: '', description: '', icon: 'Coffee',
       backgroundColor: '#c89864', showButton: false,
       buttonText: '', buttonAction: '', isActive: true, displayOrder: 0,
+      detailTitle: '', detailBody: '', detailImages: '[]',
     });
     setIconImageFile(null);
     setIconImagePreview(null);
@@ -415,17 +423,24 @@ const NewsBannerEditor = () => {
                       />
                     </div>
                     <div>
-                      <label className={labelClass}>Ссылка кнопки</label>
-                      <input
-                        type="text"
+                      <label className={labelClass}>Куда ведёт кнопка</label>
+                      <RoutePicker
                         value={formData.buttonAction}
-                        onChange={(e) => setFormData({ ...formData, buttonAction: e.target.value })}
-                        placeholder="/promotions-page или https://..."
-                        className={inputClass}
+                        onChange={val => setFormData({ ...formData, buttonAction: val })}
                       />
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Detail modal section */}
+              <div className="px-6 pb-4">
+                <DetailFormSection
+                  detailTitle={formData.detailTitle}
+                  detailBody={formData.detailBody}
+                  detailImages={formData.detailImages}
+                  onChange={(key, val) => setFormData(f => ({ ...f, [key]: val }))}
+                />
               </div>
 
               {/* Footer */}

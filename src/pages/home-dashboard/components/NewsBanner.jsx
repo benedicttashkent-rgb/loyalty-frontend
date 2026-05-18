@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import { getApiUrl } from '../../../config/api';
+import DetailModal from './DetailModal';
 
 const serif = { fontFamily: "'Marcellus', serif" };
 
 const NewsBanner = () => {
+  const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [newsItems, setNewsItems] = useState([]);
@@ -28,6 +32,9 @@ const NewsBanner = () => {
               showButton: banner.show_button || false,
               buttonText: banner.button_text,
               buttonAction: banner.button_action,
+              detailTitle: banner.detail_title || '',
+              detailBody: banner.detail_body || '',
+              detailImages: banner.detail_images || '[]',
             })));
           }
         }
@@ -108,7 +115,13 @@ const NewsBanner = () => {
           {/* Button */}
           {item.showButton && item.buttonText && (
             <button
-              onClick={() => item.buttonAction && (window.location.href = item.buttonAction)}
+              onClick={() => {
+                const hasDetail = item.detailTitle || item.detailBody;
+                if (hasDetail) { setDetailOpen(true); return; }
+                if (!item.buttonAction) return;
+                if (item.buttonAction.startsWith('/')) navigate(item.buttonAction);
+                else window.open(item.buttonAction, '_blank');
+              }}
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
               style={{ background: 'rgba(255,255,255,0.9)', color: bg }}
             >
@@ -142,6 +155,14 @@ const NewsBanner = () => {
         )}
       </div>
     </div>
+
+    <DetailModal
+      isOpen={detailOpen}
+      onClose={() => setDetailOpen(false)}
+      title={item.detailTitle || item.title}
+      body={item.detailBody}
+      images={item.detailImages}
+    />
   );
 };
 

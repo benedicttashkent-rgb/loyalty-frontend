@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
+import DetailFormSection, { RoutePicker } from './components/DetailFormSection';
 
 const SpecialOffersEditor = () => {
   const [offers, setOffers] = useState([]);
@@ -9,7 +10,7 @@ const SpecialOffersEditor = () => {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: 0, isActive: true });
+  const [form, setForm] = useState({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: 0, isActive: true, buttonAction: '', detailTitle: '', detailBody: '', detailImages: '[]' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -29,7 +30,7 @@ const SpecialOffersEditor = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: offers.length, isActive: true });
+    setForm({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: offers.length, isActive: true, buttonAction: '', detailTitle: '', detailBody: '', detailImages: '[]' });
     setImageFile(null);
     setImagePreview(null);
     setShowForm(true);
@@ -43,6 +44,10 @@ const SpecialOffersEditor = () => {
       backgroundColor: offer.background_color || '#1a1a1a',
       displayOrder: offer.display_order || 0,
       isActive: offer.is_active,
+      buttonAction: offer.button_action || '',
+      detailTitle: offer.detail_title || '',
+      detailBody: offer.detail_body || '',
+      detailImages: offer.detail_images || '[]',
     });
     setImageFile(null);
     setImagePreview(offer.image_url || null);
@@ -259,6 +264,18 @@ const SpecialOffersEditor = () => {
                   className="w-4 h-4 rounded accent-primary" />
                 <span className="text-sm text-foreground">Активно (показывать на главной)</span>
               </label>
+
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Страница при нажатии</label>
+                <RoutePicker value={form.buttonAction} onChange={val => setForm(f => ({ ...f, buttonAction: val }))} />
+              </div>
+
+              <DetailFormSection
+                detailTitle={form.detailTitle}
+                detailBody={form.detailBody}
+                detailImages={form.detailImages}
+                onChange={(key, val) => setForm(f => ({ ...f, [key]: val }))}
+              />
             </div>
 
             <div className="px-5 pb-5 flex gap-3">
