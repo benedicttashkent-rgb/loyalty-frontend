@@ -3,7 +3,6 @@ import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY } from '../../utils/formatDate';
 import { adminApiRequest } from '../../utils/adminApiClient';
 
-const serif = { fontFamily: "'Marcellus', serif" };
 
 const TIER_CONFIG = {
   Bronze:   { color: '#cd7f32', bg: '#fdf3e7', label: 'Bronze' },
@@ -248,7 +247,7 @@ const CustomersEditor = () => {
       {/* Header */}
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground" style={serif}>Клиенты</h1>
+          <h1 className="text-3xl font-bold text-foreground">Клиенты</h1>
           <p className="text-sm text-muted-foreground mt-1">
             {customers.length > 0 ? `${customers.length} клиентов в базе` : 'Загрузка...'}
           </p>
@@ -305,7 +304,7 @@ const CustomersEditor = () => {
                   <Icon name={icon} size={18} style={{ color: accent }} />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-foreground" style={serif}>{value ?? '—'}</div>
+              <div className="text-2xl font-bold text-foreground">{value ?? '—'}</div>
               <div className="text-xs text-muted-foreground mt-0.5 font-medium">{label}</div>
               {sub && <div className="text-xs mt-1 font-medium" style={{ color: accent }}>{sub}</div>}
             </div>
@@ -384,7 +383,7 @@ const CustomersEditor = () => {
                       <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#f8efe0' }}>
                         <Icon name="Users" size={24} style={{ color: '#8b6a4e' }} />
                       </div>
-                      <p className="text-base text-foreground mb-1" style={serif}>Клиенты не найдены</p>
+                      <p className="text-base text-foreground mb-1">Клиенты не найдены</p>
                       <p className="text-sm text-muted-foreground">Попробуйте изменить поисковый запрос</p>
                     </div>
                   </td>
@@ -530,7 +529,7 @@ const CustomersEditor = () => {
                 {getInitials(selectedCustomer.name, selectedCustomer.sur_name)}
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-xl font-bold text-foreground leading-tight" style={serif}>
+                <h2 className="text-xl font-bold text-foreground leading-tight">
                   {[selectedCustomer.name, selectedCustomer.sur_name].filter(Boolean).join(' ') || '—'}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-0.5">{formatPhone(selectedCustomer.phone)}</p>
@@ -630,7 +629,7 @@ const CustomersEditor = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Баланс лояльности</div>
-                        <div className="text-3xl font-bold" style={{ color: '#8b6a4e', ...serif }}>
+                        <div className="text-3xl font-bold" style={{ color: '#8b6a4e' }}>
                           {formatBalance(selectedCustomer.balance)} <span className="text-lg font-normal">сум</span>
                         </div>
                       </div>
@@ -711,7 +710,7 @@ const CustomersEditor = () => {
                         <Icon name="MapPin" size={12} />
                         Визитов
                       </div>
-                      <div className="text-xl font-bold text-foreground" style={serif}>{selectedCustomer.visit_count || 0}</div>
+                      <div className="text-xl font-bold text-foreground">{selectedCustomer.visit_count || 0}</div>
                       {selectedCustomer.last_visit_date && (
                         <div className="text-xs text-muted-foreground mt-0.5">
                           Последний: {formatDateDDMMYYYY(selectedCustomer.last_visit_date)}
@@ -723,7 +722,7 @@ const CustomersEditor = () => {
                         <Icon name="Calendar" size={12} />
                         Дата регистрации
                       </div>
-                      <div className="text-base font-semibold text-foreground" style={serif}>
+                      <div className="text-base font-semibold text-foreground">
                         {formatDateDDMMYYYY(selectedCustomer.created_at)}
                       </div>
                     </div>
@@ -797,7 +796,7 @@ const CustomersEditor = () => {
                       <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#f8efe0' }}>
                         <Icon name="ShoppingBag" size={24} style={{ color: '#8b6a4e' }} />
                       </div>
-                      <p className="text-base text-foreground mb-1" style={serif}>Нет данных</p>
+                      <p className="text-base text-foreground mb-1">Нет данных</p>
                       <p className="text-sm text-muted-foreground">У клиента нет завершённых заказов</p>
                     </div>
                   )}
@@ -817,7 +816,7 @@ const CustomersEditor = () => {
                               <Icon name={icon} size={14} style={{ color: accent }} />
                               <span className="text-xs text-muted-foreground">{label}</span>
                             </div>
-                            <p className="text-lg font-bold" style={{ color: accent, ...serif }}>{value}</p>
+                            <p className="text-lg font-bold" style={{ color: accent }}>{value}</p>
                           </div>
                         ))}
                       </div>
@@ -830,7 +829,7 @@ const CustomersEditor = () => {
                           </div>
                           <div>
                             <div className="text-xs text-muted-foreground">Любимый день</div>
-                            <div className="text-lg font-bold text-foreground" style={serif}>{DAY_NAMES[insights.favoriteDay]}</div>
+                            <div className="text-lg font-bold text-foreground">{DAY_NAMES[insights.favoriteDay]}</div>
                           </div>
                         </div>
                         <div className="rounded-xl p-4 flex items-center gap-3" style={{ background: 'var(--color-muted)' }}>
@@ -839,7 +838,7 @@ const CustomersEditor = () => {
                           </div>
                           <div>
                             <div className="text-xs text-muted-foreground">Любимое время</div>
-                            <div className="text-lg font-bold text-foreground" style={serif}>{formatHour(insights.favoriteHour)}</div>
+                            <div className="text-lg font-bold text-foreground">{formatHour(insights.favoriteHour)}</div>
                           </div>
                         </div>
                       </div>

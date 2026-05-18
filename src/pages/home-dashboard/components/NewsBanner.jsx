@@ -4,7 +4,6 @@ import Icon from '../../../components/AppIcon';
 import { getApiUrl } from '../../../config/api';
 import DetailModal from './DetailModal';
 
-const serif = { fontFamily: "'Marcellus', serif" };
 
 const NewsBanner = () => {
   const navigate = useNavigate();
@@ -98,7 +97,7 @@ const NewsBanner = () => {
             </div>
             <h3
               className="text-lg leading-snug text-white pt-1"
-              style={serif}
+             
             >
               {item.title}
             </h3>

@@ -2,39 +2,66 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import { adminApiRequest } from '../../../utils/adminApiClient';
 
-export const APP_ROUTES = [
+const INTERNAL_ROUTES = [
   { label: 'Главная страница', value: '/home-dashboard' },
   { label: 'Меню — Заказ с собой', value: '/food-ordering-menu' },
   { label: 'Мои награды / Каталог', value: '/rewards-catalog' },
   { label: 'Мой профиль', value: '/user-profile-management' },
   { label: 'Акции и промо', value: '/promotions-page' },
   { label: 'Филиалы / О нас', value: '/about-branch-locations' },
-  { label: 'Внешняя ссылка (вставить URL вручную)', value: '__custom__' },
 ];
 
+const isExternal = (val) => val && (val.startsWith('http://') || val.startsWith('https://'));
+const isInternal = (val) => val && INTERNAL_ROUTES.some(r => r.value === val);
+
 export const RoutePicker = ({ value, onChange }) => {
-  const isCustom = value && !APP_ROUTES.some(r => r.value === value && r.value !== '__custom__');
-  const selectVal = isCustom && value ? '__custom__' : (value || '');
+  const type = !value ? 'none' : isInternal(value) ? 'internal' : 'external';
 
   return (
     <div className="space-y-2">
-      <select
-        value={selectVal}
-        onChange={e => onChange(e.target.value === '__custom__' ? '' : e.target.value)}
-        className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-        style={{ fontSize: 'max(16px, 1em)' }}
-      >
-        <option value="">— Не открывать страницу —</option>
-        {APP_ROUTES.map(r => (
-          <option key={r.value} value={r.value}>{r.label}</option>
+      {/* Type selector */}
+      <div className="flex rounded-lg overflow-hidden border border-border">
+        {[
+          { id: 'none', label: 'Ничего' },
+          { id: 'internal', label: 'Страница приложения' },
+          { id: 'external', label: 'Внешняя ссылка' },
+        ].map(opt => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => {
+              if (opt.id === 'none') onChange('');
+              else if (opt.id === 'internal') onChange(INTERNAL_ROUTES[0].value);
+              else onChange('https://');
+            }}
+            className={`flex-1 py-2 text-xs font-medium transition-colors ${type === opt.id ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:bg-muted'}`}
+          >
+            {opt.label}
+          </button>
         ))}
-      </select>
-      {(selectVal === '__custom__' || isCustom) && (
-        <input
-          type="text"
+      </div>
+
+      {/* Internal route dropdown */}
+      {type === 'internal' && (
+        <select
           value={value || ''}
           onChange={e => onChange(e.target.value)}
-          placeholder="https://... или /путь"
+          className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+          style={{ fontSize: 'max(16px, 1em)' }}
+        >
+          {INTERNAL_ROUTES.map(r => (
+            <option key={r.value} value={r.value}>{r.label}</option>
+          ))}
+        </select>
+      )}
+
+      {/* External URL input */}
+      {type === 'external' && (
+        <input
+          type="url"
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+          placeholder="https://instagram.com/benedict_cafe"
           className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
           style={{ fontSize: 'max(16px, 1em)' }}
         />

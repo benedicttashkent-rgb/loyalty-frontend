@@ -5,7 +5,6 @@ import { formatDateDDMMYYYY, formatDateForInput, parseDateDDMMYYYY, getMonthAbbr
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
 
-const serif = { fontFamily: "'Marcellus', serif" };
 
 const EventsEditor = () => {
   const navigate = useNavigate();
@@ -201,7 +200,7 @@ const EventsEditor = () => {
       {/* Header */}
       <div className="flex items-end justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground" style={serif}>События</h1>
+          <h1 className="text-3xl font-bold text-foreground">События</h1>
           <p className="text-sm text-muted-foreground mt-1">{events.length} записей в афише</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -240,7 +239,7 @@ const EventsEditor = () => {
           <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#eedcbe' }}>
             <Icon name="Calendar" size={24} style={{ color: '#b07c45' }} />
           </div>
-          <p className="text-lg text-foreground mb-1" style={serif}>Нет событий</p>
+          <p className="text-lg text-foreground mb-1">Нет событий</p>
           <p className="text-sm text-muted-foreground mb-5">Создайте первое событие для афиши</p>
           <button
             onClick={() => { resetForm(); setShowModal(true); }}
@@ -258,7 +257,7 @@ const EventsEditor = () => {
             <div key={date}>
               {/* Date group header */}
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-sm font-semibold text-foreground" style={serif}>
+                <span className="text-sm font-semibold text-foreground">
                   {date === 'no-date' ? 'Без даты' : formatDateDDMMYYYY(date)}
                 </span>
                 <div className="flex-1 h-px bg-border" />
@@ -326,7 +325,7 @@ const EventsEditor = () => {
 
                       {/* Time */}
                       <div className="text-right flex-shrink-0">
-                        <div className="font-semibold text-sm text-foreground" style={serif}>{event.time}</div>
+                        <div className="font-semibold text-sm text-foreground">{event.time}</div>
                         {event.month && <div className="text-xs text-muted-foreground">{event.month}</div>}
                       </div>
 
@@ -368,7 +367,7 @@ const EventsEditor = () => {
               className="px-6 py-5 flex items-center justify-between"
               style={{ borderBottom: '1px solid var(--color-border)' }}
             >
-              <h2 className="text-xl text-foreground" style={serif}>
+              <h2 className="text-xl text-foreground">
                 {editingEvent ? 'Редактировать событие' : 'Новое событие'}
               </h2>
               <button

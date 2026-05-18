@@ -5,8 +5,6 @@ import BottomTabNavigation from '../../components/navigation/BottomTabNavigation
 import { formatDateWithMonth } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
 
-const serif = { fontFamily: "'Marcellus', serif" };
-const sans = { fontFamily: "'Raleway', sans-serif" };
 
 const monthNames = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
 
@@ -83,7 +81,7 @@ const PromotionsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24" style={sans}>
+    <div className="min-h-screen bg-background pb-24">
 
       {/* Header */}
       <div
@@ -101,10 +99,10 @@ const PromotionsPage = () => {
               <Icon name="ArrowLeft" size={20} className="text-white" />
             </button>
             <div className="flex-1">
-              <h1 className="text-2xl text-white leading-none" style={{ ...serif, letterSpacing: '0.02em' }}>
+              <h1 className="text-2xl text-white leading-none" style={{ letterSpacing: '0.02em' }}>
                 {isDetailView ? 'Событие' : 'Афиша'}
               </h1>
-              <p className="text-xs text-white/70 mt-0.5 tracking-widest uppercase" style={sans}>
+              <p className="text-xs text-white/70 mt-0.5 tracking-widest uppercase">
                 Benedict Cafe
               </p>
             </div>
@@ -140,7 +138,7 @@ const PromotionsPage = () => {
                 <div className="text-center" style={{ minWidth: 56 }}>
                   <div
                     className="text-5xl leading-none text-foreground"
-                    style={{ ...serif }}
+                    style={{}}
                   >
                     {getDayFromDate(detailEvent.date)}
                   </div>
@@ -153,7 +151,7 @@ const PromotionsPage = () => {
                   style={{ background: 'var(--color-border)', marginTop: 6 }}
                 />
                 <div className="flex-1 pt-1">
-                  <h2 className="text-2xl font-semibold text-foreground leading-tight mb-1" style={serif}>
+                  <h2 className="text-2xl font-semibold text-foreground leading-tight mb-1">
                     {detailEvent.performer}
                   </h2>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -282,7 +280,6 @@ const PromotionsPage = () => {
                           <div
                             className="text-3xl leading-none"
                             style={{
-                              ...serif,
                               color: isHighlighted ? '#8b6a4e' : 'var(--color-foreground)',
                             }}
                           >
@@ -327,7 +324,7 @@ const PromotionsPage = () => {
                         <div className="text-right flex-shrink-0">
                           <div
                             className="font-semibold text-base"
-                            style={{ ...serif, color: isHighlighted ? '#3d2810' : 'var(--color-foreground)' }}
+                            style={{ color: isHighlighted ? '#3d2810' : 'var(--color-foreground)' }}
                           >
                             {event.time}
                           </div>
@@ -361,7 +358,7 @@ const PromotionsPage = () => {
               >
                 <Icon name="Music" size={28} style={{ color: '#b07c45' }} />
               </div>
-              <h3 className="text-lg text-foreground mb-2" style={serif}>
+              <h3 className="text-lg text-foreground mb-2">
                 Событий пока нет
               </h3>
               <p className="text-sm text-muted-foreground">

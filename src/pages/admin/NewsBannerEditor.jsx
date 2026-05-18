@@ -3,7 +3,6 @@ import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
 import DetailFormSection, { RoutePicker } from './components/DetailFormSection';
 
-const serif = { fontFamily: "'Marcellus', serif" };
 
 const NewsBannerEditor = () => {
   const [banners, setBanners] = useState([]);
@@ -139,7 +138,7 @@ const NewsBannerEditor = () => {
       {/* Header */}
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground" style={serif}>Баннеры</h1>
+          <h1 className="text-3xl font-bold text-foreground">Баннеры</h1>
           <p className="text-sm text-muted-foreground mt-1">{banners.length} баннеров на главной</p>
         </div>
         <button
@@ -157,7 +156,7 @@ const NewsBannerEditor = () => {
           <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#eedcbe' }}>
             <Icon name="Megaphone" size={24} style={{ color: '#b07c45' }} />
           </div>
-          <p className="text-lg text-foreground mb-1" style={serif}>Нет баннеров</p>
+          <p className="text-lg text-foreground mb-1">Нет баннеров</p>
           <p className="text-sm text-muted-foreground mb-5">Добавьте первый баннер для главной</p>
           <button
             onClick={() => { resetForm(); setShowModal(true); }}
@@ -203,7 +202,7 @@ const NewsBannerEditor = () => {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <div className="text-white text-xs font-semibold truncate leading-tight" style={serif}>
+                  <div className="text-white text-xs font-semibold truncate leading-tight">
                     {banner.title}
                   </div>
                 </div>
@@ -259,7 +258,7 @@ const NewsBannerEditor = () => {
           >
             {/* Modal header */}
             <div className="px-6 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
-              <h2 className="text-xl text-foreground" style={serif}>
+              <h2 className="text-xl text-foreground">
                 {editingBanner ? 'Редактировать баннер' : 'Новый баннер'}
               </h2>
               <button
@@ -290,7 +289,7 @@ const NewsBannerEditor = () => {
                       )}
                     </div>
                     <div>
-                      <div className="text-white font-semibold text-sm leading-snug" style={serif}>
+                      <div className="text-white font-semibold text-sm leading-snug">
                         {formData.title || 'Заголовок баннера'}
                       </div>
                       <div className="text-white/80 text-xs mt-0.5">

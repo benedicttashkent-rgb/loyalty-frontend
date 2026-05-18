@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
 
-const serif = { fontFamily: "'Marcellus', serif" };
 
 const TIER_CONFIG = {
   Bronze:   { label: 'Bronze',   color: '#cd7f32', bg: '#fdf3e7' },
@@ -92,7 +91,7 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground" style={serif}>Дашборд</h1>
+          <h1 className="text-3xl font-bold text-foreground">Дашборд</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Обновлено в {refreshTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
           </p>
@@ -163,7 +162,7 @@ const AdminDashboard = () => {
               </div>
               {link && <Icon name="ChevronRight" size={16} className="text-muted-foreground" />}
             </div>
-            <div className="text-2xl font-bold text-foreground" style={serif}>{value}</div>
+            <div className="text-2xl font-bold text-foreground">{value}</div>
             <div className="text-xs text-muted-foreground mt-0.5 font-medium">{label}</div>
             {sub && <div className="text-xs mt-1" style={{ color: accent }}>{sub}</div>}
           </div>
@@ -176,7 +175,7 @@ const AdminDashboard = () => {
         {/* Customer tiers */}
         <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-base font-semibold text-foreground" style={serif}>Клиенты по статусу</h2>
+            <h2 className="text-base font-semibold text-foreground">Клиенты по статусу</h2>
             <span className="text-xs text-muted-foreground">{fmt(stats?.totalCustomers)} всего</span>
           </div>
           {tierEntries.length > 0 ? (
@@ -208,7 +207,7 @@ const AdminDashboard = () => {
         {/* Registrations chart */}
         {stats?.recentRegistrations && stats.recentRegistrations.length > 0 ? (
           <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
-            <h2 className="text-base font-semibold text-foreground mb-5" style={serif}>Регистрации за 7 дней</h2>
+            <h2 className="text-base font-semibold text-foreground mb-5">Регистрации за 7 дней</h2>
             <div className="flex items-end justify-between gap-2" style={{ height: 80 }}>
               {stats.recentRegistrations.map((reg, i) => {
                 const h = maxReg > 0 ? Math.max(8, (reg.count / maxReg) * 80) : 8;
@@ -228,7 +227,7 @@ const AdminDashboard = () => {
         ) : (
           /* Banners + rewards summary if no reg data */
           <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
-            <h2 className="text-base font-semibold text-foreground mb-5" style={serif}>Контент</h2>
+            <h2 className="text-base font-semibold text-foreground mb-5">Контент</h2>
             <div className="space-y-3">
               {[
                 { label: 'Активных баннеров', value: stats?.activeNewsBanners, total: stats?.totalNewsBanners, link: '/admin/news' },
@@ -253,7 +252,7 @@ const AdminDashboard = () => {
       {/* Content summary (when reg chart is shown) */}
       {stats?.recentRegistrations && stats.recentRegistrations.length > 0 && (
         <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
-          <h2 className="text-base font-semibold text-foreground mb-4" style={serif}>Контент</h2>
+          <h2 className="text-base font-semibold text-foreground mb-4">Контент</h2>
           <div className="grid grid-cols-3 gap-4">
             {[
               { label: 'Баннеров', value: stats?.activeNewsBanners, total: stats?.totalNewsBanners, icon: 'Megaphone', link: '/admin/news', accent: '#9d7bb5' },
@@ -269,7 +268,7 @@ const AdminDashboard = () => {
                   <Icon name={icon} size={15} style={{ color: accent }} />
                   <span className="text-xs text-muted-foreground">{label}</span>
                 </div>
-                <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors" style={serif}>
+                <span className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
                   {fmt(value)}
                 </span>
                 <span className="text-xs text-muted-foreground">из {fmt(total)}</span>
