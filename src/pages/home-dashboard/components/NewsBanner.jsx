@@ -125,7 +125,7 @@ const NewsBanner = ({ userTier }) => {
           </div>
 
           {/* Button */}
-          {item.showButton && item.buttonText && (
+          {item.showButton && (
             <button
               onClick={() => {
                 if (item.buttonAction === '__detail__' || item.detailTitle || item.detailBody) {
@@ -138,7 +138,7 @@ const NewsBanner = ({ userTier }) => {
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
               style={{ background: 'rgba(255,255,255,0.95)', color: bg }}
             >
-              {item.buttonText}
+              {item.buttonText || 'Узнать больше'}
               <Icon name="ArrowRight" size={15} />
             </button>
           )}

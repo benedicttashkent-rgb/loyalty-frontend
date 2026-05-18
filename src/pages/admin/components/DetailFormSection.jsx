@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import { adminApiRequest } from '../../../utils/adminApiClient';
 
@@ -15,18 +15,30 @@ const isInternal = (val) => val && INTERNAL_ROUTES.some(r => r.value === val);
 
 const DetailInlineForm = ({ detailTitle, detailBody, detailImages, onDetailChange }) => {
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const fileInputRef = useRef(null);
   const images = (() => { try { return JSON.parse(detailImages || '[]'); } catch { return []; } })();
 
   const uploadImage = async (file) => {
     setUploading(true);
+    setUploadError(null);
     try {
       const fd = new FormData();
       fd.append('image', file);
       const res = await adminApiRequest('admin/upload-detail-image', { method: 'POST', body: fd });
       const data = await res.json();
-      if (data.success) onDetailChange('detailImages', JSON.stringify([...images, data.url]));
-    } catch (e) { console.error(e); }
-    finally { setUploading(false); }
+      if (data.success && data.url) {
+        onDetailChange('detailImages', JSON.stringify([...images, data.url]));
+      } else {
+        setUploadError(data.error || 'Не удалось загрузить фото');
+      }
+    } catch (e) {
+      console.error('Upload error:', e);
+      setUploadError('Ошибка соединения при загрузке');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const removeImage = (idx) => {
@@ -78,15 +90,29 @@ const DetailInlineForm = ({ detailTitle, detailBody, detailImages, onDetailChang
           </div>
         )}
         {images.length < 5 && (
-          <label className="cursor-pointer">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:bg-background transition-colors">
+          <>
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:bg-background transition-colors disabled:opacity-50"
+            >
               {uploading
                 ? <><Icon name="Loader2" size={14} className="animate-spin" /> Загрузка...</>
                 : <><Icon name="ImagePlus" size={14} /> Добавить фото</>}
-            </div>
-            <input type="file" accept="image/*" className="sr-only" disabled={uploading}
-              onChange={e => e.target.files[0] && uploadImage(e.target.files[0])} />
-          </label>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              disabled={uploading}
+              onChange={e => { if (e.target.files[0]) uploadImage(e.target.files[0]); }}
+            />
+            {uploadError && (
+              <p className="text-xs text-destructive mt-1">{uploadError}</p>
+            )}
+          </>
         )}
       </div>
     </div>
