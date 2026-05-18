@@ -180,11 +180,6 @@ const AdminLogin = () => {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>Default credentials:</p>
-            <p className="font-mono">Username: Benedict200010</p>
-            <p className="font-mono">Password: 10203010</p>
-          </div>
         </div>
       </div>
     </div>
