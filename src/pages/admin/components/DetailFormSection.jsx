@@ -24,7 +24,7 @@ const DetailInlineForm = ({ detailTitle, detailBody, detailImages, onDetailChang
     setUploadError(null);
     try {
       const fd = new FormData();
-      fd.append('image', file);
+      fd.append('photo', file);
       const res = await adminApiRequest('admin/upload-detail-image', { method: 'POST', body: fd });
       const data = await res.json();
       if (data.success && data.url) {
