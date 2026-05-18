@@ -80,53 +80,59 @@ const NewsBanner = () => {
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        className="rounded-2xl overflow-hidden select-none cursor-grab active:cursor-grabbing"
+        className="rounded-2xl overflow-hidden select-none cursor-grab active:cursor-grabbing relative"
         style={{ backgroundColor: bg }}
       >
-        <div className="p-5">
-          {/* Top row: icon + title */}
-          <div className="flex items-start gap-4 mb-3">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.25)' }}
+        {/* Subtle inner highlight */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%)' }}
+        />
+
+        <div className="relative p-5">
+          {/* Icon + description row */}
+          <div className="flex items-center gap-4 mb-4">
+            {/* Icon — no white box for image icons, just a clean shadow ring */}
+            <div className="flex-shrink-0 w-14 h-14 rounded-2xl overflow-hidden shadow-lg"
+              style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}
             >
               {item.iconImageUrl ? (
                 <img src={item.iconImageUrl} alt={item.title} className="w-full h-full object-cover" />
               ) : (
-                <Icon name={item.icon} size={24} className="text-white" />
+                <div className="w-full h-full flex items-center justify-center"
+                  style={{ background: 'rgba(255,255,255,0.25)' }}>
+                  <Icon name={item.icon} size={28} className="text-white" />
+                </div>
               )}
             </div>
-            <h3
-              className="text-lg leading-snug text-white pt-1"
-             
-            >
-              {item.title}
-            </h3>
+
+            {/* Text block */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base font-bold text-white leading-tight mb-1">
+                {item.title}
+              </h3>
+              <p className="text-sm text-white/80 leading-snug line-clamp-2">
+                {item.description}
+              </p>
+            </div>
           </div>
-
-          {/* Divider */}
-          <div className="mb-3" style={{ height: 1, background: 'rgba(255,255,255,0.25)' }} />
-
-          {/* Description */}
-          <p className="text-sm text-white/90 leading-relaxed mb-4">
-            {item.description}
-          </p>
 
           {/* Button */}
           {item.showButton && item.buttonText && (
             <button
               onClick={() => {
-                const hasDetail = item.detailTitle || item.detailBody;
-                if (hasDetail) { setDetailOpen(true); return; }
+                if (item.buttonAction === '__detail__' || item.detailTitle || item.detailBody) {
+                  setDetailOpen(true); return;
+                }
                 if (!item.buttonAction) return;
                 if (item.buttonAction.startsWith('/')) navigate(item.buttonAction);
                 else window.open(item.buttonAction, '_blank');
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95"
-              style={{ background: 'rgba(255,255,255,0.9)', color: bg }}
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
+              style={{ background: 'rgba(255,255,255,0.95)', color: bg }}
             >
               {item.buttonText}
-              <Icon name="ArrowRight" size={16} />
+              <Icon name="ArrowRight" size={15} />
             </button>
           )}
         </div>

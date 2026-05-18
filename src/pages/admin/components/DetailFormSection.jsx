@@ -11,67 +11,9 @@ const INTERNAL_ROUTES = [
   { label: 'Филиалы / О нас', value: '/about-branch-locations' },
 ];
 
-const isExternal = (val) => val && (val.startsWith('http://') || val.startsWith('https://'));
 const isInternal = (val) => val && INTERNAL_ROUTES.some(r => r.value === val);
 
-export const RoutePicker = ({ value, onChange }) => {
-  const type = !value ? 'none' : isInternal(value) ? 'internal' : 'external';
-
-  return (
-    <div className="space-y-2">
-      {/* Type selector */}
-      <div className="flex rounded-lg overflow-hidden border border-border">
-        {[
-          { id: 'none', label: 'Ничего' },
-          { id: 'internal', label: 'Страница приложения' },
-          { id: 'external', label: 'Внешняя ссылка' },
-        ].map(opt => (
-          <button
-            key={opt.id}
-            type="button"
-            onClick={() => {
-              if (opt.id === 'none') onChange('');
-              else if (opt.id === 'internal') onChange(INTERNAL_ROUTES[0].value);
-              else onChange('https://');
-            }}
-            className={`flex-1 py-2 text-xs font-medium transition-colors ${type === opt.id ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:bg-muted'}`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Internal route dropdown */}
-      {type === 'internal' && (
-        <select
-          value={value || ''}
-          onChange={e => onChange(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-          style={{ fontSize: 'max(16px, 1em)' }}
-        >
-          {INTERNAL_ROUTES.map(r => (
-            <option key={r.value} value={r.value}>{r.label}</option>
-          ))}
-        </select>
-      )}
-
-      {/* External URL input */}
-      {type === 'external' && (
-        <input
-          type="url"
-          value={value || ''}
-          onChange={e => onChange(e.target.value)}
-          placeholder="https://instagram.com/benedict_cafe"
-          className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-          style={{ fontSize: 'max(16px, 1em)' }}
-        />
-      )}
-    </div>
-  );
-};
-
-// Reusable detail content section for both editors
-const DetailFormSection = ({ detailTitle, detailBody, detailImages, onChange }) => {
+const DetailInlineForm = ({ detailTitle, detailBody, detailImages, onDetailChange }) => {
   const [uploading, setUploading] = useState(false);
   const images = (() => { try { return JSON.parse(detailImages || '[]'); } catch { return []; } })();
 
@@ -82,34 +24,23 @@ const DetailFormSection = ({ detailTitle, detailBody, detailImages, onChange }) 
       fd.append('image', file);
       const res = await adminApiRequest('admin/upload-detail-image', { method: 'POST', body: fd });
       const data = await res.json();
-      if (data.success) {
-        const updated = JSON.stringify([...images, data.url]);
-        onChange('detailImages', updated);
-      }
+      if (data.success) onDetailChange('detailImages', JSON.stringify([...images, data.url]));
     } catch (e) { console.error(e); }
     finally { setUploading(false); }
   };
 
   const removeImage = (idx) => {
-    const updated = images.filter((_, i) => i !== idx);
-    onChange('detailImages', JSON.stringify(updated));
+    onDetailChange('detailImages', JSON.stringify(images.filter((_, i) => i !== idx)));
   };
 
   return (
-    <div className="space-y-3 pt-3 border-t border-border">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-        Окно при нажатии (необязательно)
-      </p>
-      <p className="text-xs text-muted-foreground -mt-1">
-        Если заполнено — при нажатии откроется окно с подробностями вместо перехода на страницу.
-      </p>
-
+    <div className="space-y-3 p-3 rounded-xl border border-border" style={{ background: 'var(--color-muted)' }}>
       <div>
         <label className="block text-xs font-medium text-muted-foreground mb-1">Заголовок окна</label>
         <input
           type="text"
           value={detailTitle || ''}
-          onChange={e => onChange('detailTitle', e.target.value)}
+          onChange={e => onDetailChange('detailTitle', e.target.value)}
           placeholder="Например: Скидка 20% на завтраки"
           className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
           style={{ fontSize: 'max(16px, 1em)' }}
@@ -120,7 +51,7 @@ const DetailFormSection = ({ detailTitle, detailBody, detailImages, onChange }) 
         <label className="block text-xs font-medium text-muted-foreground mb-1">Текст</label>
         <textarea
           value={detailBody || ''}
-          onChange={e => onChange('detailBody', e.target.value)}
+          onChange={e => onDetailChange('detailBody', e.target.value)}
           placeholder="Условия акции, описание, что нужно сделать..."
           rows={3}
           className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
@@ -136,6 +67,7 @@ const DetailFormSection = ({ detailTitle, detailBody, detailImages, onChange }) 
               <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-border">
                 <img src={url} alt="" className="w-full h-full object-cover" />
                 <button
+                  type="button"
                   onClick={() => removeImage(i)}
                   className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center text-white"
                 >
@@ -147,7 +79,7 @@ const DetailFormSection = ({ detailTitle, detailBody, detailImages, onChange }) 
         )}
         {images.length < 5 && (
           <label className="cursor-pointer">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:bg-muted transition-colors">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:bg-background transition-colors">
               {uploading
                 ? <><Icon name="Loader2" size={14} className="animate-spin" /> Загрузка...</>
                 : <><Icon name="ImagePlus" size={14} /> Добавить фото</>}
@@ -161,4 +93,68 @@ const DetailFormSection = ({ detailTitle, detailBody, detailImages, onChange }) 
   );
 };
 
-export default DetailFormSection;
+export const RoutePicker = ({ value, onChange, detailTitle, detailBody, detailImages, onDetailChange }) => {
+  const type = !value ? 'none' : value === '__detail__' ? 'detail' : isInternal(value) ? 'internal' : 'external';
+
+  return (
+    <div className="space-y-2">
+      <div className="flex rounded-lg overflow-hidden border border-border">
+        {[
+          { id: 'none', label: 'Ничего' },
+          { id: 'internal', label: 'Страница' },
+          { id: 'external', label: 'Ссылка' },
+          { id: 'detail', label: 'Окно при нажатии' },
+        ].map(opt => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => {
+              if (opt.id === 'none') onChange('');
+              else if (opt.id === 'internal') onChange(INTERNAL_ROUTES[0].value);
+              else if (opt.id === 'external') onChange('https://');
+              else onChange('__detail__');
+            }}
+            className={`flex-1 py-2 text-xs font-medium transition-colors ${type === opt.id ? 'bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:bg-muted'}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {type === 'internal' && (
+        <select
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+          className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+          style={{ fontSize: 'max(16px, 1em)' }}
+        >
+          {INTERNAL_ROUTES.map(r => (
+            <option key={r.value} value={r.value}>{r.label}</option>
+          ))}
+        </select>
+      )}
+
+      {type === 'external' && (
+        <input
+          type="url"
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+          placeholder="https://instagram.com/benedict_cafe"
+          className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+          style={{ fontSize: 'max(16px, 1em)' }}
+        />
+      )}
+
+      {type === 'detail' && onDetailChange && (
+        <DetailInlineForm
+          detailTitle={detailTitle}
+          detailBody={detailBody}
+          detailImages={detailImages}
+          onDetailChange={onDetailChange}
+        />
+      )}
+    </div>
+  );
+};
+
+export default RoutePicker;

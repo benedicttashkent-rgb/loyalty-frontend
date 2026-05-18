@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
-import DetailFormSection, { RoutePicker } from './components/DetailFormSection';
+import { RoutePicker } from './components/DetailFormSection';
 
 
 const NewsBannerEditor = () => {
@@ -397,15 +397,17 @@ const NewsBannerEditor = () => {
                   </label>
                 </div>
 
-                {/* Button — only shown when an action is set */}
-                <div className="grid grid-cols-1 gap-4">
+                {/* Button action */}
+                <div className="space-y-4">
                   <div>
-                    <label className={labelClass}>Куда ведёт кнопка</label>
+                    <label className={labelClass}>Действие кнопки</label>
                     <RoutePicker
                       value={formData.buttonAction}
-                      onChange={val => {
-                        setFormData({ ...formData, buttonAction: val, showButton: !!val });
-                      }}
+                      onChange={val => setFormData(f => ({ ...f, buttonAction: val, showButton: !!val }))}
+                      detailTitle={formData.detailTitle}
+                      detailBody={formData.detailBody}
+                      detailImages={formData.detailImages}
+                      onDetailChange={(key, val) => setFormData(f => ({ ...f, [key]: val }))}
                     />
                   </div>
                   {formData.buttonAction && (
@@ -421,16 +423,6 @@ const NewsBannerEditor = () => {
                     </div>
                   )}
                 </div>
-              </div>
-
-              {/* Detail modal section */}
-              <div className="px-6 pb-4">
-                <DetailFormSection
-                  detailTitle={formData.detailTitle}
-                  detailBody={formData.detailBody}
-                  detailImages={formData.detailImages}
-                  onChange={(key, val) => setFormData(f => ({ ...f, [key]: val }))}
-                />
               </div>
 
               {/* Footer */}

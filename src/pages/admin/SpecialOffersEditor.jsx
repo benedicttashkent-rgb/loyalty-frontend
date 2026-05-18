@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
-import DetailFormSection, { RoutePicker } from './components/DetailFormSection';
+import { RoutePicker } from './components/DetailFormSection';
 
 const SpecialOffersEditor = () => {
   const [offers, setOffers] = useState([]);
@@ -266,16 +266,16 @@ const SpecialOffersEditor = () => {
               </label>
 
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">Страница при нажатии</label>
-                <RoutePicker value={form.buttonAction} onChange={val => setForm(f => ({ ...f, buttonAction: val }))} />
+                <label className="block text-xs font-medium text-muted-foreground mb-1">Действие кнопки</label>
+                <RoutePicker
+                  value={form.buttonAction}
+                  onChange={val => setForm(f => ({ ...f, buttonAction: val }))}
+                  detailTitle={form.detailTitle}
+                  detailBody={form.detailBody}
+                  detailImages={form.detailImages}
+                  onDetailChange={(key, val) => setForm(f => ({ ...f, [key]: val }))}
+                />
               </div>
-
-              <DetailFormSection
-                detailTitle={form.detailTitle}
-                detailBody={form.detailBody}
-                detailImages={form.detailImages}
-                onChange={(key, val) => setForm(f => ({ ...f, [key]: val }))}
-              />
             </div>
 
             <div className="px-5 pb-5 flex gap-3">
