@@ -11,7 +11,7 @@ const SpecialOffersEditor = () => {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: 0, isActive: true, buttonAction: '', detailTitle: '', detailBody: '', detailImages: '[]', visibleTo: 'all' });
+  const [form, setForm] = useState({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: 0, isActive: true, buttonAction: '', buttonText: '', detailTitle: '', detailBody: '', detailImages: '[]', visibleTo: 'all' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
@@ -31,7 +31,7 @@ const SpecialOffersEditor = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: offers.length, isActive: true, buttonAction: '', detailTitle: '', detailBody: '', detailImages: '[]', visibleTo: 'all' });
+    setForm({ title: '', description: '', backgroundColor: '#1a1a1a', displayOrder: offers.length, isActive: true, buttonAction: '', buttonText: '', detailTitle: '', detailBody: '', detailImages: '[]', visibleTo: 'all' });
     setImageFile(null);
     setImagePreview(null);
     setShowForm(true);
@@ -46,6 +46,7 @@ const SpecialOffersEditor = () => {
       displayOrder: offer.display_order || 0,
       isActive: offer.is_active,
       buttonAction: offer.button_action || '',
+      buttonText: offer.button_text || '',
       detailTitle: offer.detail_title || '',
       detailBody: offer.detail_body || '',
       detailImages: offer.detail_images || '[]',
@@ -73,6 +74,11 @@ const SpecialOffersEditor = () => {
       fd.append('backgroundColor', form.backgroundColor);
       fd.append('displayOrder', form.displayOrder);
       fd.append('isActive', form.isActive);
+      fd.append('buttonAction', form.buttonAction || '');
+      fd.append('buttonText', form.buttonText || '');
+      fd.append('detailTitle', form.detailTitle || '');
+      fd.append('detailBody', form.detailBody || '');
+      fd.append('detailImages', form.detailImages || '[]');
       fd.append('visibleTo', form.visibleTo || 'all');
       if (imageFile) fd.append('iconImage', imageFile);
 
@@ -276,16 +282,31 @@ const SpecialOffersEditor = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">Действие кнопки</label>
-                <RoutePicker
-                  value={form.buttonAction}
-                  onChange={val => setForm(f => ({ ...f, buttonAction: val }))}
-                  detailTitle={form.detailTitle}
-                  detailBody={form.detailBody}
-                  detailImages={form.detailImages}
-                  onDetailChange={(key, val) => setForm(f => ({ ...f, [key]: val }))}
-                />
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">Действие кнопки</label>
+                  <RoutePicker
+                    value={form.buttonAction}
+                    onChange={val => setForm(f => ({ ...f, buttonAction: val }))}
+                    detailTitle={form.detailTitle}
+                    detailBody={form.detailBody}
+                    detailImages={form.detailImages}
+                    onDetailChange={(key, val) => setForm(f => ({ ...f, [key]: val }))}
+                  />
+                </div>
+                {form.buttonAction && (
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Текст кнопки</label>
+                    <input
+                      type="text"
+                      value={form.buttonText}
+                      onChange={e => setForm(f => ({ ...f, buttonText: e.target.value }))}
+                      placeholder="Узнать больше"
+                      className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      style={{ fontSize: 'max(16px, 1em)' }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

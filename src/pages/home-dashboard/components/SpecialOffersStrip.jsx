@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getApiUrl } from '../../../config/api';
 import DetailModal from './DetailModal';
+import Icon from '../../../components/AppIcon';
 
 const SpecialOffersStrip = ({ userTier }) => {
   const navigate = useNavigate();
@@ -61,8 +62,15 @@ const SpecialOffersStrip = ({ userTier }) => {
                 <div className="absolute inset-0 p-3 flex flex-col justify-between">
                   <p className="text-white text-xs font-semibold leading-tight line-clamp-1">Benedict Café</p>
                   <div>
-                    <p className="text-white text-sm font-bold leading-snug line-clamp-3 mb-1">{offer.title}</p>
-                    {offer.description && <p className="text-white/60 text-xs line-clamp-1">{offer.description}</p>}
+                    <p className="text-white text-sm font-bold leading-snug line-clamp-2 mb-1">{offer.title}</p>
+                    {offer.description && <p className="text-white/60 text-xs line-clamp-1 mb-2">{offer.description}</p>}
+                    {tappable && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
+                        style={{ background: 'rgba(255,255,255,0.2)', color: 'white', backdropFilter: 'blur(4px)' }}>
+                        {offer.button_text || 'Узнать больше'}
+                        <Icon name="ArrowRight" size={11} />
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
