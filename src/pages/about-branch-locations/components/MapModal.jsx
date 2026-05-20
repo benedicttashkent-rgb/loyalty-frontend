@@ -6,7 +6,7 @@ import ModalOverlay from '../../../components/navigation/ModalOverlay';
 const MapModal = ({ isOpen, onClose, coordinates, branchName }) => {
   if (!coordinates) return null;
 
-  const mapUrl = `https://www.google.com/maps?q=${coordinates?.lat},${coordinates?.lng}&z=15&output=embed`;
+  const mapUrl = `https://yandex.ru/map-widget/v1/?ll=${coordinates?.lng},${coordinates?.lat}&z=15&pt=${coordinates?.lng},${coordinates?.lat},pm2rdm`;
 
   return (
     <ModalOverlay isOpen={isOpen} onClose={onClose}>
@@ -48,7 +48,7 @@ const MapModal = ({ isOpen, onClose, coordinates, branchName }) => {
             size="default"
             iconName="Navigation"
             iconPosition="left"
-            onClick={() => window.open(`https://www.google.com/maps?q=${coordinates?.lat},${coordinates?.lng}`, '_blank')}
+            onClick={() => window.open(`https://maps.yandex.ru/?ll=${coordinates?.lng},${coordinates?.lat}&z=15&pt=${coordinates?.lng},${coordinates?.lat}`, '_blank')}
             className="flex-1"
           >
             Открыть в картах
