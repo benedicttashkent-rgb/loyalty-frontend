@@ -32,6 +32,12 @@ const CustomersEditor = () => {
   const [balanceAmount, setBalanceAmount] = useState('');
   const [balanceLoading, setBalanceLoading] = useState(false);
   const [balanceError, setBalanceError] = useState('');
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoOrderAmount, setPromoOrderAmount] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState('');
+  const [promoSuccess, setPromoSuccess] = useState('');
 
   useEffect(() => {
     fetchCustomers();
@@ -90,6 +96,11 @@ const CustomersEditor = () => {
           setBalanceAction(null);
           setBalanceAmount('');
           setBalanceError('');
+          setPromoOpen(false);
+          setPromoCode('');
+          setPromoOrderAmount('');
+          setPromoError('');
+          setPromoSuccess('');
           setShowDetails(true);
         }
       }
@@ -167,6 +178,38 @@ const CustomersEditor = () => {
       setBalanceError('Ошибка: ' + e.message);
     } finally {
       setBalanceLoading(false);
+    }
+  };
+
+  const handleApplyPromoCode = async () => {
+    const code = promoCode.trim();
+    const orderAmount = parseFloat(promoOrderAmount);
+    if (!code) { setPromoError('Введите промокод'); return; }
+    if (!orderAmount || orderAmount <= 0) { setPromoError('Введите сумму заказа больше 0'); return; }
+    setPromoLoading(true);
+    setPromoError('');
+    setPromoSuccess('');
+    try {
+      const response = await adminApiRequest(`admin/customers/${selectedCustomer.id}/promocode`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, orderAmount }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        setSelectedCustomer(prev => ({ ...prev, balance: data.balance ?? prev.balance }));
+        setPromoSuccess(`Начислено ${data.bonusAmount?.toLocaleString('ru-RU')} сум кэшбэка`);
+        setPromoCode('');
+        setPromoOrderAmount('');
+        setPromoOpen(false);
+        fetchCustomers();
+      } else {
+        setPromoError(data.error || 'Ошибка операции');
+      }
+    } catch (e) {
+      setPromoError('Ошибка: ' + e.message);
+    } finally {
+      setPromoLoading(false);
     }
   };
 
@@ -516,7 +559,7 @@ const CustomersEditor = () => {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: 'rgba(0,0,0,0.45)' }}
-          onClick={(e) => { if (e.target === e.currentTarget) { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); } }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); setPromoOpen(false); setPromoCode(''); setPromoOrderAmount(''); setPromoError(''); setPromoSuccess(''); } }}
         >
           <div className="bg-card rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl" style={{ border: '1px solid var(--color-border)' }}>
 
@@ -556,7 +599,7 @@ const CustomersEditor = () => {
                 </div>
               </div>
               <button
-                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); }}
+                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); setPromoOpen(false); setPromoCode(''); setPromoOrderAmount(''); setPromoError(''); setPromoSuccess(''); }}
                 className="p-2 rounded-lg hover:bg-muted transition-colors flex-shrink-0 text-muted-foreground hover:text-foreground"
               >
                 <Icon name="X" size={20} />
@@ -700,6 +743,79 @@ const CustomersEditor = () => {
                           <p className="text-xs text-red-600">{balanceError}</p>
                         )}
                       </div>
+                    )}
+                  </div>
+
+                  {/* Promo code — one-time-per-customer cashback */}
+                  <div className="rounded-2xl p-5 space-y-3" style={{ background: '#f2f0fb' }}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#7b6fb520' }}>
+                          <Icon name="Ticket" size={18} style={{ color: '#7b6fb5' }} />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-foreground">Промокод</div>
+                          <div className="text-xs text-muted-foreground">Разовый кэшбэк по рекламному коду</div>
+                        </div>
+                      </div>
+                      {!promoOpen && (
+                        <button
+                          onClick={() => { setPromoOpen(true); setPromoError(''); setPromoSuccess(''); }}
+                          className="px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-colors"
+                          style={{ background: '#7b6fb5' }}
+                        >
+                          Применить
+                        </button>
+                      )}
+                    </div>
+
+                    {promoOpen && (
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={promoCode}
+                            onChange={(e) => { setPromoCode(e.target.value); setPromoError(''); }}
+                            placeholder="Код (например SKIDKA15)"
+                            className="flex-1 px-3 py-2 rounded-xl text-sm bg-white border focus:outline-none focus:ring-2 transition-colors uppercase"
+                            style={{ borderColor: '#7b6fb540', fontSize: 'max(16px, 1em)' }}
+                            autoFocus
+                          />
+                          <input
+                            type="number"
+                            min="1"
+                            value={promoOrderAmount}
+                            onChange={(e) => { setPromoOrderAmount(e.target.value); setPromoError(''); }}
+                            placeholder="Сумма заказа"
+                            className="w-36 px-3 py-2 rounded-xl text-sm bg-white border focus:outline-none focus:ring-2 transition-colors"
+                            style={{ borderColor: '#7b6fb540', fontSize: 'max(16px, 1em)' }}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={handleApplyPromoCode}
+                            disabled={promoLoading}
+                            className="flex-1 px-4 py-2 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-1.5 disabled:opacity-50 transition-colors"
+                            style={{ background: '#7b6fb5' }}
+                          >
+                            {promoLoading
+                              ? <Icon name="Loader2" size={14} className="animate-spin" />
+                              : <Icon name="Check" size={14} />}
+                            Начислить кэшбэк
+                          </button>
+                          <button
+                            onClick={() => { setPromoOpen(false); setPromoCode(''); setPromoOrderAmount(''); setPromoError(''); setPromoSuccess(''); }}
+                            className="px-3 py-2 rounded-xl text-sm font-medium border transition-colors"
+                            style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+                          >
+                            Отмена
+                          </button>
+                        </div>
+                        {promoError && <p className="text-xs text-red-600">{promoError}</p>}
+                      </div>
+                    )}
+                    {!promoOpen && promoSuccess && (
+                      <p className="text-xs font-medium" style={{ color: '#16a34a' }}>{promoSuccess}</p>
                     )}
                   </div>
 
