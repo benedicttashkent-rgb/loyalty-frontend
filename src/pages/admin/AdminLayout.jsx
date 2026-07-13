@@ -101,6 +101,7 @@ const AdminLayout = () => {
     { path: '/admin/events', label: 'События', icon: 'Calendar' },
     { path: '/admin/broadcast', label: 'Рассылки Telegram', icon: 'Send' },
     { path: '/admin/special-offers', label: 'Спецпредложения', icon: 'Tag' },
+    { path: '/admin/promo-codes', label: 'Промокоды', icon: 'Ticket' },
   ];
 
   if (loading) {

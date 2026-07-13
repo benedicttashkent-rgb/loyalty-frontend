@@ -22,6 +22,7 @@ import TelegramBroadcastEditor from './pages/admin/TelegramBroadcastEditor';
 import SpecialOffersEditor from './pages/admin/SpecialOffersEditor';
 import MenuItemsEditor from './pages/admin/MenuItemsEditor';
 import CategoriesEditor from './pages/admin/CategoriesEditor';
+import PromoCodesEditor from './pages/admin/PromoCodesEditor';
 import TelegramTest from './pages/telegram-test';
 import PaymentReturn from './pages/payment-return';
 import LogoLoader from './components/LogoLoader';
@@ -78,6 +79,7 @@ const AppRoutes = () => {
           <Route path="events" element={<EventsEditor />} />
           <Route path="broadcast" element={<TelegramBroadcastEditor />} />
           <Route path="special-offers" element={<SpecialOffersEditor />} />
+          <Route path="promo-codes" element={<PromoCodesEditor />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
