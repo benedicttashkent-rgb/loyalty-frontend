@@ -4,6 +4,7 @@ import Icon from '../../components/AppIcon';
 import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import { formatDateWithMonth } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
+import PromoCodeCard from './components/PromoCodeCard';
 
 
 const monthNames = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
@@ -220,6 +221,8 @@ const PromotionsPage = () => {
       {/* List view */}
       {!isDetailView && (
         <div className="max-w-2xl mx-auto px-4 py-6">
+
+          <PromoCodeCard />
 
           {/* Loading skeleton */}
           {loading && (

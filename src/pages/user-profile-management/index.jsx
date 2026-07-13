@@ -7,7 +7,6 @@ import ProfileForm from './components/ProfileForm';
 import AccountPreferences from './components/AccountPreferences';
 import DangerZone from './components/DangerZone';
 import PurchaseHistory from './components/PurchaseHistory';
-import PromoCodeCard from './components/PromoCodeCard';
 import { getApiUrl } from '../../config/api';
 
 const UserProfileManagement = () => {
@@ -352,8 +351,6 @@ const UserProfileManagement = () => {
 
         <div className="p-6 space-y-4">
           <LoyaltySummary loyaltyData={loyaltyData} />
-
-          <PromoCodeCard />
 
           <ProfileForm
             user={userData}

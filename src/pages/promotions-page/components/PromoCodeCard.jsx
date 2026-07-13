@@ -73,7 +73,7 @@ const PromoCodeCard = () => {
   if (certificate) {
     if (confirmed) {
       return (
-        <div className="rounded-2xl p-5 space-y-2 text-center" style={{ background: '#f3f4f6' }}>
+        <div className="rounded-2xl p-5 space-y-2 text-center mb-6" style={{ background: '#f3f4f6' }}>
           <Icon name="CheckCircle2" size={28} style={{ color: '#9ca3af', margin: '0 auto' }} />
           <div className="text-sm font-semibold text-muted-foreground">Сертификат «{certificate.code}» использован</div>
           <div className="text-xs text-muted-foreground">Скидка {certificate.discountPercent}% применена кассиром.</div>
@@ -81,21 +81,58 @@ const PromoCodeCard = () => {
       );
     }
     return (
-      <div className="rounded-2xl p-5 space-y-3 text-center" style={{ background: '#f2f0fb', border: '2px dashed #7b6fb5' }}>
+      <div className="rounded-2xl p-5 space-y-3 text-center mb-6" style={{ background: '#f2f0fb', border: '2px dashed #7b6fb5' }}>
         <Icon name="Ticket" size={28} style={{ color: '#7b6fb5', margin: '0 auto' }} />
         <div className="text-2xl font-bold" style={{ color: '#7b6fb5' }}>-{certificate.discountPercent}%</div>
         <div className="text-sm font-semibold text-foreground">Сертификат «{certificate.code}»</div>
         <div className="text-xs text-muted-foreground">Покажите этот экран кассиру. Кассир введёт ПИН-код ниже, чтобы применить скидку — после этого сертификат станет недействительным.</div>
-        <div className="space-y-2 pt-1">
-          <input
-            type="password"
-            inputMode="numeric"
-            value={pin}
-            onChange={(e) => { setPin(e.target.value); setPinError(''); }}
-            placeholder="ПИН-код кассира"
-            className="w-full px-3 py-2 rounded-xl text-sm bg-white border text-center tracking-widest focus:outline-none focus:ring-2 transition-colors"
-            style={{ borderColor: '#7b6fb540', fontSize: 'max(16px, 1em)' }}
-          />
+        <div className="space-y-3 pt-1">
+          <div
+            className="w-full px-3 py-2.5 rounded-xl text-lg font-semibold bg-white border text-center tracking-[0.5em]"
+            style={{ borderColor: '#7b6fb540', minHeight: 44 }}
+          >
+            {pin ? '•'.repeat(pin.length) : <span className="text-sm font-normal text-muted-foreground tracking-normal">ПИН-код кассира</span>}
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+              <button
+                key={digit}
+                type="button"
+                onClick={() => { if (pin.length < 8) setPin(pin + digit); setPinError(''); }}
+                className="py-2.5 rounded-xl text-lg font-semibold bg-white border transition-colors active:scale-95"
+                style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+              >
+                {digit}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => { setPin(''); setPinError(''); }}
+              className="py-2.5 rounded-xl text-xs font-medium border transition-colors active:scale-95"
+              style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+            >
+              Очистить
+            </button>
+            <button
+              type="button"
+              onClick={() => { if (pin.length < 8) setPin(pin + '0'); setPinError(''); }}
+              className="py-2.5 rounded-xl text-lg font-semibold bg-white border transition-colors active:scale-95"
+              style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+            >
+              0
+            </button>
+            <button
+              type="button"
+              onClick={() => { setPin(pin.slice(0, -1)); setPinError(''); }}
+              className="py-2.5 rounded-xl flex items-center justify-center border transition-colors active:scale-95"
+              style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+              aria-label="Стереть"
+            >
+              <Icon name="Delete" size={18} />
+            </button>
+          </div>
+
           <button
             onClick={handleCashierConfirm}
             disabled={pinLoading}
@@ -114,7 +151,7 @@ const PromoCodeCard = () => {
   }
 
   return (
-    <div className="rounded-2xl p-5 space-y-3" style={{ background: '#f2f0fb' }}>
+    <div className="rounded-2xl p-5 space-y-3 mb-6" style={{ background: '#f2f0fb' }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#7b6fb520' }}>
