@@ -8,6 +8,10 @@ const PromoCodeCard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [certificate, setCertificate] = useState(null);
+  const [confirmed, setConfirmed] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinLoading, setPinLoading] = useState(false);
+  const [pinError, setPinError] = useState('');
 
   const handleRedeem = async () => {
     const trimmed = code.trim();
@@ -38,13 +42,73 @@ const PromoCodeCard = () => {
     }
   };
 
+  const handleCashierConfirm = async () => {
+    const trimmedPin = pin.trim();
+    if (!trimmedPin) { setPinError('Кассир должен ввести ПИН-код'); return; }
+    setPinLoading(true);
+    setPinError('');
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(getApiUrl('customers/promocode/confirm'), {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ redemptionId: certificate.redemptionId, pin: trimmedPin }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        setConfirmed(true);
+      } else {
+        setPinError(data.error || 'Ошибка подтверждения');
+      }
+    } catch (e) {
+      setPinError('Ошибка: ' + e.message);
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
   if (certificate) {
+    if (confirmed) {
+      return (
+        <div className="rounded-2xl p-5 space-y-2 text-center" style={{ background: '#f3f4f6' }}>
+          <Icon name="CheckCircle2" size={28} style={{ color: '#9ca3af', margin: '0 auto' }} />
+          <div className="text-sm font-semibold text-muted-foreground">Сертификат «{certificate.code}» использован</div>
+          <div className="text-xs text-muted-foreground">Скидка {certificate.discountPercent}% применена кассиром.</div>
+        </div>
+      );
+    }
     return (
-      <div className="rounded-2xl p-5 space-y-2 text-center" style={{ background: '#f2f0fb', border: '2px dashed #7b6fb5' }}>
+      <div className="rounded-2xl p-5 space-y-3 text-center" style={{ background: '#f2f0fb', border: '2px dashed #7b6fb5' }}>
         <Icon name="Ticket" size={28} style={{ color: '#7b6fb5', margin: '0 auto' }} />
         <div className="text-2xl font-bold" style={{ color: '#7b6fb5' }}>-{certificate.discountPercent}%</div>
         <div className="text-sm font-semibold text-foreground">Сертификат «{certificate.code}»</div>
-        <div className="text-xs text-muted-foreground">Покажите этот экран кассиру для применения скидки. Код уже использован и больше не действует.</div>
+        <div className="text-xs text-muted-foreground">Покажите этот экран кассиру. Кассир введёт ПИН-код ниже, чтобы применить скидку — после этого сертификат станет недействительным.</div>
+        <div className="space-y-2 pt-1">
+          <input
+            type="password"
+            inputMode="numeric"
+            value={pin}
+            onChange={(e) => { setPin(e.target.value); setPinError(''); }}
+            placeholder="ПИН-код кассира"
+            className="w-full px-3 py-2 rounded-xl text-sm bg-white border text-center tracking-widest focus:outline-none focus:ring-2 transition-colors"
+            style={{ borderColor: '#7b6fb540', fontSize: 'max(16px, 1em)' }}
+          />
+          <button
+            onClick={handleCashierConfirm}
+            disabled={pinLoading}
+            className="w-full px-4 py-2 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-1.5 disabled:opacity-50 transition-colors"
+            style={{ background: '#7b6fb5' }}
+          >
+            {pinLoading
+              ? <Icon name="Loader2" size={14} className="animate-spin" />
+              : <Icon name="Check" size={14} />}
+            Применить скидку
+          </button>
+          {pinError && <p className="text-xs text-red-600">{pinError}</p>}
+        </div>
       </div>
     );
   }

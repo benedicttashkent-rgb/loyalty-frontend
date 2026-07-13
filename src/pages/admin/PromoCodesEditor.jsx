@@ -13,9 +13,58 @@ const PromoCodesEditor = () => {
   const [redemptions, setRedemptions] = useState({});
   const [redemptionsLoading, setRedemptionsLoading] = useState(false);
 
+  const [staffPin, setStaffPin] = useState('');
+  const [pinInput, setPinInput] = useState('');
+  const [pinSaving, setPinSaving] = useState(false);
+  const [pinError, setPinError] = useState('');
+  const [pinSaved, setPinSaved] = useState(false);
+
   useEffect(() => {
     fetchPromoCodes();
+    fetchStaffPin();
   }, []);
+
+  const fetchStaffPin = async () => {
+    try {
+      const response = await adminApiRequest('admin/promo-codes/staff-pin', { method: 'GET' });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setStaffPin(data.pin || '');
+          setPinInput(data.pin || '');
+        }
+      }
+    } catch (e) {
+      console.error('Fetch staff pin error:', e);
+    }
+  };
+
+  const handleSavePin = async (e) => {
+    e.preventDefault();
+    const trimmed = pinInput.trim();
+    if (!/^\d{4,8}$/.test(trimmed)) { setPinError('ПИН должен содержать от 4 до 8 цифр'); return; }
+    setPinSaving(true);
+    setPinError('');
+    setPinSaved(false);
+    try {
+      const response = await adminApiRequest('admin/promo-codes/staff-pin', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: trimmed }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.success) {
+        setStaffPin(data.pin);
+        setPinSaved(true);
+      } else {
+        setPinError(data.error || 'Ошибка сохранения ПИН-кода');
+      }
+    } catch (e) {
+      setPinError('Ошибка: ' + e.message);
+    } finally {
+      setPinSaving(false);
+    }
+  };
 
   const fetchPromoCodes = async () => {
     setLoading(true);
@@ -117,6 +166,39 @@ const PromoCodesEditor = () => {
           Гость вводит код в приложении и получает сертификат на скидку, показывает кассиру — кассир применяет скидку вручную на кассе. Каждый код можно использовать один раз на аккаунт.
         </p>
       </div>
+
+      <form onSubmit={handleSavePin} className="rounded-2xl p-5 space-y-3 border" style={{ borderColor: 'var(--color-border)' }}>
+        <div>
+          <div className="text-sm font-semibold text-foreground">ПИН-код кассира</div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            Кассир вводит этот ПИН на экране сертификата гостя, чтобы применить скидку. После этого сертификат становится недействительным.
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <input
+            type="text"
+            inputMode="numeric"
+            value={pinInput}
+            onChange={(e) => { setPinInput(e.target.value); setPinError(''); setPinSaved(false); }}
+            placeholder="ПИН (4-8 цифр)"
+            className="w-40 px-3 py-2 rounded-xl text-sm border tracking-widest focus:outline-none focus:ring-2 transition-colors"
+            style={{ fontSize: 'max(16px, 1em)' }}
+          />
+          <button
+            type="submit"
+            disabled={pinSaving}
+            className="px-4 py-2 rounded-xl text-sm font-medium text-white flex items-center gap-1.5 disabled:opacity-50 transition-colors"
+            style={{ background: 'var(--color-primary)' }}
+          >
+            {pinSaving
+              ? <Icon name="Loader2" size={14} className="animate-spin" />
+              : <Icon name="Save" size={14} />}
+            Сохранить
+          </button>
+        </div>
+        {pinError && <p className="text-xs text-red-600">{pinError}</p>}
+        {pinSaved && !pinError && <p className="text-xs font-medium" style={{ color: '#16a34a' }}>Текущий ПИН: {staffPin}</p>}
+      </form>
 
       <form onSubmit={handleCreate} className="rounded-2xl p-5 space-y-3 border" style={{ borderColor: 'var(--color-border)' }}>
         <div className="text-sm font-semibold text-foreground">Новый промокод</div>
