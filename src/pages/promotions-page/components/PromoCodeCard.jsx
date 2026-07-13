@@ -81,15 +81,15 @@ const PromoCodeCard = () => {
       );
     }
     return (
-      <div className="rounded-2xl p-5 space-y-3 text-center mb-6" style={{ background: '#f2f0fb', border: '2px dashed #7b6fb5' }}>
-        <Icon name="Ticket" size={28} style={{ color: '#7b6fb5', margin: '0 auto' }} />
-        <div className="text-2xl font-bold" style={{ color: '#7b6fb5' }}>-{certificate.discountPercent}%</div>
+      <div className="rounded-2xl p-5 space-y-3 text-center mb-6" style={{ background: '#f8efe0', border: '2px dashed #8b6a4e' }}>
+        <Icon name="Ticket" size={28} style={{ color: '#8b6a4e', margin: '0 auto' }} />
+        <div className="text-2xl font-bold" style={{ color: '#8b6a4e' }}>-{certificate.discountPercent}%</div>
         <div className="text-sm font-semibold text-foreground">Сертификат «{certificate.code}»</div>
         <div className="text-xs text-muted-foreground">Покажите этот экран кассиру. Кассир введёт ПИН-код ниже, чтобы применить скидку — после этого сертификат станет недействительным.</div>
         <div className="space-y-3 pt-1">
           <div
             className="w-full px-3 py-2.5 rounded-xl text-lg font-semibold bg-white border text-center tracking-[0.5em]"
-            style={{ borderColor: '#7b6fb540', minHeight: 44 }}
+            style={{ borderColor: '#8b6a4e40', minHeight: 44 }}
           >
             {pin ? '•'.repeat(pin.length) : <span className="text-sm font-normal text-muted-foreground tracking-normal">ПИН-код кассира</span>}
           </div>
@@ -101,7 +101,7 @@ const PromoCodeCard = () => {
                 type="button"
                 onClick={() => { if (pin.length < 8) setPin(pin + digit); setPinError(''); }}
                 className="py-2.5 rounded-xl text-lg font-semibold bg-white border transition-colors active:scale-95"
-                style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+                style={{ borderColor: '#8b6a4e40', color: '#8b6a4e' }}
               >
                 {digit}
               </button>
@@ -110,7 +110,7 @@ const PromoCodeCard = () => {
               type="button"
               onClick={() => { setPin(''); setPinError(''); }}
               className="py-2.5 rounded-xl text-xs font-medium border transition-colors active:scale-95"
-              style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+              style={{ borderColor: '#8b6a4e40', color: '#8b6a4e' }}
             >
               Очистить
             </button>
@@ -118,7 +118,7 @@ const PromoCodeCard = () => {
               type="button"
               onClick={() => { if (pin.length < 8) setPin(pin + '0'); setPinError(''); }}
               className="py-2.5 rounded-xl text-lg font-semibold bg-white border transition-colors active:scale-95"
-              style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+              style={{ borderColor: '#8b6a4e40', color: '#8b6a4e' }}
             >
               0
             </button>
@@ -126,7 +126,7 @@ const PromoCodeCard = () => {
               type="button"
               onClick={() => { setPin(pin.slice(0, -1)); setPinError(''); }}
               className="py-2.5 rounded-xl flex items-center justify-center border transition-colors active:scale-95"
-              style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+              style={{ borderColor: '#8b6a4e40', color: '#8b6a4e' }}
               aria-label="Стереть"
             >
               <Icon name="Delete" size={18} />
@@ -137,7 +137,7 @@ const PromoCodeCard = () => {
             onClick={handleCashierConfirm}
             disabled={pinLoading}
             className="w-full px-4 py-2 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-1.5 disabled:opacity-50 transition-colors"
-            style={{ background: '#7b6fb5' }}
+            style={{ background: '#8b6a4e' }}
           >
             {pinLoading
               ? <Icon name="Loader2" size={14} className="animate-spin" />
@@ -151,11 +151,11 @@ const PromoCodeCard = () => {
   }
 
   return (
-    <div className="rounded-2xl p-5 space-y-3 mb-6" style={{ background: '#f2f0fb' }}>
+    <div className="rounded-2xl p-5 space-y-3 mb-6" style={{ background: '#f8efe0' }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#7b6fb520' }}>
-            <Icon name="Ticket" size={18} style={{ color: '#7b6fb5' }} />
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#8b6a4e20' }}>
+            <Icon name="Ticket" size={18} style={{ color: '#8b6a4e' }} />
           </div>
           <div>
             <div className="text-sm font-semibold text-foreground">Есть промокод?</div>
@@ -166,7 +166,7 @@ const PromoCodeCard = () => {
           <button
             onClick={() => { setOpen(true); setError(''); }}
             className="px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-colors"
-            style={{ background: '#7b6fb5' }}
+            style={{ background: '#8b6a4e' }}
           >
             Ввести код
           </button>
@@ -181,7 +181,7 @@ const PromoCodeCard = () => {
             onChange={(e) => { setCode(e.target.value); setError(''); }}
             placeholder="Введите промокод"
             className="w-full px-3 py-2 rounded-xl text-sm bg-white border focus:outline-none focus:ring-2 transition-colors uppercase"
-            style={{ borderColor: '#7b6fb540', fontSize: 'max(16px, 1em)' }}
+            style={{ borderColor: '#8b6a4e40', fontSize: 'max(16px, 1em)' }}
             autoFocus
           />
           <div className="flex gap-2">
@@ -189,7 +189,7 @@ const PromoCodeCard = () => {
               onClick={handleRedeem}
               disabled={loading}
               className="flex-1 px-4 py-2 rounded-xl text-sm font-medium text-white flex items-center justify-center gap-1.5 disabled:opacity-50 transition-colors"
-              style={{ background: '#7b6fb5' }}
+              style={{ background: '#8b6a4e' }}
             >
               {loading
                 ? <Icon name="Loader2" size={14} className="animate-spin" />
@@ -199,7 +199,7 @@ const PromoCodeCard = () => {
             <button
               onClick={() => { setOpen(false); setCode(''); setError(''); }}
               className="px-3 py-2 rounded-xl text-sm font-medium border transition-colors"
-              style={{ borderColor: '#7b6fb540', color: '#7b6fb5' }}
+              style={{ borderColor: '#8b6a4e40', color: '#8b6a4e' }}
             >
               Отмена
             </button>
