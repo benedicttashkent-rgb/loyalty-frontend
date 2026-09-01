@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, Suspense, lazy } from "react";
 import { BrowserRouter, Routes as RouterRoutes, Route, useLocation } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
@@ -11,28 +11,36 @@ import UserProfileManagement from './pages/user-profile-management';
 import RewardsCatalog from './pages/rewards-catalog';
 import PromotionsPage from './pages/promotions-page';
 import SignupPage from './pages/signup';
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminLayout from './pages/admin/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import CustomersEditor from './pages/admin/CustomersEditor';
-import NewsBannerEditor from './pages/admin/NewsBannerEditor';
-import RewardsEditor from './pages/admin/RewardsEditor';
-import EventsEditor from './pages/admin/EventsEditor';
-import TelegramBroadcastEditor from './pages/admin/TelegramBroadcastEditor';
-import SpecialOffersEditor from './pages/admin/SpecialOffersEditor';
-import MenuItemsEditor from './pages/admin/MenuItemsEditor';
-import CategoriesEditor from './pages/admin/CategoriesEditor';
-import PromoCodesEditor from './pages/admin/PromoCodesEditor';
 import TelegramTest from './pages/telegram-test';
 import PaymentReturn from './pages/payment-return';
 import LogoLoader from './components/LogoLoader';
+
+// Admin panel is a separate chunk — not needed by any public-facing page.
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const CustomersEditor = lazy(() => import('./pages/admin/CustomersEditor'));
+const NewsBannerEditor = lazy(() => import('./pages/admin/NewsBannerEditor'));
+const RewardsEditor = lazy(() => import('./pages/admin/RewardsEditor'));
+const EventsEditor = lazy(() => import('./pages/admin/EventsEditor'));
+const TelegramBroadcastEditor = lazy(() => import('./pages/admin/TelegramBroadcastEditor'));
+const SpecialOffersEditor = lazy(() => import('./pages/admin/SpecialOffersEditor'));
+const MenuItemsEditor = lazy(() => import('./pages/admin/MenuItemsEditor'));
+const CategoriesEditor = lazy(() => import('./pages/admin/CategoriesEditor'));
+const PromoCodesEditor = lazy(() => import('./pages/admin/PromoCodesEditor'));
 
 const AppRoutes = () => {
   const location = useLocation();
   const [isTransitioning, setIsTransitioning] = useState(true);
   const timeoutRef = useRef(null);
 
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   useEffect(() => {
+    if (isAdminRoute) {
+      setIsTransitioning(false);
+      return;
+    }
     setIsTransitioning(true);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -46,7 +54,7 @@ const AppRoutes = () => {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [location.pathname]);
+  }, [location.pathname, isAdminRoute]);
 
   return (
     <>
@@ -67,8 +75,12 @@ const AppRoutes = () => {
         <Route path="/promotions-page/:newsId" element={<PromotionsPage />} />
         
         {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route path="/admin/login" element={
+          <Suspense fallback={<LogoLoader fullscreen />}><AdminLogin /></Suspense>
+        } />
+        <Route path="/admin" element={
+          <Suspense fallback={<LogoLoader fullscreen />}><AdminLayout /></Suspense>
+        }>
           <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="customers" element={<CustomersEditor />} />
@@ -81,7 +93,7 @@ const AppRoutes = () => {
           <Route path="special-offers" element={<SpecialOffersEditor />} />
           <Route path="promo-codes" element={<PromoCodesEditor />} />
         </Route>
-        
+
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
       {isTransitioning && <LogoLoader fullscreen />}

@@ -16,13 +16,9 @@ const AdminLayout = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    // Don't check auth if we're on the login page
-    if (location.pathname === '/admin/login') {
-      setLoading(false);
-      return;
-    }
     checkAuth();
-  }, [location.pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const checkAuth = async () => {
     try {
