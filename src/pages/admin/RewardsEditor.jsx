@@ -123,15 +123,6 @@ const RewardsEditor = () => {
         formDataToSend.append('rewardImage', rewardImageFile);
       }
 
-      console.log('[RewardsEditor] Sending FormData:', {
-        title: formData.title,
-        description: formData.description,
-        pointsCost: formData.pointsCost,
-        tier: formData.tier,
-        hasImageFile: !!rewardImageFile,
-        imageUrl: formData.imageUrl
-      });
-
       const response = await adminApiRequest(endpoint, {
         method,
         body: formDataToSend,
@@ -241,7 +232,14 @@ const RewardsEditor = () => {
   const tiers = ALL_TIERS.filter(t => ['Bronze', 'Silver', 'Gold', 'Platinum'].includes(t));
 
   if (loading) {
-    return <div className="text-center p-8">Loading...</div>;
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-8 w-48 bg-muted rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map(i => <div key={i} className="h-72 bg-muted rounded-2xl" />)}
+        </div>
+      </div>
+    );
   }
 
   return (

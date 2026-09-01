@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
-import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
 
 const AdminLayout = () => {
@@ -10,6 +9,11 @@ const AdminLayout = () => {
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     // Don't check auth if we're on the login page
@@ -22,47 +26,22 @@ const AdminLayout = () => {
 
   const checkAuth = async () => {
     try {
-      // Check for stored token
-      const adminToken = localStorage.getItem('adminToken');
-      console.log('🔍 Auth check - Token in localStorage:', adminToken ? 'EXISTS' : 'MISSING');
-      console.log('🔍 Auth check - Token value:', adminToken ? `${adminToken.substring(0, 20)}...` : 'none');
-      
-      // Use adminApiRequest helper which automatically adds token
       const response = await adminApiRequest('admin/auth/me', {
         method: 'GET',
       });
 
-      console.log('🔍 Auth check response:', {
-        status: response.status,
-        ok: response.ok,
-        url: getApiUrl('admin/auth/me'),
-        headers: Object.fromEntries(response.headers.entries()),
-        cookies: document.cookie
-      });
-
       if (response.ok) {
         const data = await response.json();
-        console.log('🔍 Auth check data:', data);
         if (data.success && data.admin) {
           setAdmin(data.admin);
-          console.log('✅ Auth check passed, admin:', data.admin);
-        } else {
-          console.warn('⚠️ Auth check failed - no admin data:', data);
-          // Only redirect if we're not already on login page
-          if (location.pathname !== '/admin/login') {
-            navigate('/admin/login');
-          }
-        }
-      } else {
-        console.warn('⚠️ Auth check failed - response not ok:', response.status);
-        // Only redirect if we're not already on login page
-        if (location.pathname !== '/admin/login') {
+        } else if (location.pathname !== '/admin/login') {
           navigate('/admin/login');
         }
+      } else if (location.pathname !== '/admin/login') {
+        navigate('/admin/login');
       }
     } catch (error) {
-      console.error('❌ Auth check error:', error);
-      // Only redirect if we're not already on login page
+      console.error('Auth check error:', error);
       if (location.pathname !== '/admin/login') {
         navigate('/admin/login');
       }
@@ -115,66 +94,101 @@ const AdminLayout = () => {
     );
   }
 
+  const sidebarContent = (
+    <>
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center justify-between">
+          {sidebarOpen && (
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold text-foreground truncate">Админ Панель</h2>
+              <p className="text-xs text-muted-foreground truncate">{admin?.username || 'Администратор'}</p>
+            </div>
+          )}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg hover:bg-muted transition-colors hidden lg:flex flex-shrink-0"
+          >
+            <Icon name="Menu" size={20} className="text-foreground" />
+          </button>
+          <button
+            onClick={() => setMobileNavOpen(false)}
+            className="p-2 rounded-lg hover:bg-muted transition-colors flex lg:hidden flex-shrink-0"
+          >
+            <Icon name="X" size={20} className="text-foreground" />
+          </button>
+        </div>
+      </div>
+
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path ||
+            (item.path === '/admin/dashboard' && location.pathname === '/admin');
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-colors ${
+                isActive
+                  ? 'bg-primary text-primary-foreground font-semibold'
+                  : 'text-foreground hover:bg-muted font-medium'
+              }`}
+            >
+              <Icon name={item.icon} size={18} className="flex-shrink-0" />
+              {sidebarOpen && <span className="truncate">{item.label}</span>}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="p-3 border-t border-border">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors"
+        >
+          <Icon name="LogOut" size={18} className="flex-shrink-0" />
+          {sidebarOpen && <span>Выйти</span>}
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
+      {/* Desktop sidebar */}
       <aside
         className={`${
           sidebarOpen ? 'w-64' : 'w-20'
-        } bg-card border-r border-border transition-all duration-300 flex flex-col`}
+        } bg-card border-r border-border transition-all duration-300 hidden lg:flex flex-col`}
       >
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between">
-            {sidebarOpen && (
-              <div>
-                <h2 className="text-xl font-bold text-foreground">Админ Панель</h2>
-                <p className="text-xs text-muted-foreground">{admin?.username || 'Администратор'}</p>
-              </div>
-            )}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-muted transition-colors"
-            >
-              <Icon name="Menu" size={24} className="text-foreground" />
-            </button>
-          </div>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-2">
-          {menuItems.map((item) => {
-            const isActive = location.pathname === item.path || 
-              (item.path === '/admin/dashboard' && location.pathname === '/admin');
-            return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-muted'
-                }`}
-              >
-                <Icon name={item.icon} size={20} />
-                {sidebarOpen && <span className="font-medium">{item.label}</span>}
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 border-t border-border">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-foreground hover:bg-muted transition-colors"
-          >
-            <Icon name="LogOut" size={20} />
-            {sidebarOpen && <span className="font-medium">Выйти</span>}
-          </button>
-        </div>
+        {sidebarContent}
       </aside>
 
+      {/* Mobile sidebar (drawer + backdrop) */}
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileNavOpen(false)}
+          />
+          <aside className="relative w-72 max-w-[80vw] bg-card border-r border-border flex flex-col">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">
+      <main className="flex-1 overflow-auto min-w-0">
+        {/* Mobile top bar */}
+        <div className="lg:hidden flex items-center gap-3 px-4 py-3 border-b border-border bg-card sticky top-0 z-30">
+          <button
+            onClick={() => setMobileNavOpen(true)}
+            className="p-2 -ml-2 rounded-lg hover:bg-muted transition-colors"
+          >
+            <Icon name="Menu" size={22} className="text-foreground" />
+          </button>
+          <span className="font-semibold text-foreground">Админ Панель</span>
+        </div>
+        <div className="p-4 sm:p-6">
           <Outlet />
         </div>
       </main>

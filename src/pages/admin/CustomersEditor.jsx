@@ -15,12 +15,15 @@ const DAY_NAMES = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
 const formatHour = (h) => `${String(h).padStart(2, '0')}:00`;
 
 const CustomersEditor = () => {
+  const PAGE_SIZE = 50;
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [stats, setStats] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('DESC');
+  const [page, setPage] = useState(1);
+  const [totalCustomers, setTotalCustomers] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [detailTab, setDetailTab] = useState('info');
@@ -35,8 +38,11 @@ const CustomersEditor = () => {
 
   useEffect(() => {
     fetchCustomers();
+  }, [sortBy, sortOrder, page]);
+
+  useEffect(() => {
     fetchStats();
-  }, [sortBy, sortOrder]);
+  }, []);
 
   const fetchStats = async () => {
     try {
@@ -54,8 +60,8 @@ const CustomersEditor = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page: '1',
-        limit: '999999',
+        page: String(page),
+        limit: String(PAGE_SIZE),
         search: search.trim(),
         sortBy,
         sortOrder,
@@ -64,7 +70,10 @@ const CustomersEditor = () => {
       const response = await adminApiRequest(`admin/customers?${params}`, { method: 'GET' });
       if (response.ok) {
         const data = await response.json();
-        if (data.success) setCustomers(data.customers || []);
+        if (data.success) {
+          setCustomers(data.customers || []);
+          setTotalCustomers(data.total ?? data.pagination?.total ?? (data.customers || []).length);
+        }
       }
     } catch (e) {
       console.error('Fetch customers error:', e);
@@ -75,7 +84,8 @@ const CustomersEditor = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchCustomers();
+    if (page !== 1) setPage(1);
+    else fetchCustomers();
   };
 
   const handleCustomerClick = async (customer) => {
@@ -249,7 +259,7 @@ const CustomersEditor = () => {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Клиенты</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {customers.length > 0 ? `${customers.length} клиентов в базе` : 'Загрузка...'}
+            {totalCustomers > 0 ? `${totalCustomers} клиентов в базе` : 'Загрузка...'}
           </p>
         </div>
         <button
@@ -327,7 +337,7 @@ const CustomersEditor = () => {
           </div>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => { setSortBy(e.target.value); setPage(1); }}
             className="px-3 py-2.5 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
           >
             <option value="created_at">По дате регистрации</option>
@@ -338,7 +348,7 @@ const CustomersEditor = () => {
           </select>
           <select
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
+            onChange={(e) => { setSortOrder(e.target.value); setPage(1); }}
             className="px-3 py-2.5 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
           >
             <option value="DESC">Сначала новые</option>
@@ -503,10 +513,26 @@ const CustomersEditor = () => {
         </div>
 
         {customers.length > 0 && (
-          <div className="px-5 py-3" style={{ borderTop: '1px solid var(--color-border)', background: 'var(--color-muted)' }}>
+          <div className="px-5 py-3 flex items-center justify-between gap-3 flex-wrap" style={{ borderTop: '1px solid var(--color-border)', background: 'var(--color-muted)' }}>
             <span className="text-xs text-muted-foreground">
-              {customers.length} клиентов
+              Страница {page} из {Math.max(1, Math.ceil(totalCustomers / PAGE_SIZE))} · {totalCustomers} клиентов
             </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1 || loading}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground hover:bg-background disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                ← Назад
+              </button>
+              <button
+                onClick={() => setPage(p => (p * PAGE_SIZE < totalCustomers ? p + 1 : p))}
+                disabled={page * PAGE_SIZE >= totalCustomers || loading}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground hover:bg-background disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Вперёд →
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -518,104 +544,78 @@ const CustomersEditor = () => {
           style={{ background: 'rgba(0,0,0,0.45)' }}
           onClick={(e) => { if (e.target === e.currentTarget) { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); } }}
         >
-          <div className="bg-card rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl" style={{ border: '1px solid var(--color-border)' }}>
+          <div className="bg-card rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
 
-            {/* Modal header */}
-            <div className="flex items-center gap-4 p-6 pb-4">
+            {/* Modal header — warm banner */}
+            <div
+              className="relative flex items-center gap-4 p-6 pb-5 flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #f8efe0 0%, #fdf9f3 60%, var(--color-card) 100%)' }}
+            >
+              <button
+                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); }}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/60 transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <Icon name="X" size={18} />
+              </button>
               <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0"
-                style={{ background: getAvatarColor(selectedCustomer.id) }}
+                className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold text-white flex-shrink-0 shadow-sm"
+                style={{ background: getAvatarColor(selectedCustomer.id), border: '3px solid white' }}
               >
                 {getInitials(selectedCustomer.name, selectedCustomer.sur_name)}
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 pr-8">
                 <h2 className="text-xl font-bold text-foreground leading-tight">
                   {[selectedCustomer.name, selectedCustomer.sur_name].filter(Boolean).join(' ') || '—'}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-0.5">{formatPhone(selectedCustomer.phone)}</p>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                   {selectedCustomer.is_new_customer ? (
-                    <span className="px-2 py-0.5 rounded-md text-xs font-medium" style={{ background: '#f0fdf4', color: '#16a34a' }}>Новый</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-white/70" style={{ color: '#16a34a' }}>Новый</span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-md text-xs font-medium" style={{ background: '#eff6ff', color: '#2563eb' }}>Постоянный</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-white/70" style={{ color: '#2563eb' }}>Постоянный</span>
                   )}
                   {TIER_CONFIG[selectedCustomer.tier] && (
                     <span
-                      className="px-2 py-0.5 rounded-md text-xs font-medium"
-                      style={{ background: TIER_CONFIG[selectedCustomer.tier].bg, color: TIER_CONFIG[selectedCustomer.tier].color }}
+                      className="px-2 py-0.5 rounded-full text-xs font-medium bg-white/70"
+                      style={{ color: TIER_CONFIG[selectedCustomer.tier].color }}
                     >
                       {TIER_CONFIG[selectedCustomer.tier].label}
                     </span>
                   )}
                   {selectedCustomer.telegram_chat_id && (
-                    <span className="px-2 py-0.5 rounded-md text-xs font-medium flex items-center gap-1" style={{ background: '#eff6ff', color: '#3b82f6' }}>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 bg-white/70" style={{ color: '#3b82f6' }}>
                       <Icon name="Send" size={10} />
                       Telegram
                     </span>
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => { setShowDetails(false); setSelectedCustomer(null); setInsights(null); setDeleteConfirm(false); setBalanceAction(null); setBalanceAmount(''); setBalanceError(''); }}
-                className="p-2 rounded-lg hover:bg-muted transition-colors flex-shrink-0 text-muted-foreground hover:text-foreground"
-              >
-                <Icon name="X" size={20} />
-              </button>
             </div>
 
-            {/* Tabs */}
-            <div className="flex gap-1 px-6 border-b border-border">
-              {[
-                { id: 'info',     label: 'Профиль',   icon: 'User' },
-                { id: 'insights', label: 'Аналитика', icon: 'BarChart2' },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setDetailTab(tab.id);
-                    if (tab.id === 'insights') fetchInsights(selectedCustomer.id);
-                  }}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
-                    detailTab === tab.id
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <Icon name={tab.icon} size={14} />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Delete footer */}
-            <div className="px-6 py-4 border-t border-border flex items-center justify-between gap-3" style={{ background: 'var(--color-muted)' }}>
-              {!deleteConfirm ? (
-                <button
-                  onClick={() => setDeleteConfirm(true)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  <Icon name="Trash2" size={14} />
-                  Удалить клиента
-                </button>
-              ) : (
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-sm text-red-600 font-medium flex-1">Удалить без возможности восстановления?</span>
+            {/* Tabs — pill segmented control */}
+            <div className="px-6 pt-4 flex-shrink-0">
+              <div className="inline-flex gap-1 p-1 rounded-xl" style={{ background: 'var(--color-muted)' }}>
+                {[
+                  { id: 'info',     label: 'Профиль',   icon: 'User' },
+                  { id: 'insights', label: 'Аналитика', icon: 'BarChart2' },
+                ].map(tab => (
                   <button
-                    onClick={handleDeleteCustomer}
-                    disabled={deleting}
-                    className="px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                    key={tab.id}
+                    onClick={() => {
+                      setDetailTab(tab.id);
+                      if (tab.id === 'insights') fetchInsights(selectedCustomer.id);
+                    }}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      detailTab === tab.id
+                        ? 'bg-card text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    {deleting ? <Icon name="Loader2" size={13} className="animate-spin" /> : <Icon name="Trash2" size={13} />}
-                    Да, удалить
+                    <Icon name={tab.icon} size={14} />
+                    {tab.label}
                   </button>
-                  <button
-                    onClick={() => setDeleteConfirm(false)}
-                    className="px-3 py-1.5 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
-                  >
-                    Отмена
-                  </button>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
 
             {/* Tab content */}
@@ -729,35 +729,40 @@ const CustomersEditor = () => {
                   </div>
 
                   {/* Personal info */}
-                  <div className="space-y-0 rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+                  <div className="rounded-2xl p-1.5 space-y-0.5" style={{ background: 'var(--color-muted)' }}>
                     {[
                       { icon: 'User',       label: 'Имя',            value: [selectedCustomer.name, selectedCustomer.sur_name].filter(Boolean).join(' ') || '—' },
                       { icon: 'Phone',      label: 'Телефон',        value: formatPhone(selectedCustomer.phone) },
                       { icon: 'Mail',       label: 'Email',          value: selectedCustomer.email || '—' },
                       { icon: 'Cake',       label: 'Дата рождения',  value: selectedCustomer.birth_date ? formatDateDDMMYYYY(selectedCustomer.birth_date) : '—' },
                       { icon: 'CreditCard', label: 'Карта лояльности', value: selectedCustomer.card_number || '—', mono: true },
-                    ].map(({ icon, label, value, mono }, i, arr) => (
+                    ].map(({ icon, label, value, mono }) => (
                       <div
                         key={label}
-                        className="flex items-center gap-3 px-4 py-3"
-                        style={{ borderBottom: i < arr.length - 1 ? '1px solid var(--color-border)' : 'none' }}
+                        className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl"
                       >
-                        <Icon name={icon} size={15} className="text-muted-foreground flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground w-36 flex-shrink-0">{label}</span>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-card">
+                          <Icon name={icon} size={14} className="text-muted-foreground" />
+                        </div>
+                        <span className="text-xs text-muted-foreground w-32 flex-shrink-0">{label}</span>
                         <span className={`text-sm text-foreground ${mono ? 'font-mono' : 'font-medium'}`}>{value}</span>
                       </div>
                     ))}
                     {selectedCustomer.iiko_customer_id && (
-                      <div className="flex items-center gap-3 px-4 py-3" style={{ borderTop: '1px solid var(--color-border)' }}>
-                        <Icon name="CheckCircle" size={15} className="text-green-500 flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground w-36 flex-shrink-0">iiko ID</span>
+                      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-card">
+                          <Icon name="CheckCircle" size={14} className="text-green-500" />
+                        </div>
+                        <span className="text-xs text-muted-foreground w-32 flex-shrink-0">iiko ID</span>
                         <span className="text-xs text-foreground font-mono">{selectedCustomer.iiko_customer_id}</span>
                       </div>
                     )}
                     {selectedCustomer.telegram_chat_id && (
-                      <div className="flex items-center gap-3 px-4 py-3" style={{ borderTop: '1px solid var(--color-border)' }}>
-                        <Icon name="Send" size={15} className="text-blue-400 flex-shrink-0" />
-                        <span className="text-xs text-muted-foreground w-36 flex-shrink-0">Telegram</span>
+                      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-card">
+                          <Icon name="Send" size={14} className="text-blue-400" />
+                        </div>
+                        <span className="text-xs text-muted-foreground w-32 flex-shrink-0">Telegram</span>
                         <span className="text-xs text-foreground font-mono">{selectedCustomer.telegram_chat_id}</span>
                       </div>
                     )}
@@ -898,6 +903,37 @@ const CustomersEditor = () => {
                       )}
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer — danger zone, tucked away */}
+            <div className="px-6 py-3.5 border-t border-border flex-shrink-0" style={{ background: 'var(--color-muted)' }}>
+              {!deleteConfirm ? (
+                <button
+                  onClick={() => setDeleteConfirm(true)}
+                  className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-red-600 transition-colors"
+                >
+                  <Icon name="Trash2" size={12} />
+                  Удалить клиента
+                </button>
+              ) : (
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-sm text-red-600 font-medium flex-1">Удалить без возможности восстановления?</span>
+                  <button
+                    onClick={handleDeleteCustomer}
+                    disabled={deleting}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                  >
+                    {deleting ? <Icon name="Loader2" size={13} className="animate-spin" /> : <Icon name="Trash2" size={13} />}
+                    Да, удалить
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(false)}
+                    className="px-3 py-1.5 rounded-lg text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
+                  >
+                    Отмена
+                  </button>
                 </div>
               )}
             </div>
