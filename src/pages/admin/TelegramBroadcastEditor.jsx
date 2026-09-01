@@ -174,117 +174,108 @@ const TelegramBroadcastEditor = () => {
     }
   };
 
+  const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
+  const labelClass = "block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5";
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Рассылки через Telegram</h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Отправка сообщений клиентам через Telegram бот
         </p>
       </div>
 
       {/* Last Result */}
       {lastResult && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="font-semibold text-foreground mb-3">Результат последней рассылки</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <span className="text-sm text-muted-foreground">Всего отправлено</span>
-              <p className="text-xl font-bold text-foreground">{lastResult.totalCustomers}</p>
-            </div>
-            <div>
-              <span className="text-sm text-muted-foreground">Успешно</span>
-              <p className="text-xl font-bold text-green-500">{lastResult.sent}</p>
-            </div>
-            <div>
-              <span className="text-sm text-muted-foreground">Ошибок</span>
-              <p className="text-xl font-bold text-red-500">{lastResult.failed}</p>
-            </div>
+        <div className="rounded-2xl p-5 grid grid-cols-3 gap-4" style={{ background: '#f8efe0' }}>
+          <div className="col-span-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide -mb-1">
+            Результат последней рассылки
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground">Всего отправлено</span>
+            <p className="text-xl font-bold text-foreground">{lastResult.totalCustomers}</p>
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground">Успешно</span>
+            <p className="text-xl font-bold" style={{ color: '#16a34a' }}>{lastResult.sent}</p>
+          </div>
+          <div>
+            <span className="text-xs text-muted-foreground">Ошибок</span>
+            <p className="text-xl font-bold text-destructive">{lastResult.failed}</p>
           </div>
         </div>
       )}
 
       {/* Broadcast Form */}
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-xl font-bold text-foreground mb-4">Создать рассылку</h2>
+      <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
+        <h2 className="text-lg font-bold text-foreground mb-4">Создать рассылку</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Photo Upload */}
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Фото (необязательно)
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              className="w-full px-3 py-2 border border-input rounded-lg bg-background"
-            />
-            {photoPreview && (
-              <div className="mt-2">
-                <img
-                  src={photoPreview}
-                  alt="Preview"
-                  className="max-w-xs max-h-48 rounded-lg border border-border"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPhotoFile(null);
-                    setPhotoPreview(null);
-                  }}
-                  className="mt-2 text-sm text-red-500 hover:text-red-700"
-                >
-                  Удалить фото
-                </button>
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">
+            <label className={labelClass}>Фото (необязательно)</label>
+            <div className="rounded-xl overflow-hidden" style={{ border: '1px dashed var(--color-border)' }}>
+              {photoPreview ? (
+                <div className="relative">
+                  <img src={photoPreview} alt="Preview" className="w-full object-cover" style={{ maxHeight: 160 }} />
+                  <button
+                    type="button"
+                    onClick={() => { setPhotoFile(null); setPhotoPreview(null); }}
+                    className="absolute top-2 right-2 w-7 h-7 bg-black/50 rounded-full flex items-center justify-center"
+                  >
+                    <Icon name="X" size={14} className="text-white" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center gap-2 py-6 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <Icon name="ImagePlus" size={22} className="text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">Нажмите для загрузки</span>
+                  <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
+                </label>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">
               Можно отправить только фото, только текст, или фото с текстом
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Сообщение {!photoFile && '*'}
-            </label>
+            <label className={labelClass}>Сообщение {!photoFile && '*'}</label>
             <textarea
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               placeholder="Введите сообщение для рассылки..."
               rows={6}
-              className="w-full px-3 py-2 border border-input rounded-lg bg-background resize-none"
+              className={inputClass}
+              style={{ resize: 'none' }}
               required={!photoFile}
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1.5">
               Поддерживается HTML форматирование (например: &lt;b&gt;жирный&lt;/b&gt;, &lt;i&gt;курсив&lt;/i&gt;)
             </p>
           </div>
 
           {/* Visit Frequency Filter */}
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Категория клиентов
-            </label>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="sendToAll"
-                  checked={formData.sendToAll}
-                  onChange={(e) => setFormData({ ...formData, sendToAll: e.target.checked, visitFrequency: 'all' })}
-                  className="w-4 h-4"
-                />
-                <label htmlFor="sendToAll" className="text-sm font-medium cursor-pointer">
-                  Отправить всем категориям за один раз
-                </label>
-              </div>
-              
+            <label className={labelClass}>Категория клиентов</label>
+            <div className="space-y-2.5 p-4 rounded-xl" style={{ background: 'var(--color-muted)' }}>
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <div
+                  className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
+                  style={{ background: formData.sendToAll ? 'var(--color-primary)' : 'var(--color-border)' }}
+                  onClick={() => setFormData({ ...formData, sendToAll: !formData.sendToAll, visitFrequency: 'all' })}
+                >
+                  <div className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: formData.sendToAll ? 22 : 4 }} />
+                </div>
+                <span className="text-xs font-medium text-foreground">Отправить всем категориям за один раз</span>
+              </label>
+
               {!formData.sendToAll && (
                 <select
                   value={formData.visitFrequency}
                   onChange={(e) => setFormData({ ...formData, visitFrequency: e.target.value })}
-                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                  className={inputClass}
                 >
                   <option value="all">Все клиенты</option>
                   <option value="weekly">Приходит каждую неделю ({stats?.visitFrequency?.weekly || 0})</option>
@@ -298,7 +289,7 @@ const TelegramBroadcastEditor = () => {
 
           {/* Loyalty status filter */}
           <div>
-            <label className="block text-sm font-medium mb-2">Статус лояльности</label>
+            <label className={labelClass}>Статус лояльности</label>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -335,67 +326,63 @@ const TelegramBroadcastEditor = () => {
             </p>
           </div>
 
-          {/* WebApp button */}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="includeWebAppButton"
-              checked={formData.includeWebAppButton}
-              onChange={(e) => setFormData({ ...formData, includeWebAppButton: e.target.checked, includeCustomButton: false })}
-              className="w-4 h-4"
-            />
-            <label htmlFor="includeWebAppButton" className="text-sm font-medium cursor-pointer">
-              Добавить кнопку "Открыть приложение" (Mini App)
+          {/* Toggles */}
+          <div className="space-y-2.5 p-4 rounded-xl" style={{ background: 'var(--color-muted)' }}>
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <div
+                className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
+                style={{ background: formData.includeWebAppButton ? 'var(--color-primary)' : 'var(--color-border)' }}
+                onClick={() => setFormData({ ...formData, includeWebAppButton: !formData.includeWebAppButton, includeCustomButton: false })}
+              >
+                <div className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: formData.includeWebAppButton ? 22 : 4 }} />
+              </div>
+              <span className="text-xs font-medium text-foreground">Добавить кнопку «Открыть приложение» (Mini App)</span>
+            </label>
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <div
+                className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
+                style={{ background: formData.includeCustomButton ? 'var(--color-primary)' : 'var(--color-border)' }}
+                onClick={() => setFormData({ ...formData, includeCustomButton: !formData.includeCustomButton, includeWebAppButton: false })}
+              >
+                <div className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all" style={{ left: formData.includeCustomButton ? 22 : 4 }} />
+              </div>
+              <span className="text-xs font-medium text-foreground">Добавить кнопку со ссылкой</span>
             </label>
           </div>
 
           {formData.includeWebAppButton && (
             <div>
-              <label className="block text-sm font-medium mb-2">Текст кнопки</label>
+              <label className={labelClass}>Текст кнопки</label>
               <input
                 type="text"
                 value={formData.buttonText}
                 onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
                 placeholder="Открыть приложение"
-                className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                className={inputClass}
               />
             </div>
           )}
 
-          {/* Custom URL button */}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="includeCustomButton"
-              checked={formData.includeCustomButton}
-              onChange={(e) => setFormData({ ...formData, includeCustomButton: e.target.checked, includeWebAppButton: false })}
-              className="w-4 h-4"
-            />
-            <label htmlFor="includeCustomButton" className="text-sm font-medium cursor-pointer">
-              Добавить кнопку с ссылкой
-            </label>
-          </div>
-
           {formData.includeCustomButton && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-2">Текст кнопки *</label>
+                <label className={labelClass}>Текст кнопки *</label>
                 <input
                   type="text"
                   value={formData.customButtonText}
                   onChange={(e) => setFormData({ ...formData, customButtonText: e.target.value })}
                   placeholder="Перейти на сайт"
-                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Ссылка (URL) *</label>
+                <label className={labelClass}>Ссылка (URL) *</label>
                 <input
                   type="url"
                   value={formData.customButtonUrl}
                   onChange={(e) => setFormData({ ...formData, customButtonUrl: e.target.value })}
                   placeholder="https://example.com"
-                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                  className={inputClass}
                 />
               </div>
             </div>
@@ -405,7 +392,7 @@ const TelegramBroadcastEditor = () => {
             <button
               type="submit"
               disabled={sending || !stats?.botConfigured || stats?.telegramCustomers === 0}
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2.5 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {sending ? (
                 <>
@@ -433,30 +420,30 @@ const TelegramBroadcastEditor = () => {
       </div>
 
       {/* Test Send */}
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-xl font-bold text-foreground mb-1">Тестовая отправка</h2>
+      <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
+        <h2 className="text-lg font-bold text-foreground mb-1">Тестовая отправка</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Отправляет то же сообщение, фото и кнопки на конкретный Chat ID
         </p>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Telegram Chat ID *</label>
+            <label className={labelClass}>Telegram Chat ID *</label>
             <input
               type="text"
               value={testChatId}
               onChange={(e) => setTestChatId(e.target.value)}
               placeholder="123456789"
-              className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+              className={inputClass}
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1.5">
               Chat ID пользователя для теста
             </p>
           </div>
 
           {/* Preview what will be sent */}
           {(formData.message || photoPreview || formData.includeWebAppButton || formData.includeCustomButton) && (
-            <div className="rounded-lg p-3 space-y-1.5" style={{ background: 'var(--color-muted)' }}>
+            <div className="rounded-xl p-3.5 space-y-1.5" style={{ background: 'var(--color-muted)' }}>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Будет отправлено:</p>
               {photoPreview && (
                 <div className="flex items-center gap-2 text-sm text-foreground">
@@ -488,7 +475,7 @@ const TelegramBroadcastEditor = () => {
           <button
             onClick={handleTestSend}
             disabled={testSending || !stats?.botConfigured || !testChatId || (!formData.message && !photoFile)}
-            className="px-6 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-2.5 rounded-xl text-sm font-medium bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {testSending ? (
               <>

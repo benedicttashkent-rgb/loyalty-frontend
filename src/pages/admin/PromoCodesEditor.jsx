@@ -159,9 +159,9 @@ const PromoCodesEditor = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Промокоды</h1>
+        <h1 className="text-3xl font-bold text-foreground">Промокоды</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Гость вводит код в приложении и получает сертификат на скидку, показывает кассиру — кассир применяет скидку вручную на кассе. Каждый код можно использовать один раз на аккаунт.
         </p>
@@ -238,9 +238,14 @@ const PromoCodesEditor = () => {
 
       <div className="rounded-2xl border overflow-hidden" style={{ borderColor: 'var(--color-border)' }}>
         {loading ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">Загрузка...</div>
+          <div className="p-4 space-y-2 animate-pulse">
+            {[1, 2, 3].map(i => <div key={i} className="h-14 bg-muted rounded-xl" />)}
+          </div>
         ) : promoCodes.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">Промокодов пока нет</div>
+          <div className="py-16 text-center">
+            <Icon name="Ticket" size={28} className="mx-auto mb-3 text-muted-foreground opacity-40" />
+            <p className="text-sm text-muted-foreground">Промокодов пока нет</p>
+          </div>
         ) : (
           <div className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
             {promoCodes.map((promo) => (

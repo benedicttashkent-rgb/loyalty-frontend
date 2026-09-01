@@ -231,6 +231,13 @@ const RewardsEditor = () => {
 
   const tiers = ALL_TIERS.filter(t => ['Bronze', 'Silver', 'Gold', 'Platinum'].includes(t));
 
+  const TIER_COLORS = {
+    Bronze:   '#cd7f32',
+    Silver:   '#9ca3af',
+    Gold:     '#d4a574',
+    Platinum: '#8b6a4e',
+  };
+
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
@@ -244,65 +251,77 @@ const RewardsEditor = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-end justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Награды</h1>
-          <p className="text-muted-foreground">Управление каталогом наград</p>
+          <h1 className="text-3xl font-bold text-foreground">Награды</h1>
+          <p className="text-sm text-muted-foreground mt-1">{rewards.length} наград в каталоге</p>
         </div>
         <button
           onClick={() => {
             resetForm();
             setShowModal(true);
           }}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
         >
-          <Icon name="Plus" size={20} />
-          Добавить Награду
+          <Icon name="Plus" size={16} />
+          Добавить награду
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {rewards.map((reward) => (
-          <div key={reward.id} className="bg-card border border-border rounded-lg p-4 hover:shadow-lg transition-shadow">
-            {reward.image_url && (
-              <div className="w-full h-48 bg-muted rounded-lg mb-4 overflow-hidden">
+          <div key={reward.id} className="group bg-card rounded-2xl overflow-hidden transition-all hover:shadow-md" style={{ border: '1px solid var(--color-border)' }}>
+            <div className="w-full h-40 relative overflow-hidden" style={{ background: 'var(--color-muted)' }}>
+              {reward.image_url ? (
                 <img src={reward.image_url} alt={reward.title} className="w-full h-full object-cover" />
-              </div>
-            )}
-            <div className="space-y-2">
-              <div className="flex items-start justify-between">
-                <h3 className="font-bold text-lg text-foreground">{reward.title}</h3>
-                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  reward.is_active ? 'bg-green-500/20 text-green-600' : 'bg-gray-500/20 text-gray-600'
-                }`}>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Icon name="Gift" size={28} className="text-muted-foreground opacity-40" />
+                </div>
+              )}
+              <div className="absolute top-2.5 right-2.5 flex flex-col gap-1.5 items-end">
+                <span
+                  className="px-2 py-0.5 rounded-full text-xs font-medium backdrop-blur-sm"
+                  style={reward.is_active
+                    ? { background: 'rgba(240,253,244,0.9)', color: '#16a34a' }
+                    : { background: 'rgba(243,244,246,0.9)', color: '#6b7280' }}
+                >
                   {reward.is_active ? 'Активна' : 'Неактивна'}
                 </span>
-              </div>
-              <p className="text-sm text-muted-foreground line-clamp-2">{reward.description}</p>
-              <div className="flex items-center justify-between pt-2 border-t border-border">
-                <div>
-                  <p className="text-sm font-bold text-primary">{reward.points_cost} баллов</p>
-                  <p className="text-xs text-muted-foreground">Тир: {reward.tier}</p>
-                </div>
                 {reward.is_featured && (
-                  <span className="px-2 py-1 bg-pink-500/20 text-pink-600 rounded text-xs font-medium">
-                    Рекомендуется
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium backdrop-blur-sm flex items-center gap-1" style={{ background: 'rgba(253,240,240,0.9)', color: '#c17b7b' }}>
+                    <Icon name="Star" size={10} />
+                    Рекомендуем
                   </span>
                 )}
               </div>
-              <div className="flex gap-2 pt-2">
+            </div>
+            <div className="p-4 space-y-2.5">
+              <h3 className="font-semibold text-foreground leading-tight">{reward.title}</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2 min-h-[2rem]">{reward.description}</p>
+              <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid var(--color-border)' }}>
+                <span className="text-sm font-bold" style={{ color: '#8b6a4e' }}>{reward.points_cost} баллов</span>
+                <span
+                  className="px-2 py-0.5 rounded-full text-xs font-medium"
+                  style={{ background: `${TIER_COLORS[reward.tier] || '#8b6a4e'}20`, color: TIER_COLORS[reward.tier] || '#8b6a4e' }}
+                >
+                  {reward.tier}
+                </span>
+              </div>
+              <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => handleEdit(reward)}
-                  className="flex-1 px-3 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors"
+                  style={{ background: 'var(--color-muted)', color: 'var(--color-foreground)' }}
                 >
-                  <Icon name="Edit" size={16} />
+                  <Icon name="Pencil" size={13} />
                   Редактировать
                 </button>
                 <button
                   onClick={() => handleDelete(reward.id)}
-                  className="px-3 py-2 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-colors"
+                  className="px-3 py-2 rounded-xl transition-colors hover:bg-destructive/10"
                 >
-                  <Icon name="Trash2" size={16} />
+                  <Icon name="Trash2" size={13} className="text-destructive" />
                 </button>
               </div>
             </div>
@@ -311,47 +330,49 @@ const RewardsEditor = () => {
       </div>
 
       {rewards.length === 0 && (
-        <div className="text-center py-12 bg-card border border-border rounded-lg">
-          <Icon name="Gift" size={48} className="mx-auto mb-4 text-muted-foreground opacity-50" />
-          <p className="text-lg font-medium text-foreground mb-2">Нет наград</p>
-          <p className="text-sm text-muted-foreground mb-4">Создайте первую награду для каталога</p>
+        <div className="py-20 text-center rounded-2xl" style={{ background: '#f8efe0' }}>
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#eedcbe' }}>
+            <Icon name="Gift" size={24} style={{ color: '#8b6a4e' }} />
+          </div>
+          <p className="text-lg text-foreground mb-1">Нет наград</p>
+          <p className="text-sm text-muted-foreground mb-5">Создайте первую награду для каталога</p>
           <button
             onClick={() => {
               resetForm();
               setShowModal(true);
             }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+            className="px-5 py-2 rounded-lg text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
           >
-            Добавить Награду
+            Добавить награду
           </button>
         </div>
       )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-card rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-4">
-              {editingReward ? 'Редактировать Награду' : 'Добавить Награду'}
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-card w-full sm:max-w-2xl sm:rounded-2xl rounded-t-2xl overflow-y-auto shadow-2xl p-6" style={{ maxHeight: '92vh' }}>
+            <h2 className="text-xl text-foreground mb-4">
+              {editingReward ? 'Редактировать награду' : 'Новая награда'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Название *</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Название *</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Стоимость (баллы) *</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Стоимость (баллы) *</label>
                   <input
                     type="number"
                     value={formData.pointsCost}
                     onChange={(e) => setFormData({ ...formData, pointsCost: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     min="0"
                     required
                   />
@@ -359,24 +380,24 @@ const RewardsEditor = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Описание *</label>
+                <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Описание *</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                  className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                   rows={3}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Изображение Награды (Загрузить Фото) *</label>
+                <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Изображение Награды (Загрузить Фото) *</label>
                 <div className="space-y-2">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleRewardImageChange}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     required={!formData.imageUrl && !rewardImagePreview}
                   />
                   {rewardImagePreview && (
@@ -404,11 +425,11 @@ const RewardsEditor = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Тир/Статус *</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Тир/Статус *</label>
                   <select
                     value={formData.tier}
                     onChange={(e) => setFormData({ ...formData, tier: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     required
                   >
                     {ALL_TIERS.map(tier => (
@@ -417,12 +438,12 @@ const RewardsEditor = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Категория</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Категория</label>
                   <input
                     type="text"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     placeholder="Например: Еда, Напитки"
                   />
                 </div>
@@ -430,23 +451,23 @@ const RewardsEditor = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Количество на складе</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Количество на складе</label>
                   <input
                     type="number"
                     value={formData.stockQuantity || ''}
                     onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value || null })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     min="0"
                     placeholder="Оставьте пустым для безлимита"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Лимит выкупа</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Лимит выкупа</label>
                   <input
                     type="number"
                     value={formData.redemptionLimit || ''}
                     onChange={(e) => setFormData({ ...formData, redemptionLimit: e.target.value || null })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     min="0"
                     placeholder="Оставьте пустым для безлимита"
                   />
@@ -455,7 +476,7 @@ const RewardsEditor = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Действительна с (dd/mm/yyyy)</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Действительна с (dd/mm/yyyy)</label>
                   <input
                     type="text"
                     value={formData.validFrom}
@@ -464,13 +485,13 @@ const RewardsEditor = () => {
                       setFormData({ ...formData, validFrom: value });
                     }}
                     placeholder="dd/mm/yyyy"
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     maxLength={10}
                   />
                   <p className="text-xs text-muted-foreground mt-1">Format: dd/mm/yyyy</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Действительна до (dd/mm/yyyy)</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Действительна до (dd/mm/yyyy)</label>
                   <input
                     type="text"
                     value={formData.validUntil}
@@ -479,7 +500,7 @@ const RewardsEditor = () => {
                       setFormData({ ...formData, validUntil: value });
                     }}
                     placeholder="dd/mm/yyyy"
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     maxLength={10}
                   />
                   <p className="text-xs text-muted-foreground mt-1">Format: dd/mm/yyyy</p>
@@ -488,54 +509,54 @@ const RewardsEditor = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Порядок отображения</label>
+                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Порядок отображения</label>
                   <input
                     type="number"
                     value={formData.displayOrder}
                     onChange={(e) => setFormData({ ...formData, displayOrder: e.target.value })}
-                    className="w-full px-3 py-2 border border-input rounded-lg bg-background"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     min="0"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm font-medium">Активна</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={formData.isFeatured}
-                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm font-medium">Рекомендуемая</span>
-                </label>
+              <div className="flex items-center gap-6 py-4 px-4 rounded-xl" style={{ background: 'var(--color-muted)' }}>
+                {[
+                  { key: 'isActive', label: 'Активна' },
+                  { key: 'isFeatured', label: 'Рекомендуемая' },
+                ].map(({ key, label }) => (
+                  <label key={key} className="flex items-center gap-2.5 cursor-pointer flex-1">
+                    <div
+                      className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
+                      style={{ background: formData[key] ? 'var(--color-primary)' : 'var(--color-border)' }}
+                      onClick={() => setFormData({ ...formData, [key]: !formData[key] })}
+                    >
+                      <div
+                        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all"
+                        style={{ left: formData[key] ? 22 : 4 }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-foreground">{label}</span>
+                  </label>
+                ))}
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
-                >
-                  {editingReward ? 'Обновить' : 'Создать'}
-                </button>
+              <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 border border-input rounded-lg hover:bg-muted"
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
                 >
                   Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                >
+                  {editingReward ? 'Сохранить' : 'Создать'}
                 </button>
               </div>
             </form>
