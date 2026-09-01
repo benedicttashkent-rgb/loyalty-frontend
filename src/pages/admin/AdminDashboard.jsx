@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
 
@@ -53,9 +54,29 @@ const AdminDashboard = () => {
   ]);
   const totalByTier = tierEntries.reduce((s, [, v]) => s + v, 0);
 
-  const maxReg = stats?.recentRegistrations
-    ? Math.max(...stats.recentRegistrations.map(r => r.count), 1)
-    : 1;
+  const pieData = tierEntries
+    .filter(([, count]) => count > 0)
+    .map(([tier, count]) => ({ name: TIER_CONFIG[tier]?.label || tier, value: count, color: TIER_CONFIG[tier]?.color || '#99836c' }));
+
+  const regChartData = (stats?.recentRegistrations || []).map(r => ({
+    date: fmtDate(r.date),
+    count: r.count,
+  }));
+
+  const ChartTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="rounded-xl px-3 py-2 shadow-lg text-xs" style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)' }}>
+        {label && <div className="text-muted-foreground mb-0.5">{label}</div>}
+        {payload.map((p, i) => (
+          <div key={i} className="font-semibold text-foreground flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: p.color || p.payload?.color }} />
+            {p.name}: {fmt(p.value)}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -174,30 +195,50 @@ const AdminDashboard = () => {
 
         {/* Customer tiers */}
         <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center justify-between mb-2">
             <h2 className="text-base font-semibold text-foreground">Клиенты по статусу</h2>
             <span className="text-xs text-muted-foreground">{fmt(stats?.totalCustomers)} всего</span>
           </div>
-          {tierEntries.length > 0 ? (
-            <div className="space-y-3">
-              {tierEntries.map(([tier, count]) => {
-                const pct = totalByTier > 0 ? (count / totalByTier) * 100 : 0;
-                const cfg = TIER_CONFIG[tier] || { label: tier, color: '#99836c' };
-                return (
-                  <div key={tier}>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="font-medium text-foreground">{cfg.label}</span>
+          {pieData.length > 0 ? (
+            <div className="flex items-center gap-6">
+              <div className="relative flex-shrink-0" style={{ width: 140, height: 140 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={44}
+                      outerRadius={64}
+                      paddingAngle={3}
+                      stroke="none"
+                    >
+                      {pieData.map((entry, i) => (
+                        <Cell key={i} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<ChartTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-xl font-bold text-foreground">{fmt(totalByTier)}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">клиентов</span>
+                </div>
+              </div>
+              <div className="flex-1 space-y-2.5 min-w-0">
+                {tierEntries.map(([tier, count]) => {
+                  const pct = totalByTier > 0 ? Math.round((count / totalByTier) * 100) : 0;
+                  const cfg = TIER_CONFIG[tier] || { label: tier, color: '#99836c' };
+                  return (
+                    <div key={tier} className="flex items-center gap-2.5 text-sm">
+                      <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
+                      <span className="text-foreground font-medium flex-1 truncate">{cfg.label}</span>
                       <span className="text-muted-foreground">{fmt(count)}</span>
+                      <span className="text-xs text-muted-foreground w-9 text-right">{pct}%</span>
                     </div>
-                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-muted)' }}>
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%`, background: cfg.color }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Данные о статусах не поступают с сервера</p>
@@ -207,21 +248,37 @@ const AdminDashboard = () => {
         {/* Registrations chart */}
         {stats?.recentRegistrations && stats.recentRegistrations.length > 0 ? (
           <div className="bg-card rounded-2xl p-6" style={{ border: '1px solid var(--color-border)' }}>
-            <h2 className="text-base font-semibold text-foreground mb-5">Регистрации за 7 дней</h2>
-            <div className="flex items-end justify-between gap-2" style={{ height: 80 }}>
-              {stats.recentRegistrations.map((reg, i) => {
-                const h = maxReg > 0 ? Math.max(8, (reg.count / maxReg) * 80) : 8;
-                return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                    <span className="text-xs font-semibold text-foreground">{reg.count > 0 ? reg.count : ''}</span>
-                    <div
-                      className="w-full rounded-t-md transition-all duration-500"
-                      style={{ height: h, background: reg.count > 0 ? '#c89864' : 'var(--color-muted)' }}
-                    />
-                    <span className="text-[10px] text-muted-foreground">{fmtDate(reg.date)}</span>
-                  </div>
-                );
-              })}
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-base font-semibold text-foreground">Регистрации за 7 дней</h2>
+              <span className="text-xs text-muted-foreground">
+                {fmt(stats.recentRegistrations.reduce((s, r) => s + r.count, 0))} всего
+              </span>
+            </div>
+            <div style={{ width: '100%', height: 140 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={regChartData} margin={{ top: 12, right: 4, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="regFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#c89864" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#c89864" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 4" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'var(--color-muted-foreground)' }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-muted-foreground)' }} axisLine={false} tickLine={false} width={24} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    name="Регистраций"
+                    stroke="#c89864"
+                    strokeWidth={2.5}
+                    fill="url(#regFill)"
+                    dot={{ r: 3, fill: '#c89864', strokeWidth: 0 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
           </div>
         ) : (
