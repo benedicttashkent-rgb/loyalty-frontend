@@ -32,7 +32,6 @@ const AboutBranchLocations = () => {
       features: [
         "Бесплатный Wi-Fi",
         "Места для работы с ноутбуком",
-        "Терраса на 20 мест",
         "Детская площадка"
       ],
       isNew: false

@@ -20,6 +20,13 @@ const AdminLayout = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (admin?.role === 'marketing' && !marketingPaths.includes(location.pathname)) {
+      navigate('/admin/news', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, admin]);
+
   const checkAuth = async () => {
     try {
       const response = await adminApiRequest('admin/auth/me', {
@@ -30,6 +37,9 @@ const AdminLayout = () => {
         const data = await response.json();
         if (data.success && data.admin) {
           setAdmin(data.admin);
+          if (data.admin.role === 'marketing' && !marketingPaths.includes(location.pathname)) {
+            navigate('/admin/news', { replace: true });
+          }
         } else if (location.pathname !== '/admin/login') {
           navigate('/admin/login');
         }
@@ -66,18 +76,23 @@ const AdminLayout = () => {
     }
   };
 
-  const menuItems = [
-    { path: '/admin/dashboard', label: 'Дашборд', icon: 'LayoutDashboard' },
-    { path: '/admin/customers', label: 'Клиенты', icon: 'Users' },
+  const allMenuItems = [
+    { path: '/admin/dashboard', label: 'Дашборд', icon: 'LayoutDashboard', marketing: false },
+    { path: '/admin/customers', label: 'Клиенты', icon: 'Users', marketing: false },
     // { path: '/admin/menu-items', label: 'Блюда', icon: 'Utensils' },   // hidden: menu now comes from iiko
     // { path: '/admin/categories', label: 'Категории', icon: 'Folder' }, // hidden: menu now comes from iiko
-    { path: '/admin/news', label: 'Баннеры Новостей', icon: 'Newspaper' },
-    { path: '/admin/rewards', label: 'Награды', icon: 'Gift' },
-    { path: '/admin/events', label: 'События', icon: 'Calendar' },
-    { path: '/admin/broadcast', label: 'Рассылки Telegram', icon: 'Send' },
-    { path: '/admin/special-offers', label: 'Спецпредложения', icon: 'Tag' },
-    { path: '/admin/promo-codes', label: 'Промокоды', icon: 'Ticket' },
+    { path: '/admin/news', label: 'Баннеры Новостей', icon: 'Newspaper', marketing: true },
+    { path: '/admin/rewards', label: 'Награды', icon: 'Gift', marketing: true },
+    { path: '/admin/events', label: 'События', icon: 'Calendar', marketing: true },
+    { path: '/admin/broadcast', label: 'Рассылки Telegram', icon: 'Send', marketing: true },
+    { path: '/admin/special-offers', label: 'Спецпредложения', icon: 'Tag', marketing: true },
+    { path: '/admin/promo-codes', label: 'Промокоды', icon: 'Ticket', marketing: true },
   ];
+
+  const marketingPaths = allMenuItems.filter((item) => item.marketing).map((item) => item.path);
+  const menuItems = admin?.role === 'marketing'
+    ? allMenuItems.filter((item) => item.marketing)
+    : allMenuItems;
 
   if (loading) {
     return (
