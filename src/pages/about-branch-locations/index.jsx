@@ -23,7 +23,7 @@ const AboutBranchLocations = () => {
       address: "ул. Нукус 31/2",
       phone: "+998 33 8888807",
       hours: {
-        weekdays: "Ежедневно: 08:00 - 00:00",
+        weekdays: "Пн-Чт: 08:00-00:00, Пт-Сб: 08:00-02:00, Вс: 08:00-00:00",
       },
       coordinates: {
         lat: 41.293115,
@@ -40,7 +40,7 @@ const AboutBranchLocations = () => {
       id: 2,
       name: "Benedict Мирабад",
       district: "Ташкент",
-      address: "ул. Мирабад 60B",
+      address: "ул. Мирабад, 60",
       phone: "+998 33 5556601",
       hours: {
         weekdays: "Ежедневно: 08:00 - 00:00",
