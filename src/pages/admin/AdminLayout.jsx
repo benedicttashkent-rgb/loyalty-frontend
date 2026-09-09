@@ -87,6 +87,7 @@ const AdminLayout = () => {
     { path: '/admin/broadcast', label: 'Рассылки Telegram', icon: 'Send', marketing: true },
     { path: '/admin/special-offers', label: 'Спецпредложения', icon: 'Tag', marketing: true },
     { path: '/admin/promo-codes', label: 'Промокоды', icon: 'Ticket', marketing: true },
+    { path: '/admin/links', label: 'Ссылки и QR', icon: 'QrCode', marketing: true },
   ];
 
   const marketingPaths = allMenuItems.filter((item) => item.marketing).map((item) => item.path);

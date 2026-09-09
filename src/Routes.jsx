@@ -28,6 +28,7 @@ const SpecialOffersEditor = lazy(() => import('./pages/admin/SpecialOffersEditor
 const MenuItemsEditor = lazy(() => import('./pages/admin/MenuItemsEditor'));
 const CategoriesEditor = lazy(() => import('./pages/admin/CategoriesEditor'));
 const PromoCodesEditor = lazy(() => import('./pages/admin/PromoCodesEditor'));
+const MarketingLinksEditor = lazy(() => import('./pages/admin/MarketingLinksEditor'));
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -92,6 +93,7 @@ const AppRoutes = () => {
           <Route path="broadcast" element={<TelegramBroadcastEditor />} />
           <Route path="special-offers" element={<SpecialOffersEditor />} />
           <Route path="promo-codes" element={<PromoCodesEditor />} />
+          <Route path="links" element={<MarketingLinksEditor />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
