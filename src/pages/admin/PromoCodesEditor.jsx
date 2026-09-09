@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
+import { primaryButtonClass } from './components/formPrimitives';
 
 const PromoCodesEditor = () => {
   const [promoCodes, setPromoCodes] = useState([]);
@@ -181,7 +182,7 @@ const PromoCodesEditor = () => {
             value={pinInput}
             onChange={(e) => { setPinInput(e.target.value); setPinError(''); setPinSaved(false); }}
             placeholder="ПИН (4-8 цифр)"
-            className="w-40 px-3 py-2 rounded-xl text-sm border tracking-widest focus:outline-none focus:ring-2 transition-colors"
+            className="w-40 px-3 py-2 rounded-xl text-sm bg-background border border-border tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
             style={{ fontSize: 'max(16px, 1em)' }}
           />
           <button
@@ -208,7 +209,7 @@ const PromoCodesEditor = () => {
             value={code}
             onChange={(e) => { setCode(e.target.value); setCreateError(''); }}
             placeholder="Код (например SKIDKA15)"
-            className="flex-1 min-w-[180px] px-3 py-2 rounded-xl text-sm border focus:outline-none focus:ring-2 transition-colors uppercase"
+            className="flex-1 min-w-[180px] px-3 py-2 rounded-xl text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors uppercase"
             style={{ fontSize: 'max(16px, 1em)' }}
           />
           <input
@@ -218,7 +219,7 @@ const PromoCodesEditor = () => {
             value={discountPercent}
             onChange={(e) => { setDiscountPercent(e.target.value); setCreateError(''); }}
             placeholder="% скидки"
-            className="w-32 px-3 py-2 rounded-xl text-sm border focus:outline-none focus:ring-2 transition-colors"
+            className="w-32 px-3 py-2 rounded-xl text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
             style={{ fontSize: 'max(16px, 1em)' }}
           />
           <button

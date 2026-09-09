@@ -3,6 +3,7 @@ import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
 import { RoutePicker } from './components/DetailFormSection';
 import VisibilityPicker from './components/VisibilityPicker';
+import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from './components/formPrimitives';
 
 
 const NewsBannerEditor = () => {
@@ -124,9 +125,6 @@ const NewsBannerEditor = () => {
     setIconImagePreview(null);
   };
 
-  const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
-  const labelClass = "block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5";
-
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
@@ -229,7 +227,7 @@ const NewsBannerEditor = () => {
                       </span>
                     )}
                     {banner.visible_to && banner.visible_to !== 'all' && (
-                      <span className="text-[10px] tracking-widest uppercase px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">
+                      <span className="text-[10px] tracking-widest uppercase px-1.5 py-0.5 rounded" style={{ background: '#eedcbe', color: '#8b6a4e' }}>
                         {banner.visible_to}
                       </span>
                     )}
@@ -447,13 +445,13 @@ const NewsBannerEditor = () => {
                 <button
                   type="button"
                   onClick={() => { setShowModal(false); resetForm(); }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
+                  className={secondaryButtonClass}
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  className={primaryButtonClass}
                 >
                   {editingBanner ? 'Сохранить' : 'Создать'}
                 </button>

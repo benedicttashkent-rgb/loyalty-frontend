@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '../../components/AppIcon';
 import { adminApiRequest } from '../../utils/adminApiClient';
+import { inputClass, labelClass, textareaClass, requiredMark, hintTextClass, errorTextClass, primaryButtonClass, secondaryButtonClass } from './components/formPrimitives';
 import { RoutePicker } from './components/DetailFormSection';
 import VisibilityPicker from './components/VisibilityPicker';
 
@@ -208,7 +209,7 @@ const SpecialOffersEditor = () => {
             <div className="p-5 space-y-4">
               {/* Image upload */}
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-2">Фото блюда / акции</label>
+                <label className={labelClass}>Фото блюда / акции</label>
                 <label className="cursor-pointer">
                   <div
                     className="w-full h-36 rounded-xl border-2 border-dashed border-border flex items-center justify-center overflow-hidden relative"
@@ -228,32 +229,32 @@ const SpecialOffersEditor = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">Название *</label>
+                <label className={labelClass}>Название *</label>
                 <input
                   type="text"
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   placeholder="Например: -20% на завтраки"
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className={inputClass}
                   style={{ fontSize: 'max(16px, 1em)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">Описание</label>
+                <label className={labelClass}>Описание</label>
                 <textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   placeholder="Краткое описание акции"
                   rows={2}
-                  className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                  className={textareaClass}
                   style={{ fontSize: 'max(16px, 1em)' }}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Цвет фона</label>
+                  <label className={labelClass}>Цвет фона</label>
                   <div className="flex items-center gap-2">
                     <input type="color" value={form.backgroundColor} onChange={e => setForm(f => ({ ...f, backgroundColor: e.target.value }))}
                       className="w-10 h-9 rounded-lg border border-border cursor-pointer bg-background p-0.5" />
@@ -261,9 +262,9 @@ const SpecialOffersEditor = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Порядок</label>
+                  <label className={labelClass}>Порядок</label>
                   <input type="number" value={form.displayOrder} onChange={e => setForm(f => ({ ...f, displayOrder: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    className={inputClass}
                     style={{ fontSize: 'max(16px, 1em)' }} />
                 </div>
               </div>
@@ -275,7 +276,7 @@ const SpecialOffersEditor = () => {
               </label>
 
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Кому показывать</label>
+                <label className={labelClass}>Кому показывать</label>
                 <VisibilityPicker
                   value={form.visibleTo}
                   onChange={val => setForm(f => ({ ...f, visibleTo: val }))}
@@ -284,7 +285,7 @@ const SpecialOffersEditor = () => {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">Действие кнопки</label>
+                  <label className={labelClass}>Действие кнопки</label>
                   <RoutePicker
                     value={form.buttonAction}
                     onChange={val => setForm(f => ({ ...f, buttonAction: val }))}
@@ -296,13 +297,13 @@ const SpecialOffersEditor = () => {
                 </div>
                 {form.buttonAction && (
                   <div>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">Текст кнопки</label>
+                    <label className={labelClass}>Текст кнопки</label>
                     <input
                       type="text"
                       value={form.buttonText}
                       onChange={e => setForm(f => ({ ...f, buttonText: e.target.value }))}
                       placeholder="Узнать больше"
-                      className="w-full px-3 py-2 rounded-lg text-sm bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      className={inputClass}
                       style={{ fontSize: 'max(16px, 1em)' }}
                     />
                   </div>
@@ -311,11 +312,11 @@ const SpecialOffersEditor = () => {
             </div>
 
             <div className="px-5 pb-5 flex gap-3">
-              <button onClick={() => setShowForm(false)} className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors">
+              <button onClick={() => setShowForm(false)} className={secondaryButtonClass}>
                 Отмена
               </button>
               <button onClick={handleSave} disabled={saving}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+                className={`${primaryButtonClass} flex items-center justify-center gap-2`}>
                 {saving ? <Icon name="Loader2" size={15} className="animate-spin" /> : <Icon name="Check" size={15} />}
                 {editing ? 'Сохранить' : 'Создать'}
               </button>

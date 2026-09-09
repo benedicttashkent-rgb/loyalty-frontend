@@ -4,6 +4,7 @@ import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY, formatDateForInput, parseDateDDMMYYYY, ALL_TIERS } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
+import { inputClass, labelClass, autoSlashDate, errorTextClass, hintTextClass, primaryButtonClass, secondaryButtonClass, toggleTrackClass, toggleThumbClass, toggleGroupClass, requiredMark } from './components/formPrimitives';
 
 const RewardsEditor = () => {
   const navigate = useNavigate();
@@ -357,22 +358,22 @@ const RewardsEditor = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Название *</label>
+                  <label className={labelClass}>Название *</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className={inputClass}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Стоимость (баллы) *</label>
+                  <label className={labelClass}>Стоимость (баллы) *</label>
                   <input
                     type="number"
                     value={formData.pointsCost}
                     onChange={(e) => setFormData({ ...formData, pointsCost: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className={inputClass}
                     min="0"
                     required
                   />
@@ -380,24 +381,24 @@ const RewardsEditor = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Описание *</label>
+                <label className={labelClass}>Описание *</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                  className={inputClass}
                   rows={3}
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Изображение Награды (Загрузить Фото) *</label>
+                <label className={labelClass}>Изображение Награды (Загрузить Фото) *</label>
                 <div className="space-y-2">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleRewardImageChange}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className={inputClass}
                     required={!formData.imageUrl && !rewardImagePreview}
                   />
                   {rewardImagePreview && (
@@ -425,11 +426,11 @@ const RewardsEditor = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Тир/Статус *</label>
+                  <label className={labelClass}>Тир/Статус *</label>
                   <select
                     value={formData.tier}
                     onChange={(e) => setFormData({ ...formData, tier: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className={inputClass}
                     required
                   >
                     {ALL_TIERS.map(tier => (
@@ -438,12 +439,12 @@ const RewardsEditor = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Категория</label>
+                  <label className={labelClass}>Категория</label>
                   <input
                     type="text"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className={inputClass}
                     placeholder="Например: Еда, Напитки"
                   />
                 </div>
@@ -451,23 +452,23 @@ const RewardsEditor = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Количество на складе</label>
+                  <label className={labelClass}>Количество на складе</label>
                   <input
                     type="number"
                     value={formData.stockQuantity || ''}
                     onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value || null })}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className={inputClass}
                     min="0"
                     placeholder="Оставьте пустым для безлимита"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Лимит выкупа</label>
+                  <label className={labelClass}>Лимит выкупа</label>
                   <input
                     type="number"
                     value={formData.redemptionLimit || ''}
                     onChange={(e) => setFormData({ ...formData, redemptionLimit: e.target.value || null })}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className={inputClass}
                     min="0"
                     placeholder="Оставьте пустым для безлимита"
                   />
@@ -476,63 +477,65 @@ const RewardsEditor = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Действительна с (dd/mm/yyyy)</label>
+                  <label className={labelClass}>Действительна с (dd/mm/yyyy)</label>
                   <input
                     type="text"
                     value={formData.validFrom}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^\d/]/g, ''); // Only allow digits and /
-                      setFormData({ ...formData, validFrom: value });
-                    }}
-                    placeholder="dd/mm/yyyy"
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    onChange={(e) => setFormData({ ...formData, validFrom: autoSlashDate(e.target.value) })}
+                    placeholder="15/12/2024"
+                    className={inputClass}
                     maxLength={10}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Format: dd/mm/yyyy</p>
+                  {formData.validFrom && !parseDateDDMMYYYY(formData.validFrom) ? (
+                    <p className={errorTextClass}>Неверный формат</p>
+                  ) : (
+                    <p className={hintTextClass}>Формат: dd/mm/yyyy</p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Действительна до (dd/mm/yyyy)</label>
+                  <label className={labelClass}>Действительна до (dd/mm/yyyy)</label>
                   <input
                     type="text"
                     value={formData.validUntil}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/[^\d/]/g, ''); // Only allow digits and /
-                      setFormData({ ...formData, validUntil: value });
-                    }}
-                    placeholder="dd/mm/yyyy"
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    onChange={(e) => setFormData({ ...formData, validUntil: autoSlashDate(e.target.value) })}
+                    placeholder="15/12/2024"
+                    className={inputClass}
                     maxLength={10}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Format: dd/mm/yyyy</p>
+                  {formData.validUntil && !parseDateDDMMYYYY(formData.validUntil) ? (
+                    <p className={errorTextClass}>Неверный формат</p>
+                  ) : (
+                    <p className={hintTextClass}>Формат: dd/mm/yyyy</p>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5">Порядок отображения</label>
+                  <label className={labelClass}>Порядок отображения</label>
                   <input
                     type="number"
                     value={formData.displayOrder}
                     onChange={(e) => setFormData({ ...formData, displayOrder: e.target.value })}
-                    className="w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    className={inputClass}
                     min="0"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 py-4 px-4 rounded-xl" style={{ background: 'var(--color-muted)' }}>
+              <div className={toggleGroupClass} style={{ background: 'var(--color-muted)' }}>
                 {[
                   { key: 'isActive', label: 'Активна' },
                   { key: 'isFeatured', label: 'Рекомендуемая' },
                 ].map(({ key, label }) => (
                   <label key={key} className="flex items-center gap-2.5 cursor-pointer flex-1">
                     <div
-                      className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
+                      className={toggleTrackClass}
                       style={{ background: formData[key] ? 'var(--color-primary)' : 'var(--color-border)' }}
                       onClick={() => setFormData({ ...formData, [key]: !formData[key] })}
                     >
                       <div
-                        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all"
+                        className={toggleThumbClass}
                         style={{ left: formData[key] ? 22 : 4 }}
                       />
                     </div>
@@ -548,13 +551,13 @@ const RewardsEditor = () => {
                     setShowModal(false);
                     resetForm();
                   }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
+                  className={secondaryButtonClass}
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  className={primaryButtonClass}
                 >
                   {editingReward ? 'Сохранить' : 'Создать'}
                 </button>

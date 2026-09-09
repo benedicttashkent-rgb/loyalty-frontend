@@ -3,6 +3,7 @@ import Icon from '../../components/AppIcon';
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
 import { TIER_OPTIONS } from './components/VisibilityPicker';
+import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from './components/formPrimitives';
 
 const TelegramBroadcastEditor = () => {
   const [stats, setStats] = useState(null);
@@ -174,8 +175,6 @@ const TelegramBroadcastEditor = () => {
     }
   };
 
-  const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
-  const labelClass = "block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5";
 
   return (
     <div className="space-y-6">

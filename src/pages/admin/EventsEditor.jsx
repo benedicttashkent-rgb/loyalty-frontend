@@ -4,6 +4,7 @@ import Icon from '../../components/AppIcon';
 import { formatDateDDMMYYYY, formatDateForInput, parseDateDDMMYYYY, getMonthAbbr } from '../../utils/formatDate';
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
+import { inputClass, inputClassCompact, labelClass, autoSlashDate, errorTextClass, primaryButtonClass, secondaryButtonClass, toggleTrackClass, toggleThumbClass, toggleGroupClass } from './components/formPrimitives';
 
 
 const EventsEditor = () => {
@@ -181,9 +182,6 @@ const EventsEditor = () => {
     return known[type] || { label: type, icon: 'Sparkles' };
   };
 
-  const inputClass = "w-full px-3 py-2.5 rounded-lg text-sm text-foreground bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors";
-  const labelClass = "block text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1.5";
-
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
@@ -207,7 +205,7 @@ const EventsEditor = () => {
           <select
             value={filter.type}
             onChange={(e) => setFilter({ ...filter, type: e.target.value })}
-            className="px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className={inputClassCompact}
           >
             <option value="">Все типы</option>
             {eventTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
@@ -215,7 +213,7 @@ const EventsEditor = () => {
           <select
             value={filter.month}
             onChange={(e) => setFilter({ ...filter, month: e.target.value })}
-            className="px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className={inputClassCompact}
           >
             <option value="">Все месяцы</option>
             {months.map(m => <option key={m} value={m}>{m}</option>)}
@@ -416,19 +414,14 @@ const EventsEditor = () => {
                     <input
                       type="text"
                       value={formData.date}
-                      onChange={(e) => {
-                        let value = e.target.value.replace(/[^\d/]/g, '');
-                        if (value.length === 2 && !value.includes('/')) value = value + '/';
-                        else if (value.length === 5 && value.split('/').length === 2) value = value + '/';
-                        if (value.length <= 10) setFormData({ ...formData, date: value });
-                      }}
+                      onChange={(e) => setFormData({ ...formData, date: autoSlashDate(e.target.value) })}
                       placeholder="15/12/2024"
                       className={inputClass}
                       required
                       maxLength={10}
                     />
                     {formData.date && !parseDateDDMMYYYY(formData.date) && (
-                      <p className="text-xs text-destructive mt-1">Неверный формат</p>
+                      <p className={errorTextClass}>Неверный формат</p>
                     )}
                   </div>
                   <div>
@@ -515,7 +508,7 @@ const EventsEditor = () => {
 
                 {/* Toggles */}
                 <div
-                  className="flex items-center gap-6 py-4 px-4 rounded-xl"
+                  className={toggleGroupClass}
                   style={{ background: 'var(--color-muted)' }}
                 >
                   {[
@@ -524,12 +517,12 @@ const EventsEditor = () => {
                   ].map(({ key, label, icon }) => (
                     <label key={key} className="flex items-center gap-2.5 cursor-pointer flex-1">
                       <div
-                        className="w-10 h-6 rounded-full relative transition-colors flex-shrink-0"
+                        className={toggleTrackClass}
                         style={{ background: formData[key] ? 'var(--color-primary)' : 'var(--color-border)' }}
                         onClick={() => setFormData({ ...formData, [key]: !formData[key] })}
                       >
                         <div
-                          className="absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all"
+                          className={toggleThumbClass}
                           style={{ left: formData[key] ? 22 : 4 }}
                         />
                       </div>
@@ -549,13 +542,13 @@ const EventsEditor = () => {
                 <button
                   type="button"
                   onClick={() => { setShowModal(false); resetForm(); }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
+                  className={secondaryButtonClass}
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                  className={primaryButtonClass}
                 >
                   {editingEvent ? 'Сохранить' : 'Создать'}
                 </button>

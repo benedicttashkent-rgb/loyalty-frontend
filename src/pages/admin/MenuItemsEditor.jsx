@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
+import { inputClass, labelClass, requiredMark, hintTextClass, primaryButtonClass, secondaryButtonClass } from './components/formPrimitives';
 
 const MenuItemsEditor = () => {
   const navigate = useNavigate();
@@ -690,30 +691,30 @@ const MenuItemsEditor = () => {
                       />
                     </label>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className={hintTextClass}>
                     Загрузите изображение в формате JPEG, PNG или WEBP. Максимальный размер файла – 10 МБ.
                   </p>
                 </div>
 
                 {/* Product Name */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Название продукта *</label>
+                  <label className={labelClass}>Название продукта *</label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                    className={inputClass}
                     required
                   />
                 </div>
 
                 {/* Category */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Категория</label>
+                  <label className={labelClass}>Категория</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                    className={inputClass}
                   >
                     <option value="">Выберите категорию</option>
                     {categories.map(cat => (
@@ -724,11 +725,11 @@ const MenuItemsEditor = () => {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Описание</label>
+                  <label className={labelClass}>Описание</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                    className={inputClass}
                     rows={4}
                     placeholder="Введите описание блюда..."
                   />
@@ -737,24 +738,24 @@ const MenuItemsEditor = () => {
                 {/* Price and Unit */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Стоимость *</label>
+                    <label className={labelClass}>Стоимость *</label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">UZS</span>
                       <input
                         type="number"
                         value={formData.price}
                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                        className="w-full pl-16 pr-3 py-2 border border-border rounded-lg bg-background"
+                        className={`${inputClass} pl-16`}
                         required
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Единица измерения</label>
+                    <label className={labelClass}>Единица измерения</label>
                     <select
                       value={formData.weight || 'порция'}
                       onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                      className={inputClass}
                     >
                       <option value="порция">порция</option>
                       <option value="г">г</option>
@@ -766,56 +767,56 @@ const MenuItemsEditor = () => {
 
                 {/* Modifiers (JSON) */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Модификаторы (JSON массив)</label>
+                  <label className={labelClass}>Модификаторы (JSON массив)</label>
                   <textarea
                     value={formData.modifiers}
                     onChange={(e) => setFormData({ ...formData, modifiers: e.target.value })}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background font-mono text-xs"
+                    className={`${inputClass} font-mono text-xs`}
                     rows={4}
                     placeholder='Например: [{"id":"coffee-large-330","name":"Большой (330 мл)","price":0},{"id":"coffee-small-230","name":"Маленький (230 мл)","price":0}]'
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Оставьте пустым чтобы использовать дефолтные (для кофе — 330/230 мл).</p>
+                  <p className={hintTextClass}>Оставьте пустым чтобы использовать дефолтные (для кофе — 330/230 мл).</p>
                 </div>
 
                 {/* Nutritional Info */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Калории</label>
+                    <label className={labelClass}>Калории</label>
                     <input
                       type="number"
                       value={formData.calories}
                       onChange={(e) => setFormData({ ...formData, calories: e.target.value })}
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                      className={inputClass}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Белки (г)</label>
+                    <label className={labelClass}>Белки (г)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={formData.proteins}
                       onChange={(e) => setFormData({ ...formData, proteins: e.target.value })}
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                      className={inputClass}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Жиры (г)</label>
+                    <label className={labelClass}>Жиры (г)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={formData.fats}
                       onChange={(e) => setFormData({ ...formData, fats: e.target.value })}
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                      className={inputClass}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Углеводы (г)</label>
+                    <label className={labelClass}>Углеводы (г)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={formData.carbohydrates}
                       onChange={(e) => setFormData({ ...formData, carbohydrates: e.target.value })}
-                      className="w-full px-3 py-2 border border-border rounded-lg bg-background"
+                      className={inputClass}
                     />
                   </div>
                 </div>
@@ -834,15 +835,15 @@ const MenuItemsEditor = () => {
                       setEditingItem(null);
                       resetForm();
                     }}
-                    className="px-6 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 transition-colors"
+                    className={secondaryButtonClass}
                   >
                     Отмена
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                    className={primaryButtonClass}
                   >
-                    {editingItem ? 'Редактировать' : 'Создать'}
+                    {editingItem ? 'Сохранить' : 'Создать'}
                   </button>
                 </div>
               </form>

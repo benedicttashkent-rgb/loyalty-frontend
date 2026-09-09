@@ -674,7 +674,7 @@ const CustomersEditor = () => {
                             onChange={(e) => { setBalanceAmount(e.target.value); setBalanceError(''); }}
                             placeholder="Сумма в сумах"
                             className="flex-1 px-3 py-2 rounded-xl text-sm bg-white border focus:outline-none focus:ring-2 transition-colors"
-                            style={{ borderColor: '#8b6a4e40', fontSize: 'max(16px, 1em)' }}
+                            style={{ borderColor: '#8b6a4e40', fontSize: 'max(16px, 1em)', '--tw-ring-color': '#8b6a4e4d' }}
                             autoFocus
                           />
                           <button
