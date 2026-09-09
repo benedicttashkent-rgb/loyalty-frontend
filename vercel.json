@@ -5,6 +5,10 @@
       "destination": "https://dev-mesh.multicard.uz/:path*"
     },
     {
+      "source": "/r/:code",
+      "destination": "https://chic-blessing-production-3203.up.railway.app/r/:code"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
