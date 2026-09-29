@@ -445,7 +445,7 @@ const FoodOrderingMenu = () => {
       {/* Under Development Overlay — stops above the bottom tab bar so tabs stay usable */}
       <div
         className="fixed inset-x-0 top-0 z-[90] flex flex-col items-center justify-center px-6 bg-white/95 backdrop-blur-sm pointer-events-auto select-none"
-        style={{ bottom: 'calc(60px + env(safe-area-inset-bottom, 0px))' }}
+        style={{ bottom: 'calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px))' }}
       >
         <button
           onClick={() => navigate('/')}

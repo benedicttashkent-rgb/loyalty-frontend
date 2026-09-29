@@ -62,7 +62,7 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
               aria-current={isActive(tab?.path) ? 'page' : undefined}
             >
               <div className="bottom-tab-item-icon">
-                <Icon name={tab?.icon} size={24} />
+                <Icon name={tab?.icon} size={22} />
               </div>
               <span className="bottom-tab-item-label">{tab?.label}</span>
               {tab?.badge && (
