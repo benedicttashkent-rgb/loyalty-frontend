@@ -61,21 +61,15 @@ const AboutBranchLocations = () => {
 
   const socialMedia = [
     {
-      platform: "Instagram",
-      icon: "Instagram",
-      followers: "25K",
-      url: "https://www.instagram.com/benedict_cafe_tashkent"
-    },
-    {
       platform: "Instagram — Мирабад",
       icon: "Instagram",
-      followers: "—",
+      followers: "25K",
       url: "https://www.instagram.com/benedict_mirabad_tashkent?stkn=dWdsaDVlYTZ6Yjhr"
     },
     {
       platform: "Instagram — Нукус",
       icon: "Instagram",
-      followers: "—",
+      followers: "200",
       url: "https://www.instagram.com/benedict_nukus_tashkent?stkn=MTE2dW5zeHRsMWhhbA=="
     }
   ];

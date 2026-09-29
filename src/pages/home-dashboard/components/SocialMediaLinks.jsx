@@ -6,7 +6,7 @@ const SocialMediaLinks = () => {
     {
       name: 'Instagram',
       icon: 'Instagram',
-      url: 'https://www.instagram.com/benedict_cafe_tashkent',
+      url: 'https://www.instagram.com/benedict_mirabad_tashkent?stkn=dWdsaDVlYTZ6Yjhr',
       color: '#E4405F'
     },
     {
