@@ -3,7 +3,9 @@ import { fetchCached } from '../../utils/apiCache';
 // Vacancies live in the same Google Apps Script backend as benedict-cafe.uz
 // (managed from that site's admin page). All calls are GET with query params
 // to avoid CORS preflight issues with Apps Script web apps.
-const SCRIPT_URL = import.meta.env.VITE_VACANCIES_SCRIPT_URL;
+// Env var wins if set; the fallback is the public web-app URL (it ships in the bundle either way).
+const SCRIPT_URL = import.meta.env.VITE_VACANCIES_SCRIPT_URL
+  || 'https://script.google.com/macros/s/AKfycbyXbJG6oPJGluN1RjrVPYSoadOqipQRQ7qlN5ziB9KmZy4oVwmNB7VBXuVjMDiIQ1mtjw/exec';
 
 const buildUrl = (params) => `${SCRIPT_URL}?${new URLSearchParams(params).toString()}`;
 
