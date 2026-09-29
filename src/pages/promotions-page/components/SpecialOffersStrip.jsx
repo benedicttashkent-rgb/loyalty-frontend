@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import SmoothImage from '../../../components/SmoothImage';
 import { useNavigate } from 'react-router-dom';
 import { readCache, fetchContent } from '../../../utils/apiCache';
 import DetailModal from './DetailModal';
@@ -50,7 +51,7 @@ const SpecialOffersStrip = ({ userTier }) => {
                 style={{ background: offer.background_color || '#1a1a1a' }}
               >
                 {offer.image_url && (
-                  <img src={offer.image_url} alt={offer.title} className="absolute inset-0 w-full h-full object-cover" />
+                  <SmoothImage src={offer.image_url} alt={offer.title} className="absolute inset-0 w-full h-full object-cover" />
                 )}
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 45%, rgba(0,0,0,0.15) 100%)' }} />
                 <div className="absolute inset-0 p-3 flex flex-col justify-between">

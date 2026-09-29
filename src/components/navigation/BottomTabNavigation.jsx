@@ -10,7 +10,7 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
   const tabs = [
     { label: 'Команда', path: '/team', icon: 'Users' },
     { label: 'Награды', path: '/rewards-catalog', icon: 'Gift' },
-    { label: 'center-promo', path: '/promotions-page', isCenter: true },
+    { label: 'center-promo', path: '/', isCenter: true },
     { label: 'Заказ', path: '/food-ordering-menu', icon: 'UtensilsCrossed', badge: cartCount > 0 ? cartCount : null },
     { label: 'О нас', path: '/about-branch-locations', icon: 'MapPin' },
   ];
@@ -21,8 +21,7 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
 
   const isActive = (path) => {
     if (!location?.pathname) return false;
-    if (path === '/team') return ['/', '/team', '/home-dashboard'].includes(location.pathname);
-    if (path === '/promotions-page') return location.pathname.startsWith('/promotions-page');
+    if (path === '/') return ['/', '/home-dashboard'].includes(location.pathname) || location.pathname.startsWith('/promotions-page');
     return location.pathname === path;
   };
 
@@ -38,13 +37,13 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
                 className={`center-promo-button ${isActive(tab?.path) ? 'active' : ''}`}
                 onClick={() => handleTabClick(tab?.path)}
                 aria-current={isActive(tab?.path) ? 'page' : undefined}
-                aria-label="Акции"
+                aria-label="Главная"
               >
                 <div className="center-promo-button-inner">
                   <div className="center-promo-shine-layer" />
                   <div className="center-promo-glow-layer" />
                   <AppImage
-                    src="assets/images/111-removebg-preview-1765697795359.png"
+                    src="/assets/images/logo-mark.webp"
                     alt="Benedict Café logo with transparent background on promotional button"
                     className="center-promo-logo"
                   />

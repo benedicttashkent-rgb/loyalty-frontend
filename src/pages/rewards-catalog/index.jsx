@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import PageHeader from '../../components/navigation/PageHeader';
-import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import ModalOverlay from '../../components/navigation/ModalOverlay';
 import Icon from '../../components/AppIcon';
 import MembershipCard from './components/MembershipCard';
@@ -131,7 +130,6 @@ const RewardsCatalog = () => {
         </section>
       </div>
 
-      <BottomTabNavigation />
 
       <ModalOverlay isOpen={showQRCode} onClose={() => setShowQRCode(false)}>
         <QRCodeModal isOpen={showQRCode} onClose={() => setShowQRCode(false)} userData={userData} />

@@ -264,7 +264,7 @@ const SignupPage = () => {
               localStorage.setItem('isNewCustomer', 'false');
               
               // Redirect to dashboard - user is logged in (no need to fill registration form)
-              navigate('/rewards-catalog');
+              navigate('/');
               return;
             }
           } else if (customerResponse.status === 404) {
@@ -394,7 +394,7 @@ const SignupPage = () => {
           
           console.log('✅ Customer data stored, navigating to dashboard...');
           // Navigate to home dashboard
-          navigate('/rewards-catalog');
+          navigate('/');
         } else {
           console.error('❌ Registration response missing customer data:', data);
           setErrors({ submit: 'Ошибка: данные клиента не получены' });

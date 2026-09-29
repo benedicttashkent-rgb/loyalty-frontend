@@ -10,7 +10,7 @@ const PageHeader = ({ title, subtitle }) => {
     <header className="flex items-center justify-between gap-4 mb-6">
       <div className="flex items-center gap-3 min-w-0">
         <img
-          src="/assets/images/111-removebg-preview-1765697795359.png"
+          src="/assets/images/logo-mark.webp"
           alt="Benedict Café"
           className="w-10 h-10 object-contain flex-shrink-0"
         />

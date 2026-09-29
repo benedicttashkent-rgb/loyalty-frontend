@@ -14,6 +14,7 @@ import SignupPage from './pages/signup';
 import TelegramTest from './pages/telegram-test';
 import PaymentReturn from './pages/payment-return';
 import LogoLoader from './components/LogoLoader';
+import TabLayout from './components/navigation/TabLayout';
 
 // Admin panel is a separate chunk — not needed by any public-facing page.
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -36,20 +37,24 @@ const AppRoutes = () => {
       <ScrollToTop />
       <RouterRoutes>
         {/* Public Routes */}
-        <Route path="/" element={<Team />} />
-        <Route path="/team" element={<Team />} />
-        {/* Old home URL — still linked from signup, admin-configured buttons and saved bookmarks */}
-        <Route path="/home-dashboard" element={<Team />} />
+        {/* Tab pages share one layout so the bottom tab bar stays mounted between them */}
+        <Route element={<TabLayout />}>
+          {/* The center tab (offers, news, events) is the main page */}
+          <Route path="/" element={<PromotionsPage />} />
+          {/* Old home URL — still linked from admin-configured buttons and saved bookmarks */}
+          <Route path="/home-dashboard" element={<PromotionsPage />} />
+          <Route path="/promotions-page" element={<PromotionsPage />} />
+          <Route path="/promotions-page/:newsId" element={<PromotionsPage />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/rewards-catalog" element={<RewardsCatalog />} />
+          <Route path="/food-ordering-menu" element={<FoodOrderingMenu />} />
+          <Route path="/about-branch-locations" element={<AboutBranchLocations />} />
+        </Route>
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/telegram-test" element={<TelegramTest />} />
-        <Route path="/food-ordering-menu" element={<FoodOrderingMenu />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/payment/return" element={<PaymentReturn />} />
-        <Route path="/about-branch-locations" element={<AboutBranchLocations />} />
         <Route path="/user-profile-management" element={<UserProfileManagement />} />
-        <Route path="/rewards-catalog" element={<RewardsCatalog />} />
-        <Route path="/promotions-page" element={<PromotionsPage />} />
-        <Route path="/promotions-page/:newsId" element={<PromotionsPage />} />
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={

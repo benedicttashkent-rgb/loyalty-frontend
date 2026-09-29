@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import SmoothImage from '../../../components/SmoothImage';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import { readCache, fetchContent } from '../../../utils/apiCache';
@@ -96,7 +97,7 @@ const NewsBanner = ({ userTier }) => {
               style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.18)' }}
             >
               {item.iconImageUrl ? (
-                <img src={item.iconImageUrl} alt={item.title} className="w-full h-full object-cover" />
+                <SmoothImage eager src={item.iconImageUrl} alt={item.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center"
                   style={{ background: 'rgba(255,255,255,0.25)' }}>

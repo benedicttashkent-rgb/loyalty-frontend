@@ -1,11 +1,14 @@
 import React from 'react';
+import SmoothImage from '../../../components/SmoothImage';
 import Icon from '../../../components/AppIcon';
 
 const BranchCard = ({ branch, onCallClick, onMapClick }) => {
   return (
     <article className="rounded-2xl border border-border overflow-hidden">
       {branch?.image && (
-        <img src={branch.image} alt={branch.name} className="w-full h-40 object-cover" loading="lazy" />
+        <div className="h-40 bg-muted">
+          <SmoothImage src={branch.image} alt={branch.name} className="w-full h-full object-cover" />
+        </div>
       )}
 
       <div className="p-5">

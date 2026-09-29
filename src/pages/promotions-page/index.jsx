@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
-import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import { formatDateWithMonth } from '../../utils/formatDate';
-import { readCache, fetchContent, readCachedCustomer } from '../../utils/apiCache';
+import { readCache, fetchContent } from '../../utils/apiCache';
 import PromoCodeCard from './components/PromoCodeCard';
 import NewsBanner from './components/NewsBanner';
 import SpecialOffersStrip from './components/SpecialOffersStrip';
 import PageHeader from '../../components/navigation/PageHeader';
-import { toUserData } from '../../utils/customer';
+import SmoothImage from '../../components/SmoothImage';
+import useCustomer from '../../hooks/useCustomer';
 
 
 const monthNames = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
@@ -40,8 +40,9 @@ const PromotionsPage = () => {
   const [cachedEvents] = useState(() => readCache('content/events'));
   const [events, setEvents] = useState(() => mapEvents(cachedEvents));
   const [loading, setLoading] = useState(() => !cachedEvents);
-  // Tier only filters which offers/news are shown, so the cached profile is enough
-  const [userTier] = useState(() => toUserData(readCachedCustomer())?.tier);
+  // Main page: sends signed-out users to signup and saves the Telegram chat ID
+  const { userData } = useCustomer();
+  const userTier = userData?.tier;
 
   const isDetailView = Boolean(newsId);
   const detailEvent = location.state?.event || (newsId && events.find(e => String(e.id) === String(newsId)));
@@ -88,7 +89,7 @@ const PromotionsPage = () => {
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
           <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
             <button
-              onClick={() => navigate('/promotions-page')}
+              onClick={() => navigate('/')}
               className="w-10 h-10 rounded-full bg-muted flex items-center justify-center active:scale-95 transition-transform"
               aria-label="Назад"
             >
@@ -163,8 +164,9 @@ const PromotionsPage = () => {
               </div>
 
               {detailEvent.imageUrl && (
-                <div className="mb-6 rounded-xl overflow-hidden">
-                  <img
+                <div className="mb-6 rounded-xl overflow-hidden bg-muted">
+                  <SmoothImage
+                    eager
                     src={detailEvent.imageUrl}
                     alt={detailEvent.performer}
                     className="w-full object-cover"
@@ -202,14 +204,13 @@ const PromotionsPage = () => {
               )}
             </article>
           )}
-          <BottomTabNavigation />
         </div>
       )}
 
       {/* List view */}
       {!isDetailView && (
         <div className="main-content max-w-md mx-auto">
-          <PageHeader title="Акции" subtitle="Предложения, новости и афиша" />
+          <PageHeader title="Главная" subtitle="Акции, новости и афиша" />
 
           <NewsBanner userTier={userTier} />
 
@@ -371,7 +372,6 @@ const PromotionsPage = () => {
         </div>
       )}
 
-      {!isDetailView && <BottomTabNavigation />}
     </div>
   );
 };

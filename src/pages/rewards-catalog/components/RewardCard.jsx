@@ -1,5 +1,5 @@
 import React from 'react';
-import Image from '../../../components/AppImage';
+import SmoothImage from '../../../components/SmoothImage';
 import Icon from '../../../components/AppIcon';
 
 const RewardCard = ({ reward, userPoints, onRedeem }) => {
@@ -10,7 +10,7 @@ const RewardCard = ({ reward, userPoints, onRedeem }) => {
     <article className="flex gap-4 rounded-2xl border border-border p-3">
       <div className="w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden bg-muted">
         {reward?.imageUrl ? (
-          <Image
+          <SmoothImage
             src={reward.imageUrl}
             alt={reward.title || 'Награда'}
             className="w-full h-full object-cover"

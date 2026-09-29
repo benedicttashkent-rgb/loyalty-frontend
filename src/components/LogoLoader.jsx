@@ -27,7 +27,7 @@ const LogoLoader = ({ fullscreen = false, size = 'md', label = 'Загрузка
       aria-label={label}
     >
       <AppImage
-        src="/assets/images/111-removebg-preview-1765697795359.png"
+        src="/assets/images/logo-mark.webp"
         alt="Benedict Café"
         className={clsx(
           config.logo,

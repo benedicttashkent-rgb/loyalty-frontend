@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import PageHeader from '../../components/navigation/PageHeader';
 import Icon from '../../components/AppIcon';
-import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import BranchCard from './components/BranchCard';
 
 import SocialMediaSection from './components/SocialMediaSection';
@@ -22,7 +21,7 @@ const AboutBranchLocations = () => {
       district: "Ташкент",
       address: "ул. Нукус 31/2",
       phone: "+998 33 8888807",
-      image: "/IMG_2272.JPG",
+      image: "/branch-nukus.webp",
       hours: ["Пн–Чт: 08:00–00:00", "Пт–Сб: 08:00–02:00", "Вс: 08:00–00:00"],
       coordinates: {
         lat: 41.293115,
@@ -41,7 +40,7 @@ const AboutBranchLocations = () => {
       district: "Ташкент",
       address: "ул. Мирабад, 60",
       phone: "+998 33 5556601",
-      image: "/IMG_3311.JPG",
+      image: "/branch-mirabad.webp",
       hours: ["Ежедневно: 08:00–00:00"],
       coordinates: {
         lat: 41.293377,
@@ -142,7 +141,6 @@ const AboutBranchLocations = () => {
           </div>
         </main>
 
-        <BottomTabNavigation />
 
         <MapModal
           isOpen={mapModal?.isOpen}

@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import FloatingCartButton from '../../components/navigation/FloatingCartButton';
 import BrandLogo from '../../components/navigation/BrandLogo';
 import CategoryFilter from './components/CategoryFilter';
@@ -10,7 +9,7 @@ import CartModal from './components/CartModal';
 import CheckoutSuccessModal from './components/CheckoutSuccessModal';
 import BranchSelectionModal from './components/BranchSelectionModal';
 import Icon from '../../components/AppIcon';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import menuScraper from '../../services/menu/menuScraper';
 import { getApiUrl } from '../../config/api';
 
@@ -233,6 +232,13 @@ const FoodOrderingMenu = () => {
   }, [activeCategory, selectedBranch, menuData, searchQuery]);
 
   const cartCount = cartItems?.reduce((sum, item) => sum + item?.quantity, 0);
+
+  // The tab bar lives in TabLayout; keep its cart badge in sync
+  const { setCartCount } = useOutletContext() || {};
+  useEffect(() => {
+    setCartCount?.(cartCount);
+    return () => setCartCount?.(0);
+  }, [cartCount, setCartCount]);
   const cartTotal = cartItems?.reduce((sum, item) => {
     const basePrice = item?.price || 0;
     const modifierPrice = item?.selectedModifier?.price || 0;
@@ -586,7 +592,6 @@ const FoodOrderingMenu = () => {
           </div>
         )}
       </div>
-      <BottomTabNavigation cartCount={cartCount} />
       {cartCount > 0 &&
       <FloatingCartButton
         cartCount={cartCount}

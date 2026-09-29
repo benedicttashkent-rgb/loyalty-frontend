@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import SmoothImage from '../../components/SmoothImage';
 import PageHeader from '../../components/navigation/PageHeader';
-import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import Icon from '../../components/AppIcon';
 import ApplySheet from './components/ApplySheet';
-import useCustomer from '../../hooks/useCustomer';
 import { readCache } from '../../utils/apiCache';
 import { fetchVacancies } from '../../services/vacancies/vacanciesService';
 
@@ -55,9 +54,6 @@ const VacancyCard = ({ vacancy, onApply }) => {
 };
 
 const Team = () => {
-  // Keeps the old home-page behaviour: signed-out users go to signup, Telegram chat ID is saved
-  useCustomer();
-
   const [data, setData] = useState(() => readCache('vacancies'));
   const [loadFailed, setLoadFailed] = useState(false);
   const [applyFor, setApplyFor] = useState(null); // null = closed, '' = general application
@@ -79,9 +75,10 @@ const Team = () => {
       <div className="main-content max-w-md mx-auto">
         <PageHeader title="Команда" subtitle="Работа в Benedict" />
 
-        <section className="relative rounded-3xl overflow-hidden mb-8">
-          <img
-            src="/IMG_2272.JPG"
+        <section className="relative rounded-3xl overflow-hidden mb-8 bg-[#3a2f25]">
+          <SmoothImage
+            eager
+            src="/branch-nukus.webp"
             alt="Зал Benedict с гостями"
             className="w-full h-56 object-cover"
           />
@@ -154,7 +151,6 @@ const Team = () => {
         </section>
       </div>
 
-      <BottomTabNavigation />
 
       <ApplySheet
         isOpen={applyFor !== null}

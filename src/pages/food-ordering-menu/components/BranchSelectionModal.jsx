@@ -14,7 +14,7 @@ const BranchSelectionModal = ({ isOpen, onClose, onBranchSelect }) => {
     address: 'ул. Нукус 31/2',
     phone: '+998 33 8888807',
     menuUrl: 'https://benedictnuk.myresto.online',
-    image: "/IMG_2272.JPG",
+    image: "/branch-nukus.webp",
     imageAlt: 'Benedict Нукус branch exterior',
     workingHours: 'Пн-Чт: 08:00-00:00, Пт-Сб: 08:00-02:00, Вс: 08:00-00:00',
     features: ['Бесплатный Wi-Fi', 'Места для работы с ноутбуком', 'Терраса на 20 мест', 'Детская площадка']
@@ -25,7 +25,7 @@ const BranchSelectionModal = ({ isOpen, onClose, onBranchSelect }) => {
     address: 'ул. Мирабад, 60',
     phone: '+998 33 5556601',
     menuUrl: 'https://benedictmir.myresto.online',
-    image: "/IMG_3311.JPG",
+    image: "/branch-mirabad.webp",
     imageAlt: 'Benedict Мирабад branch exterior',
     workingHours: 'Ежедневно: 08:00 - 00:00',
     features: ['Живая музыка по выходным', 'Винная карта', 'Камерная атмосфера', 'Банкетный зал']
