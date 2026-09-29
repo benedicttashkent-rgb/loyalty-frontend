@@ -8,7 +8,7 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
   const location = useLocation();
 
   const tabs = [
-    { label: 'Главная', path: '/home-dashboard', icon: 'Home' },
+    { label: 'Команда', path: '/team', icon: 'Users' },
     { label: 'Награды', path: '/rewards-catalog', icon: 'Gift' },
     { label: 'center-promo', path: '/promotions-page', isCenter: true },
     { label: 'Заказ', path: '/food-ordering-menu', icon: 'UtensilsCrossed', badge: cartCount > 0 ? cartCount : null },
@@ -21,7 +21,8 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
 
   const isActive = (path) => {
     if (!location?.pathname) return false;
-    if (path === '/home-dashboard') return location.pathname === '/' || location.pathname === '/home-dashboard';
+    if (path === '/team') return ['/', '/team', '/home-dashboard'].includes(location.pathname);
+    if (path === '/promotions-page') return location.pathname.startsWith('/promotions-page');
     return location.pathname === path;
   };
 
@@ -34,9 +35,10 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
             return (
               <button
                 key={`center-${index}`}
-                className="center-promo-button"
+                className={`center-promo-button ${isActive(tab?.path) ? 'active' : ''}`}
                 onClick={() => handleTabClick(tab?.path)}
-                aria-label="Новости"
+                aria-current={isActive(tab?.path) ? 'page' : undefined}
+                aria-label="Акции"
               >
                 <div className="center-promo-button-inner">
                   <div className="center-promo-shine-layer" />

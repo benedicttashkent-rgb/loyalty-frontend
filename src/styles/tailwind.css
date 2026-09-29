@@ -87,12 +87,14 @@
 @layer components {
   /* Bottom Tab Navigation Styles */
   .bottom-tab-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-card border-t border-border;
+    @apply fixed bottom-0 left-0 right-0 border-t border-border;
     height: 60px;
     padding: 0 16px;
     padding-bottom: env(safe-area-inset-bottom, 0);
     z-index: 100;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
   }
 
   .bottom-tab-nav-container {
@@ -133,6 +135,7 @@
 
   .bottom-tab-item.active .bottom-tab-item-label {
     color: var(--color-primary);
+    font-weight: 600;
   }
 
   .bottom-tab-badge {
@@ -186,6 +189,12 @@
     align-items: center;
     justify-content: center;
     border: 2px solid rgba(153, 131, 108, 0.35);
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+  }
+
+  .center-promo-button.active .center-promo-button-inner {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.2), 0 2px 12px rgba(0, 0, 0, 0.1);
   }
 
   .center-promo-shine-layer,

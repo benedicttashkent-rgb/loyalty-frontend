@@ -3,7 +3,7 @@ import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
-import HomeDashboard from './pages/home-dashboard';
+import Team from './pages/team';
 import FoodOrderingMenu from './pages/food-ordering-menu';
 import CheckoutPage from './pages/food-ordering-menu/CheckoutPage';
 import AboutBranchLocations from './pages/about-branch-locations';
@@ -36,8 +36,10 @@ const AppRoutes = () => {
       <ScrollToTop />
       <RouterRoutes>
         {/* Public Routes */}
-        <Route path="/" element={<HomeDashboard />} />
-        <Route path="/home-dashboard" element={<HomeDashboard />} />
+        <Route path="/" element={<Team />} />
+        <Route path="/team" element={<Team />} />
+        {/* Old home URL — still linked from signup, admin-configured buttons and saved bookmarks */}
+        <Route path="/home-dashboard" element={<Team />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/telegram-test" element={<TelegramTest />} />
         <Route path="/food-ordering-menu" element={<FoodOrderingMenu />} />

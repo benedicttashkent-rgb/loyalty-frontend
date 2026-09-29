@@ -36,8 +36,8 @@ const SpecialOffersStrip = ({ userTier }) => {
   return (
     <>
       <div className="mb-6">
-        <h2 className="text-lg font-bold text-foreground mb-3">
-          Специальные предложения
+        <h2 className="font-display text-2xl text-foreground mb-4">
+          Спецпредложения
         </h2>
         <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
           {offers.map(offer => {
@@ -46,7 +46,7 @@ const SpecialOffersStrip = ({ userTier }) => {
               <div
                 key={offer.id}
                 onClick={() => handleTap(offer)}
-                className={`flex-shrink-0 w-56 h-36 rounded-2xl overflow-hidden relative ${tappable ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+                className={`flex-shrink-0 w-64 h-40 rounded-2xl overflow-hidden relative ${tappable ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
                 style={{ background: offer.background_color || '#1a1a1a' }}
               >
                 {offer.image_url && (
@@ -54,7 +54,7 @@ const SpecialOffersStrip = ({ userTier }) => {
                 )}
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 45%, rgba(0,0,0,0.15) 100%)' }} />
                 <div className="absolute inset-0 p-3 flex flex-col justify-between">
-                  <p className="text-white text-xs font-semibold leading-tight line-clamp-1">Benedict Café</p>
+                  <span />
                   <div>
                     <p className="text-white text-sm font-bold leading-snug line-clamp-2 mb-1">{offer.title}</p>
                     {offer.description && <p className="text-white/60 text-xs line-clamp-1 mb-2">{offer.description}</p>}

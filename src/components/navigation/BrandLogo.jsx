@@ -5,7 +5,7 @@ import AppImage from '../AppImage';
 const BrandLogo = () => {
   const navigate = useNavigate();
   const handleClick = () => {
-    navigate('/home-dashboard');
+    navigate('/team');
   };
 
   const handleKeyDown = (e) => {

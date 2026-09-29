@@ -1,16 +1,17 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import BrandLogo from '../../components/navigation/BrandLogo';
+import React, { useState, useEffect } from 'react';
+import PageHeader from '../../components/navigation/PageHeader';
 import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
-import PointsBalanceCard from './components/PointsBalanceCard';
+import ModalOverlay from '../../components/navigation/ModalOverlay';
 import Icon from '../../components/AppIcon';
+import MembershipCard from './components/MembershipCard';
 import RewardCard from './components/RewardCard';
 import RedemptionModal from './components/RedemptionModal';
 import SuccessModal from './components/SuccessModal';
+import QRCodeModal from './components/QRCodeModal';
+import LoyaltyDetailsModal from './components/LoyaltyDetailsModal';
+import useCustomer from '../../hooks/useCustomer';
 import { getApiUrl } from '../../config/api';
-import LogoLoader from '../../components/LogoLoader';
-import { fetchCustomer, fetchContent, readCache, readCachedCustomer } from '../../utils/apiCache';
-
+import { fetchContent, readCache } from '../../utils/apiCache';
 
 const mapRewards = (data) => {
   if (!data?.success || !data.rewards) return [];
@@ -40,57 +41,27 @@ const mapRewards = (data) => {
 };
 
 const RewardsCatalog = () => {
-  const navigate = useNavigate();
-  const [cachedCustomer] = useState(() => readCachedCustomer()?.customer);
+  const { userData, isLoading: isCustomerLoading } = useCustomer();
   const [cachedRewards] = useState(() => readCache('content/rewards'));
-  const [isLoading, setIsLoading] = useState(() => !cachedCustomer || !cachedRewards);
-  const [userPoints, setUserPoints] = useState(cachedCustomer?.points || 0);
-  const [userTier, setUserTier] = useState(cachedCustomer?.tier || 'Bronze');
-  const [favorites, setFavorites] = useState([]);
+  const [rewardsData, setRewardsData] = useState(() => mapRewards(cachedRewards));
+  const [isRewardsLoading, setIsRewardsLoading] = useState(() => !cachedRewards);
+  const [spentPoints, setSpentPoints] = useState(0);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [showLoyaltyDetails, setShowLoyaltyDetails] = useState(false);
   const [redemptionModalOpen, setRedemptionModalOpen] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
   const [redeemedReward, setRedeemedReward] = useState(null);
-  const [rewardsData, setRewardsData] = useState(() => mapRewards(cachedRewards));
 
-  // Load rewards and customer data in parallel (cached data is shown instantly)
+  const userPoints = Math.max(0, (userData?.points || 0) - spentPoints);
+
+  // Cached rewards are shown instantly, this refreshes them
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      navigate('/signup');
-      return;
-    }
-
-    const loadCustomer = fetchCustomer(token)
-      .then((data) => {
-        if (data.success && data.customer) {
-          setUserPoints(data.customer.points || 0);
-          setUserTier(data.customer.tier || 'Bronze');
-        }
-      })
-      .catch((error) => {
-        if (error.status === 401 || error.status === 404) {
-          localStorage.removeItem('authToken');
-          navigate('/signup');
-        } else {
-          console.error('Error loading customer:', error);
-        }
-      });
-
-    const loadRewards = fetchContent('rewards')
+    fetchContent('rewards')
       .then((data) => setRewardsData(mapRewards(data)))
-      .catch((error) => console.error('Error loading rewards:', error));
-
-    Promise.all([loadCustomer, loadRewards]).finally(() => setIsLoading(false));
-  }, [navigate]);
-
-  const handleFavorite = (rewardId) => {
-    setFavorites((prev) =>
-    prev?.includes(rewardId) ?
-    prev?.filter((id) => id !== rewardId) :
-    [...prev, rewardId]
-    );
-  };
+      .catch((error) => console.error('Error loading rewards:', error))
+      .finally(() => setIsRewardsLoading(false));
+  }, []);
 
   const handleRedeem = (reward) => {
     setSelectedReward(reward);
@@ -98,49 +69,76 @@ const RewardsCatalog = () => {
   };
 
   const handleConfirmRedemption = (reward) => {
-    setUserPoints((prev) => prev - reward?.pointsCost);
+    setSpentPoints((prev) => prev + (reward?.pointsCost || 0));
     setRedeemedReward(reward);
     setRedemptionModalOpen(false);
     setSuccessModalOpen(true);
   };
 
-  if (isLoading) {
-    return <LogoLoader fullscreen />;
-  }
-
   return (
     <div className="min-h-screen bg-background">
-      <div className="main-content max-w-7xl mx-auto">
-        <div className="mb-6">
-          <BrandLogo />
-        </div>
+      <div className="main-content max-w-md mx-auto">
+        <PageHeader title="Награды" subtitle={userData?.name || undefined} />
 
-        <PointsBalanceCard points={userPoints} tier={userTier} />
-
-        {rewardsData && rewardsData.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rewardsData.map((reward) => (
-              <RewardCard
-                key={reward.id}
-                reward={reward}
-                userPoints={userPoints}
-                onRedeem={handleRedeem}
-                onFavorite={handleFavorite}
-                isFavorited={favorites.includes(reward.id)}
-              />
-            ))}
-          </div>
+        {isCustomerLoading && !userData ? (
+          <div className="h-[340px] rounded-3xl bg-muted animate-pulse" />
         ) : (
-          <div className="text-center py-12">
-            <div className="text-muted-foreground mb-4">
-              <Icon name="Gift" size={48} className="mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium mb-2">Каталог наград пуст</p>
-              <p className="text-sm">Награды появятся здесь позже</p>
-            </div>
-          </div>
+          <MembershipCard
+            userData={userData}
+            onShowQR={() => setShowQRCode(true)}
+            onShowDetails={() => setShowLoyaltyDetails(true)}
+          />
         )}
+
+        <section className="mt-8">
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="font-display text-2xl text-foreground">Каталог наград</h2>
+            <span className="text-sm text-muted-foreground">
+              {userPoints.toLocaleString('ru-RU')} баллов
+            </span>
+          </div>
+
+          {isRewardsLoading && rewardsData.length === 0 ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-4 rounded-2xl border border-border p-3 animate-pulse">
+                  <div className="w-24 h-24 rounded-xl bg-muted" />
+                  <div className="flex-1 py-1 space-y-2">
+                    <div className="h-4 w-3/4 bg-muted rounded-full" />
+                    <div className="h-3 w-1/2 bg-muted rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : rewardsData.length > 0 ? (
+            <div className="space-y-3">
+              {rewardsData.map((reward) => (
+                <RewardCard
+                  key={reward.id}
+                  reward={reward}
+                  userPoints={userPoints}
+                  onRedeem={handleRedeem}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-border px-5 py-8 text-center">
+              <Icon name="Gift" size={28} className="mx-auto text-primary mb-3" />
+              <p className="font-medium text-foreground">Наград пока нет</p>
+              <p className="text-sm text-muted-foreground mt-1">Копите кешбэк — скоро здесь появятся подарки</p>
+            </div>
+          )}
+        </section>
       </div>
+
       <BottomTabNavigation />
+
+      <ModalOverlay isOpen={showQRCode} onClose={() => setShowQRCode(false)}>
+        <QRCodeModal isOpen={showQRCode} onClose={() => setShowQRCode(false)} userData={userData} />
+      </ModalOverlay>
+      <ModalOverlay isOpen={showLoyaltyDetails} onClose={() => setShowLoyaltyDetails(false)}>
+        <LoyaltyDetailsModal isOpen={showLoyaltyDetails} onClose={() => setShowLoyaltyDetails(false)} userData={userData} />
+      </ModalOverlay>
       <RedemptionModal
         isOpen={redemptionModalOpen}
         onClose={() => setRedemptionModalOpen(false)}
@@ -153,9 +151,8 @@ const RewardsCatalog = () => {
         onClose={() => setSuccessModalOpen(false)}
         reward={redeemedReward}
         newBalance={userPoints} />
-
-    </div>);
-
+    </div>
+  );
 };
 
 export default RewardsCatalog;

@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import BrandLogo from '../../components/navigation/BrandLogo';
-import ProfileButton from '../../components/navigation/ProfileButton';
+import PageHeader from '../../components/navigation/PageHeader';
+import Icon from '../../components/AppIcon';
 import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import BranchCard from './components/BranchCard';
 
 import SocialMediaSection from './components/SocialMediaSection';
 import AboutSection from './components/AboutSection';
 import MapModal from './components/MapModal';
-import { useNavigate } from 'react-router-dom';
 import { openPhoneDialer } from '../../utils/openPhoneDialer';
 
+const BOOKING_URL = 'https://www.benedict-cafe.uz/#contact';
+
 const AboutBranchLocations = () => {
-  const navigate = useNavigate();
   const [mapModal, setMapModal] = useState({ isOpen: false, coordinates: null, branchName: '' });
 
   const branches = [
@@ -22,9 +22,8 @@ const AboutBranchLocations = () => {
       district: "Ташкент",
       address: "ул. Нукус 31/2",
       phone: "+998 33 8888807",
-      hours: {
-        weekdays: "Пн-Чт: 08:00-00:00, Пт-Сб: 08:00-02:00, Вс: 08:00-00:00",
-      },
+      image: "/IMG_2272.JPG",
+      hours: ["Пн–Чт: 08:00–00:00", "Пт–Сб: 08:00–02:00", "Вс: 08:00–00:00"],
       coordinates: {
         lat: 41.293115,
         lng: 69.281112
@@ -42,9 +41,8 @@ const AboutBranchLocations = () => {
       district: "Ташкент",
       address: "ул. Мирабад, 60",
       phone: "+998 33 5556601",
-      hours: {
-        weekdays: "Ежедневно: 08:00 - 00:00",
-      },
+      image: "/IMG_3311.JPG",
+      hours: ["Ежедневно: 08:00–00:00"],
       coordinates: {
         lat: 41.293377,
         lng: 69.268479
@@ -76,12 +74,6 @@ const AboutBranchLocations = () => {
 
   const aboutInfo = {
     description: "Benedict - это не просто кафе, а пространство премиального комфорта, где каждая деталь создана для вашего удовольствия. Мы предлагаем изысканную кухню, приготовленную из отборных ингредиентов, безупречный сервис и атмосферу, располагающую к приятному времяпрепровождению. Наши филиалы в Ташкенте стали излюбленными местами для тех, кто ценит качество и стиль.",
-    values: [
-      "Премиальное качество продуктов",
-      "Безупречный сервис",
-      "Изысканная атмосфера",
-      "Внимание к каждому гостю"
-    ],
     stats: {
       locations: "2",
       customers: "50K+",
@@ -97,8 +89,11 @@ const AboutBranchLocations = () => {
     setMapModal({ isOpen: true, coordinates, branchName });
   };
 
-  const handleProfileClick = () => {
-    navigate('/user-profile-management');
+  const handleBookTable = () => {
+    const tg = window.Telegram?.WebApp;
+    // Inside Telegram, openLink opens the site in the in-app browser
+    if (tg?.openLink) tg.openLink(BOOKING_URL);
+    else window.open(BOOKING_URL, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -108,24 +103,27 @@ const AboutBranchLocations = () => {
         <meta name="description" content="Информация о локациях Benedict Café, контакты и социальные сети" />
       </Helmet>
       <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-50 bg-card border-b border-border">
-          <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-            <BrandLogo />
-            <ProfileButton onClick={handleProfileClick} />
-          </div>
-        </header>
-
         <main className="main-content max-w-md mx-auto">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-foreground mb-2">О нас</h1>
-            <p className="text-sm text-muted-foreground">
-              Премиальный ресторан с безупречным сервисом
-            </p>
-          </div>
+          <PageHeader title="О нас" subtitle="Два филиала в Ташкенте" />
 
-          <div className="space-y-6">
+          <button
+            type="button"
+            onClick={handleBookTable}
+            className="w-full h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-between px-5 active:scale-[0.98] transition-transform"
+          >
+            <span className="flex items-center gap-3">
+              <Icon name="CalendarDays" size={24} />
+              <span className="text-left">
+                <span className="block text-lg font-semibold leading-tight">Забронировать стол</span>
+                <span className="block text-sm text-primary-foreground/75">На сайте benedict-cafe.uz</span>
+              </span>
+            </span>
+            <Icon name="ArrowUpRight" size={22} />
+          </button>
+
+          <div className="space-y-10 mt-8">
             <section>
-              <h2 className="text-lg font-semibold text-foreground mb-4">Наши филиалы</h2>
+              <h2 className="font-display text-2xl text-foreground mb-4">Филиалы</h2>
               <div className="space-y-4">
                 {branches?.map((branch) => (
                   <BranchCard

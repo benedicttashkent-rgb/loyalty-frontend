@@ -3,8 +3,12 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import { formatDateWithMonth } from '../../utils/formatDate';
-import { readCache, fetchContent } from '../../utils/apiCache';
+import { readCache, fetchContent, readCachedCustomer } from '../../utils/apiCache';
 import PromoCodeCard from './components/PromoCodeCard';
+import NewsBanner from './components/NewsBanner';
+import SpecialOffersStrip from './components/SpecialOffersStrip';
+import PageHeader from '../../components/navigation/PageHeader';
+import { toUserData } from '../../utils/customer';
 
 
 const monthNames = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
@@ -36,6 +40,8 @@ const PromotionsPage = () => {
   const [cachedEvents] = useState(() => readCache('content/events'));
   const [events, setEvents] = useState(() => mapEvents(cachedEvents));
   const [loading, setLoading] = useState(() => !cachedEvents);
+  // Tier only filters which offers/news are shown, so the cached profile is enough
+  const [userTier] = useState(() => toUserData(readCachedCustomer())?.tier);
 
   const isDetailView = Boolean(newsId);
   const detailEvent = location.state?.event || (newsId && events.find(e => String(e.id) === String(newsId)));
@@ -77,36 +83,25 @@ const PromotionsPage = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
 
-      {/* Header */}
-      <div
-        className="sticky top-0 z-10"
-        style={{ background: 'linear-gradient(135deg, #8b6a4e 0%, #99836c 50%, #c89864 100%)' }}
-      >
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex items-center gap-4 py-4">
+      {/* Detail view header */}
+      {isDetailView && (
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-border">
+          <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
             <button
-              onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95"
-              style={{ background: 'rgba(255,255,255,0.18)' }}
+              onClick={() => navigate('/promotions-page')}
+              className="w-10 h-10 rounded-full bg-muted flex items-center justify-center active:scale-95 transition-transform"
               aria-label="Назад"
             >
-              <Icon name="ArrowLeft" size={20} className="text-white" />
+              <Icon name="ArrowLeft" size={20} />
             </button>
-            <div className="flex-1">
-              <h1 className="text-2xl text-white leading-none" style={{ letterSpacing: '0.02em' }}>
-                {isDetailView ? 'Событие' : 'Афиша'}
-              </h1>
-              <p className="text-xs text-white/70 mt-0.5 tracking-widest uppercase">
-                Benedict Cafe
-              </p>
-            </div>
+            <h1 className="font-display text-2xl text-foreground">Событие</h1>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Detail view */}
       {isDetailView && (
-        <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="max-w-md mx-auto px-4 py-6">
           {loading && !location.state?.event && (
             <div className="py-16 text-center">
               <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
@@ -131,7 +126,7 @@ const PromotionsPage = () => {
               <div className="flex items-start gap-6 mb-8">
                 <div className="text-center" style={{ minWidth: 56 }}>
                   <div
-                    className="text-5xl leading-none text-foreground"
+                    className="font-display text-5xl leading-none text-foreground"
                     style={{}}
                   >
                     {getDayFromDate(detailEvent.date)}
@@ -145,19 +140,19 @@ const PromotionsPage = () => {
                   style={{ background: 'var(--color-border)', marginTop: 6 }}
                 />
                 <div className="flex-1 pt-1">
-                  <h2 className="text-2xl font-semibold text-foreground leading-tight mb-1">
+                  <h2 className="font-display text-[28px] text-foreground leading-tight mb-2">
                     {detailEvent.performer}
                   </h2>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className="text-xs tracking-widest uppercase px-2 py-0.5 rounded"
+                      className="text-xs font-medium px-2.5 py-1 rounded-full"
                       style={{ background: 'var(--color-muted)', color: 'var(--color-muted-foreground)' }}
                     >
                       {getTypeLabel(detailEvent.type)}
                     </span>
                     {detailEvent.highlighted && (
                       <span
-                        className="text-xs tracking-widest uppercase px-2 py-0.5 rounded"
+                        className="text-xs font-medium px-2.5 py-1 rounded-full"
                         style={{ background: '#f5ead8', color: '#8b6a4e' }}
                       >
                         Рекомендуем
@@ -190,7 +185,7 @@ const PromotionsPage = () => {
                   <div key={label} className="bg-background p-4">
                     <div className="flex items-center gap-2 mb-1">
                       <Icon name={icon} size={14} className="text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground tracking-wider uppercase">{label}</span>
+                      <span className="text-xs text-muted-foreground">{label}</span>
                     </div>
                     <div className="font-semibold text-foreground">{value}</div>
                   </div>
@@ -199,7 +194,7 @@ const PromotionsPage = () => {
 
               {detailEvent.description && (
                 <div>
-                  <p className="text-xs text-muted-foreground tracking-widest uppercase mb-3">О событии</p>
+                  <h3 className="font-display text-xl text-foreground mb-2">О событии</h3>
                   <p className="text-foreground leading-relaxed whitespace-pre-wrap" style={{ lineHeight: 1.7 }}>
                     {detailEvent.description}
                   </p>
@@ -213,9 +208,23 @@ const PromotionsPage = () => {
 
       {/* List view */}
       {!isDetailView && (
-        <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="main-content max-w-md mx-auto">
+          <PageHeader title="Акции" subtitle="Предложения, новости и афиша" />
+
+          <NewsBanner userTier={userTier} />
+
+          <SpecialOffersStrip userTier={userTier} />
 
           <PromoCodeCard />
+
+          <div className="flex items-baseline justify-between mb-2">
+            <h2 className="font-display text-2xl text-foreground">Афиша</h2>
+            {!loading && events.length > 0 && (
+              <span className="text-sm text-muted-foreground">
+                {events.length} {events.length === 1 ? 'событие' : events.length < 5 ? 'события' : 'событий'}
+              </span>
+            )}
+          </div>
 
           {/* Loading skeleton */}
           {loading && (
@@ -239,9 +248,6 @@ const PromotionsPage = () => {
           {/* Events program */}
           {!loading && events.length > 0 && (
             <div>
-              <p className="text-xs tracking-widest uppercase text-muted-foreground mb-6">
-                {events.length} {events.length === 1 ? 'событие' : events.length < 5 ? 'события' : 'событий'}
-              </p>
               <div>
                 {events.map((event, index) => {
                   const day = getDayFromDate(event.date);
@@ -274,7 +280,7 @@ const PromotionsPage = () => {
                         {/* Date column */}
                         <div className="text-center flex-shrink-0" style={{ minWidth: 48 }}>
                           <div
-                            className="text-3xl leading-none"
+                            className="font-display text-3xl leading-none"
                             style={{
                               color: isHighlighted ? '#8b6a4e' : 'var(--color-foreground)',
                             }}
@@ -309,7 +315,7 @@ const PromotionsPage = () => {
                             )}
                           </div>
                           <div
-                            className="text-xs tracking-widest uppercase"
+                            className="text-xs"
                             style={{ color: isHighlighted ? '#b07c45' : 'var(--color-muted-foreground)' }}
                           >
                             {getTypeLabel(event.type)}

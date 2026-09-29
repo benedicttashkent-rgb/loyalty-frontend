@@ -1,46 +1,31 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
 
 const SocialMediaSection = ({ socialMedia }) => {
-  const handleSocialClick = (url) => {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
   return (
-    <div className="bg-card rounded-xl p-6 card-shadow">
-      <h2 className="text-xl font-semibold text-foreground mb-2">Мы в социальных сетях</h2>
-      <p className="text-sm text-muted-foreground mb-6">
-        Следите за новостями, акциями и специальными предложениями
-      </p>
-      <div className="space-y-4">
+    <section>
+      <h2 className="font-display text-2xl text-foreground mb-4">Instagram</h2>
+      <div className="rounded-2xl border border-border divide-y divide-border">
         {socialMedia?.map((social) => (
-          <div
-            key={social?.platform}
-            className="flex items-center justify-between p-4 bg-muted rounded-lg transition-smooth hover:bg-muted/80"
+          <a
+            key={social?.url}
+            href={social?.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-4 p-4 active:bg-muted/50 transition-colors"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Icon name={social?.icon} size={24} className="text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{social?.platform}</p>
-                <p className="text-xs text-muted-foreground">{social?.followers} подписчиков</p>
-              </div>
+            <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+              <Icon name={social?.icon} size={20} className="text-primary" />
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              iconName="ExternalLink"
-              iconPosition="right"
-              onClick={() => handleSocialClick(social?.url)}
-            >
-              Перейти
-            </Button>
-          </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-foreground">{social?.platform}</p>
+              <p className="text-sm text-muted-foreground">{social?.followers} подписчиков</p>
+            </div>
+            <Icon name="ArrowUpRight" size={18} className="text-muted-foreground flex-shrink-0" />
+          </a>
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 
