@@ -9,89 +9,79 @@ import RedemptionModal from './components/RedemptionModal';
 import SuccessModal from './components/SuccessModal';
 import { getApiUrl } from '../../config/api';
 import LogoLoader from '../../components/LogoLoader';
+import { fetchCustomer, fetchContent, readCache, readCachedCustomer } from '../../utils/apiCache';
 
+
+const mapRewards = (data) => {
+  if (!data?.success || !data.rewards) return [];
+  return data.rewards.map(reward => {
+    // Convert relative image URL to full URL
+    let imageUrl = reward.image_url;
+    if (imageUrl && imageUrl.startsWith('/uploads/')) {
+      const apiBase = getApiUrl('').replace('/api', '');
+      imageUrl = `${apiBase}${imageUrl}`;
+    }
+
+    return {
+      id: reward.id,
+      title: reward.title,
+      description: reward.description,
+      imageUrl: imageUrl,
+      pointsCost: reward.points_cost,
+      tier: reward.tier,
+      category: reward.category,
+      isFeatured: reward.is_featured,
+      stockQuantity: reward.stock_quantity,
+      redemptionLimit: reward.redemption_limit,
+      validFrom: reward.valid_from,
+      validUntil: reward.valid_until,
+    };
+  });
+};
 
 const RewardsCatalog = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
-  const [userPoints, setUserPoints] = useState(0);
-  const [userTier, setUserTier] = useState('Bronze');
+  const [cachedCustomer] = useState(() => readCachedCustomer()?.customer);
+  const [cachedRewards] = useState(() => readCache('content/rewards'));
+  const [isLoading, setIsLoading] = useState(() => !cachedCustomer || !cachedRewards);
+  const [userPoints, setUserPoints] = useState(cachedCustomer?.points || 0);
+  const [userTier, setUserTier] = useState(cachedCustomer?.tier || 'Bronze');
   const [favorites, setFavorites] = useState([]);
   const [redemptionModalOpen, setRedemptionModalOpen] = useState(false);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
   const [redeemedReward, setRedeemedReward] = useState(null);
-  const [rewardsData, setRewardsData] = useState([]);
+  const [rewardsData, setRewardsData] = useState(() => mapRewards(cachedRewards));
 
-  // Load rewards and customer data
+  // Load rewards and customer data in parallel (cached data is shown instantly)
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          navigate('/signup');
-          return;
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/signup');
+      return;
+    }
+
+    const loadCustomer = fetchCustomer(token)
+      .then((data) => {
+        if (data.success && data.customer) {
+          setUserPoints(data.customer.points || 0);
+          setUserTier(data.customer.tier || 'Bronze');
         }
-
-        const customerResponse = await fetch(getApiUrl('customers/me'), {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (customerResponse.ok) {
-          const customerData = await customerResponse.json();
-          if (customerData.success && customerData.customer) {
-            setUserPoints(customerData.customer.points || 0);
-            setUserTier(customerData.customer.tier || 'Bronze');
-          }
-        } else if (customerResponse.status === 401 || customerResponse.status === 404) {
+      })
+      .catch((error) => {
+        if (error.status === 401 || error.status === 404) {
           localStorage.removeItem('authToken');
           navigate('/signup');
-          return;
+        } else {
+          console.error('Error loading customer:', error);
         }
+      });
 
-        // Load rewards from API (public endpoint)
-        const rewardsResponse = await fetch(getApiUrl('content/rewards'));
-        if (rewardsResponse.ok) {
-          const rewardsData = await rewardsResponse.json();
-          if (rewardsData.success && rewardsData.rewards) {
-            // Map API data to component format
-            const mappedRewards = rewardsData.rewards.map(reward => {
-              // Convert relative image URL to full URL
-              let imageUrl = reward.image_url;
-              if (imageUrl && imageUrl.startsWith('/uploads/')) {
-                // Prepend API base URL to relative upload paths
-                const apiBase = getApiUrl('').replace('/api', '');
-                imageUrl = `${apiBase}${imageUrl}`;
-              }
-              
-              return {
-                id: reward.id,
-                title: reward.title,
-                description: reward.description,
-                imageUrl: imageUrl,
-                pointsCost: reward.points_cost,
-                tier: reward.tier,
-                category: reward.category,
-                isFeatured: reward.is_featured,
-                stockQuantity: reward.stock_quantity,
-                redemptionLimit: reward.redemption_limit,
-                validFrom: reward.valid_from,
-                validUntil: reward.valid_until,
-              };
-            });
-            setRewardsData(mappedRewards);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    const loadRewards = fetchContent('rewards')
+      .then((data) => setRewardsData(mapRewards(data)))
+      .catch((error) => console.error('Error loading rewards:', error));
 
-    loadData();
+    Promise.all([loadCustomer, loadRewards]).finally(() => setIsLoading(false));
   }, [navigate]);
 
   const handleFavorite = (rewardId) => {

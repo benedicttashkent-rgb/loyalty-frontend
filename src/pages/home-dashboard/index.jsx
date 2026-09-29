@@ -14,6 +14,89 @@ import QRCodeModal from './components/QRCodeModal';
 import BookTableModal from './components/BookTableModal';
 import { getApiUrl } from '../../config/api';
 import LogoLoader from '../../components/LogoLoader';
+import { fetchCustomer, readCachedCustomer } from '../../utils/apiCache';
+
+// Tier thresholds (total spent) for the next level
+const NEXT_TIER_THRESHOLD = {
+  Bronze: 10000000,
+  Silver: 30000000,
+  Gold: 60000000,
+  Platinum: null,
+};
+
+const formatPhone = (phone) => {
+  if (phone && phone.startsWith('998') && phone.length === 12) {
+    // Format 998XXXXXXXXX to +998 XX XXX XX XX
+    const digits = phone.slice(3);
+    return `+998 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7)}`;
+  }
+  return phone;
+};
+
+const toUserData = (data) => {
+  if (!data?.success || !data.customer) return null;
+  const customer = data.customer;
+  const tier = customer.tier || 'Bronze';
+  const nextThreshold = NEXT_TIER_THRESHOLD[tier] ?? null;
+  const totalSpent = typeof customer.totalSpent === 'number' && !isNaN(customer.totalSpent) ? customer.totalSpent : 0;
+  // Always recalculate remaining locally in case the backend sends a wrong value
+  const remaining = nextThreshold ? Math.max(0, nextThreshold - totalSpent) : 0;
+
+  return {
+    id: customer.id,
+    name: `${customer.name} ${customer.surName || ''}`.trim(),
+    email: customer.email || '',
+    phone: formatPhone(customer.phone),
+    cashback: customer.cashback || customer.points || 0,
+    cashbackPercent: customer.cashbackPercent || 2,
+    points: customer.points || customer.cashback || 0, // Backward compatibility
+    tier,
+    progress: {
+      current: totalSpent,
+      next: nextThreshold,
+      remaining,
+      percentage: nextThreshold ? Math.min(100, (totalSpent / nextThreshold) * 100) : 100
+    }
+  };
+};
+
+const getTelegramChatId = () => {
+  const tg = window.Telegram?.WebApp;
+  if (!tg) return null;
+  try {
+    tg.ready();
+    tg.expand();
+  } catch (e) {
+    console.error('[home-dashboard] Error initializing Telegram Web App:', e);
+  }
+  // Private chats: user.id is the chat_id. Group chats: chat.id.
+  return tg.initDataUnsafe?.user?.id || tg.initDataUnsafe?.chat?.id || null;
+};
+
+// Save the Telegram chat ID once per session, without blocking page load
+let telegramChatIdSaved = false;
+const saveTelegramChatId = (token, telegramChatId) => {
+  if (telegramChatIdSaved || !telegramChatId) return;
+  telegramChatIdSaved = true;
+  fetch(getApiUrl('customers/me/telegram-chat-id'), {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ telegramChatId: String(telegramChatId) }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        telegramChatIdSaved = false;
+        console.error('[home-dashboard] Failed to save Telegram chat ID:', response.status);
+      }
+    })
+    .catch((err) => {
+      telegramChatIdSaved = false;
+      console.error('[home-dashboard] Failed to save Telegram chat ID:', err);
+    });
+};
 
 const HomeDashboard = () => {
   const navigate = useNavigate();
@@ -21,236 +104,41 @@ const HomeDashboard = () => {
   const [showQRCode, setShowQRCode] = useState(false);
   const [showBookTable, setShowBookTable] = useState(false);
   const [cartCount, setCartCount] = useState(0);
-  const [userData, setUserData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [userData, setUserData] = useState(() => toUserData(readCachedCustomer()));
+  const [isLoading, setIsLoading] = useState(() => !userData);
 
-  // Load real customer data
+  // Load real customer data (cached data is shown instantly, this refreshes it)
   const loadCustomerData = useCallback(async () => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/signup');
+      return;
+    }
+
+    const telegramChatId = getTelegramChatId();
+    saveTelegramChatId(token, telegramChatId);
+
     try {
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        // No token, redirect to signup
-        navigate('/signup');
-        return;
-      }
-
-      // ============================================
-      // GET TELEGRAM CHAT ID AND UPDATE DATABASE
-      // ============================================
-      let telegramChatId = null;
-      
-      // Wait a bit for Telegram Web App to initialize (if needed)
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Check if running in Telegram Web App
-      if (window.Telegram?.WebApp) {
-        const tg = window.Telegram.WebApp;
-        
-        // CRITICAL: Initialize Web App first
-        try {
-          tg.ready();
-          tg.expand(); // This expands the Web App and makes initData available
-        } catch (e) {
-          console.error('❌ [home-dashboard] Error initializing Telegram Web App:', e);
-        }
-        
-        console.log('📱 [home-dashboard] ===== TELEGRAM WEB APP DETECTED =====');
-        console.log('   Version:', tg.version);
-        console.log('   Platform:', tg.platform);
-        console.log('   initDataUnsafe exists:', !!tg.initDataUnsafe);
-        console.log('   initDataUnsafe keys:', tg.initDataUnsafe ? Object.keys(tg.initDataUnsafe) : 'N/A');
-        
-        // Get user data (THIS IS THE CHAT ID FOR PRIVATE MESSAGES)
-        const user = tg.initDataUnsafe?.user;
-        const chat = tg.initDataUnsafe?.chat;
-        
-        console.log('   User object:', user);
-        console.log('   Chat object:', chat);
-        
-        // For PRIVATE chats: user.id IS the chat_id (this is what we need!)
-        // For GROUP chats: chat.id is the chat_id
-        if (user?.id) {
-          telegramChatId = user.id;
-          console.log('✅ [home-dashboard] FOUND CHAT ID from user.id:', telegramChatId);
-          console.log('   User:', user.first_name, user.last_name);
-          console.log('   Username:', user.username);
-        } else if (chat?.id) {
-          telegramChatId = chat.id;
-          console.log('✅ [home-dashboard] FOUND CHAT ID from chat.id:', telegramChatId);
-        } else {
-          console.error('❌ [home-dashboard] NO CHAT ID FOUND!');
-          console.error('   user:', user);
-          console.error('   chat:', chat);
-          console.error('   Full initDataUnsafe:', JSON.stringify(tg.initDataUnsafe, null, 2));
-        }
-        
-        // Update telegram_chat_id in database
-        if (telegramChatId && token) {
-          console.log('📱 [home-dashboard] ===== UPDATING TELEGRAM CHAT ID =====');
-          console.log('   Chat ID to save:', telegramChatId);
-          console.log('   Token exists:', !!token);
-          
-          try {
-            const apiUrl = getApiUrl('customers/me/telegram-chat-id');
-            console.log('   API URL:', apiUrl);
-            
-            const requestBody = { 
-              telegramChatId: String(telegramChatId)
-            };
-            console.log('   Request body:', JSON.stringify(requestBody));
-            
-            const updateResponse = await fetch(apiUrl, {
-              method: 'PUT',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify(requestBody),
-            });
-            
-            console.log('📱 [home-dashboard] API Response status:', updateResponse.status);
-            console.log('📱 [home-dashboard] API Response ok:', updateResponse.ok);
-            
-            if (!updateResponse.ok) {
-              const errorText = await updateResponse.text();
-              console.error('❌ [home-dashboard] API ERROR:', errorText);
-              try {
-                const errorData = JSON.parse(errorText);
-                console.error('   Parsed error:', errorData);
-              } catch (e) {
-                console.error('   Raw error text:', errorText);
-              }
-            } else {
-              const updateData = await updateResponse.json();
-              console.log('📱 [home-dashboard] API SUCCESS:', updateData);
-              
-              if (updateData.success) {
-                console.log('✅✅✅ [home-dashboard] TELEGRAM CHAT ID SAVED:', telegramChatId);
-              } else {
-                console.error('❌ [home-dashboard] Update returned success: false');
-                console.error('   Response:', updateData);
-              }
-            }
-          } catch (updateErr) {
-            console.error('❌ [home-dashboard] FETCH ERROR:', updateErr);
-            console.error('   Error message:', updateErr.message);
-            console.error('   Error stack:', updateErr.stack);
-          }
-        } else {
-          if (!telegramChatId) {
-            console.error('❌ [home-dashboard] No telegramChatId to save');
-          }
-          if (!token) {
-            console.error('❌ [home-dashboard] No auth token available');
-          }
-        }
+      const data = await fetchCustomer(token, telegramChatId ? { 'X-Telegram-Chat-Id': String(telegramChatId) } : {});
+      const nextUserData = toUserData(data);
+      if (nextUserData) {
+        setUserData(nextUserData);
       } else {
-        console.log('⚠️⚠️⚠️ [home-dashboard] NOT IN TELEGRAM WEB APP');
-        console.log('   window.Telegram exists:', !!window.Telegram);
-        console.log('   window.Telegram?.WebApp exists:', !!window.Telegram?.WebApp);
-        console.log('   User must open app through Telegram bot to capture chat_id');
+        console.error('No customer data in response:', data);
+        localStorage.removeItem('authToken');
+        navigate('/signup');
       }
-
-      const response = await fetch(getApiUrl('customers/me'), {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          ...(telegramChatId && { 'X-Telegram-Chat-Id': telegramChatId.toString() }),
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('🔍 API Response /api/customers/me:', data);
-        if (data.success && data.customer) {
-          console.log('🔍 Customer data:', {
-            cashback: data.customer.cashback,
-            totalSpent: data.customer.totalSpent,
-            tier: data.customer.tier,
-            progress: data.customer.progress
-          });
-          
-          // Format phone for display
-          const phone = data.customer.phone;
-          let formattedPhone = phone;
-          if (phone && phone.startsWith('998') && phone.length === 12) {
-            // Format 998XXXXXXXXX to +998 XX XXX XX XX
-            const digits = phone.slice(3); // Remove 998 prefix
-            formattedPhone = `+998 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 7)} ${digits.slice(7)}`;
-          }
-          
-          // Extract progress data
-          const totalSpent = data.customer.totalSpent || 0;
-          const tier = data.customer.tier || 'Bronze';
-          
-          // Calculate next threshold based on tier
-          let nextThreshold = null;
-          if (tier === 'Bronze') {
-            nextThreshold = 10000000; // 10 million to reach Silver
-          } else if (tier === 'Silver') {
-            nextThreshold = 30000000; // 30 million to reach Gold
-          } else if (tier === 'Gold') {
-            nextThreshold = 60000000; // 60 million to reach Platinum
-          } else if (tier === 'Platinum') {
-            nextThreshold = null; // Max level
-          }
-          
-          // ALWAYS recalculate remaining from next - current
-          // This ensures correctness even if backend sends wrong value
-          const remaining = nextThreshold ? Math.max(0, nextThreshold - totalSpent) : 0;
-
-          // CRITICAL: Ensure totalSpent is a number and not null/undefined
-          const safeTotalSpent = typeof totalSpent === 'number' && !isNaN(totalSpent) ? totalSpent : 0;
-          const safeRemaining = nextThreshold ? Math.max(0, nextThreshold - safeTotalSpent) : 0;
-          
-          console.log('✅ Frontend progress calculation:', {
-            totalSpent: safeTotalSpent,
-            tier,
-            nextThreshold,
-            remaining: safeRemaining,
-            calculation: nextThreshold ? `${nextThreshold} - ${safeTotalSpent} = ${safeRemaining}` : 'N/A',
-            backendProgress: data.customer.progress,
-            backendTotalSpent: data.customer.totalSpent
-          });
-          
-          setUserData({
-            id: data.customer.id,
-            name: `${data.customer.name} ${data.customer.surName || ''}`.trim(),
-            email: data.customer.email || '',
-            phone: formattedPhone,
-            cashback: data.customer.cashback || data.customer.points || 0,
-            cashbackPercent: data.customer.cashbackPercent || 2,
-            points: data.customer.points || data.customer.cashback || 0, // Backward compatibility
-            tier: tier,
-            progress: {
-              current: safeTotalSpent, // Use safe value
-              next: nextThreshold,
-              remaining: safeRemaining, // Always use recalculated value
-              percentage: nextThreshold ? Math.min(100, (safeTotalSpent / nextThreshold) * 100) : 100
-            }
-          });
-          
-        } else {
-          // No customer data in response
-          console.error('No customer data in response:', data);
-          localStorage.removeItem('authToken');
-          navigate('/signup');
-        }
-      } else if (response.status === 401 || response.status === 404) {
-        // Token expired or customer not found, redirect to signup
-        console.error('Auth error:', response.status);
+    } catch (error) {
+      if (error.status === 401 || error.status === 404) {
+        // Token expired or customer not found
         localStorage.removeItem('authToken');
         localStorage.removeItem('customerId');
         localStorage.removeItem('customerPhone');
         localStorage.removeItem('customerName');
         navigate('/signup');
       } else {
-        // Other error
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Error loading customer:', errorData);
-        // Don't redirect, show error message
+        console.error('Error loading customer data:', error);
       }
-    } catch (error) {
-      console.error('Error loading customer data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -261,19 +149,13 @@ const HomeDashboard = () => {
 
     // Refresh data when page becomes visible (user returns to app)
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        console.log('🔄 Page visible - refreshing customer data...');
-        loadCustomerData();
-      }
+      if (!document.hidden) loadCustomerData();
     };
 
-    // Refresh data periodically (every 30 seconds) to catch purchase updates
+    // Refresh data periodically to catch purchase updates
     const refreshInterval = setInterval(() => {
-      if (!document.hidden) {
-        console.log('🔄 Periodic refresh - updating customer data...');
-        loadCustomerData();
-      }
-    }, 30000); // 30 seconds
+      if (!document.hidden) loadCustomerData();
+    }, 30000);
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
@@ -282,12 +164,6 @@ const HomeDashboard = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [loadCustomerData]);
-
-  // Featured rewards removed - will be loaded from API when available
-  // const featuredRewards = [];
-
-
-
 
   useEffect(() => {
     const savedCart = localStorage.getItem('benedictCart');

@@ -3,6 +3,10 @@ import Routes from "./Routes";
 import tokenRefreshService from "./services/auth/tokenRefreshService";
 import OrderStatusButton from "./pages/food-ordering-menu/components/OrderStatusButton";
 import { getApiUrl } from "./config/api";
+import { prefetchContent } from "./utils/apiCache";
+
+// Start loading page data before React renders, so the first screen is ready sooner.
+if (!window.location.pathname.startsWith('/admin')) prefetchContent();
 
 function App() {
   // Global order status - load from localStorage and sync across pages

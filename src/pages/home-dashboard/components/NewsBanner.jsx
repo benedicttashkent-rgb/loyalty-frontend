@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
-import { getApiUrl } from '../../../config/api';
+import { readCache, fetchContent } from '../../../utils/apiCache';
 import DetailModal from './DetailModal';
 
 
@@ -17,41 +17,33 @@ const NewsBanner = ({ userTier }) => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
-  const [newsItems, setNewsItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(() => readCache('content/news'));
 
   useEffect(() => {
-    const fetchNewsBanners = async () => {
-      try {
-        const response = await fetch(getApiUrl('content/news'));
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.banners && data.banners.length > 0) {
-            const filtered = data.banners.filter(b => isVisibleToTier(b.visible_to, userTier));
-            setNewsItems(filtered.map(banner => ({
-              id: banner.id,
-              icon: banner.icon || 'Coffee',
-              iconImageUrl: banner.icon_image_url || null,
-              title: banner.title,
-              description: banner.description,
-              backgroundColor: banner.background_color || '#c89864',
-              showButton: banner.show_button || false,
-              buttonText: banner.button_text,
-              buttonAction: banner.button_action,
-              detailTitle: banner.detail_title || '',
-              detailBody: banner.detail_body || '',
-              detailImages: banner.detail_images || '[]',
-            })));
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching news banners:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNewsBanners();
+    fetchContent('news')
+      .then(setData)
+      .catch((error) => console.error('Error fetching news banners:', error));
   }, []);
+
+  const newsItems = useMemo(() => {
+    if (!data?.success || !data.banners?.length) return [];
+    return data.banners
+      .filter(b => isVisibleToTier(b.visible_to, userTier))
+      .map(banner => ({
+        id: banner.id,
+        icon: banner.icon || 'Coffee',
+        iconImageUrl: banner.icon_image_url || null,
+        title: banner.title,
+        description: banner.description,
+        backgroundColor: banner.background_color || '#c89864',
+        showButton: banner.show_button || false,
+        buttonText: banner.button_text,
+        buttonAction: banner.button_action,
+        detailTitle: banner.detail_title || '',
+        detailBody: banner.detail_body || '',
+        detailImages: banner.detail_images || '[]',
+      }));
+  }, [data, userTier]);
 
   useEffect(() => {
     if (newsItems.length <= 1) return;
@@ -73,9 +65,9 @@ const NewsBanner = ({ userTier }) => {
     if (dist < -50) setCurrentIndex(prev => (prev - 1 + newsItems.length) % newsItems.length);
   };
 
-  if (loading || newsItems.length === 0) return null;
+  if (newsItems.length === 0) return null;
 
-  const item = newsItems[currentIndex];
+  const item = newsItems[currentIndex % newsItems.length];
 
   // Derive a slightly darker shade for text/accents from the bg color
   const bg = item.backgroundColor;

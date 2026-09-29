@@ -3,56 +3,49 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 import { formatDateWithMonth } from '../../utils/formatDate';
-import { getApiUrl } from '../../config/api';
+import { readCache, fetchContent } from '../../utils/apiCache';
 import PromoCodeCard from './components/PromoCodeCard';
 
 
 const monthNames = ['ЯНВ', 'ФЕВ', 'МАР', 'АПР', 'МАЙ', 'ИЮН', 'ИЮЛ', 'АВГ', 'СЕН', 'ОКТ', 'НОЯ', 'ДЕК'];
 
+const mapEvents = (data) => {
+  if (!data?.success || !data.events) return [];
+  return data.events.map(event => {
+    const eventDate = event.date ? new Date(event.date) : null;
+    const dateFormatted = eventDate ? formatDateWithMonth(eventDate) : { dayMonth: '', month: '' };
+    return {
+      id: event.id,
+      date: dateFormatted.dayMonth,
+      month: event.month || dateFormatted.month,
+      performer: event.performer,
+      time: event.time || '',
+      type: event.type || 'pianist',
+      highlighted: event.is_highlighted || false,
+      location: event.location || 'Мирабад',
+      description: event.description || event.details || '',
+      imageUrl: event.image_url || null,
+    };
+  });
+};
+
 const PromotionsPage = () => {
   const navigate = useNavigate();
   const { newsId } = useParams();
   const location = useLocation();
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [cachedEvents] = useState(() => readCache('content/events'));
+  const [events, setEvents] = useState(() => mapEvents(cachedEvents));
+  const [loading, setLoading] = useState(() => !cachedEvents);
 
   const isDetailView = Boolean(newsId);
   const detailEvent = location.state?.event || (newsId && events.find(e => String(e.id) === String(newsId)));
 
+  // Cached events are shown instantly, this refreshes them
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch(getApiUrl('content/events'));
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.events) {
-            const mappedEvents = data.events.map(event => {
-              const eventDate = event.date ? new Date(event.date) : null;
-              const dateFormatted = eventDate ? formatDateWithMonth(eventDate) : { dayMonth: '', month: '' };
-              return {
-                id: event.id,
-                date: dateFormatted.dayMonth,
-                month: event.month || dateFormatted.month,
-                performer: event.performer,
-                time: event.time || '',
-                type: event.type || 'pianist',
-                highlighted: event.is_highlighted || false,
-                location: event.location || 'Мирабад',
-                description: event.description || event.details || '',
-                imageUrl: event.image_url || null,
-              };
-            });
-            setEvents(mappedEvents);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching events:', error);
-        setEvents([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchEvents();
+    fetchContent('events')
+      .then((data) => setEvents(mapEvents(data)))
+      .catch((error) => console.error('Error fetching events:', error))
+      .finally(() => setLoading(false));
   }, []);
 
   const getTypeIcon = (type) => {

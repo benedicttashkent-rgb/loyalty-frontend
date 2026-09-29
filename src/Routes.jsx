@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState, Suspense, lazy } from "react";
-import { BrowserRouter, Routes as RouterRoutes, Route, useLocation } from "react-router-dom";
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
@@ -31,32 +31,6 @@ const PromoCodesEditor = lazy(() => import('./pages/admin/PromoCodesEditor'));
 const MarketingLinksEditor = lazy(() => import('./pages/admin/MarketingLinksEditor'));
 
 const AppRoutes = () => {
-  const location = useLocation();
-  const [isTransitioning, setIsTransitioning] = useState(true);
-  const timeoutRef = useRef(null);
-
-  const isAdminRoute = location.pathname.startsWith('/admin');
-
-  useEffect(() => {
-    if (isAdminRoute) {
-      setIsTransitioning(false);
-      return;
-    }
-    setIsTransitioning(true);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      setIsTransitioning(false);
-    }, 500);
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [location.pathname, isAdminRoute]);
-
   return (
     <>
       <ScrollToTop />
@@ -98,7 +72,6 @@ const AppRoutes = () => {
 
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>
-      {isTransitioning && <LogoLoader fullscreen />}
     </>
   );
 };

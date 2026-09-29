@@ -1,32 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getApiUrl } from '../../../config/api';
+import { readCache, fetchContent } from '../../../utils/apiCache';
 import DetailModal from './DetailModal';
 import Icon from '../../../components/AppIcon';
 
 const SpecialOffersStrip = ({ userTier }) => {
   const navigate = useNavigate();
-  const [offers, setOffers] = useState([]);
+  const [data, setData] = useState(() => readCache('content/special-offers'));
   const [activeOffer, setActiveOffer] = useState(null);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(getApiUrl('content/special-offers'));
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.success && data.offers?.length) {
-          const visible = data.offers.filter(o => {
-            if (!o.visible_to || o.visible_to === 'all') return true;
-            if (!userTier) return true;
-            return o.visible_to.split(',').includes(userTier);
-          });
-          setOffers(visible);
-        }
-      } catch (_) {}
-    };
-    load();
-  }, [userTier]);
+    fetchContent('special-offers').then(setData).catch(() => {});
+  }, []);
+
+  const offers = useMemo(() => {
+    if (!data?.success || !data.offers?.length) return [];
+    return data.offers.filter(o => {
+      if (!o.visible_to || o.visible_to === 'all') return true;
+      if (!userTier) return true;
+      return o.visible_to.split(',').includes(userTier);
+    });
+  }, [data, userTier]);
 
   if (!offers.length) return null;
 

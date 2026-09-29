@@ -436,8 +436,19 @@ const FoodOrderingMenu = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Under Development Overlay */}
-      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm pointer-events-auto select-none">
+      {/* Under Development Overlay — stops above the bottom tab bar so tabs stay usable */}
+      <div
+        className="fixed inset-x-0 top-0 z-[90] flex flex-col items-center justify-center px-6 bg-white/95 backdrop-blur-sm pointer-events-auto select-none"
+        style={{ bottom: 'calc(60px + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <button
+          onClick={() => navigate('/')}
+          aria-label="Вернуться на главную"
+          style={{ touchAction: 'manipulation', top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
+          className="absolute right-4 w-10 h-10 flex items-center justify-center rounded-full bg-muted text-foreground active:scale-95 transition-transform"
+        >
+          <Icon name="ArrowLeft" size={20} />
+        </button>
         <img
           src="/mascot-dev.webp"
           alt="Under Development"
