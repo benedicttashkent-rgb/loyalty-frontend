@@ -11,6 +11,7 @@ import LoyaltyDetailsModal from './components/LoyaltyDetailsModal';
 import useCustomer from '../../hooks/useCustomer';
 import { getApiUrl } from '../../config/api';
 import { fetchContent, readCache } from '../../utils/apiCache';
+import PromoCodeCard from '../promotions-page/components/PromoCodeCard';
 
 const mapRewards = (data) => {
   if (!data?.success || !data.rewards) return [];
@@ -77,7 +78,7 @@ const RewardsCatalog = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="main-content max-w-md mx-auto">
-        <PageHeader title="Награды" subtitle={userData?.name || undefined} />
+        <PageHeader title="Бонусы" subtitle={userData?.name || undefined} />
 
         {isCustomerLoading && !userData ? (
           <div className="h-[340px] rounded-3xl bg-muted animate-pulse" />
@@ -89,7 +90,11 @@ const RewardsCatalog = () => {
           />
         )}
 
-        <section className="mt-8">
+        <div className="mt-6">
+          <PromoCodeCard />
+        </div>
+
+        <section className="mt-2">
           <div className="flex items-baseline justify-between mb-4">
             <h2 className="font-display text-2xl text-foreground">Каталог наград</h2>
             <span className="text-sm text-muted-foreground">

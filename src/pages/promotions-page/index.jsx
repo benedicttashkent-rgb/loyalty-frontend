@@ -3,7 +3,6 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { formatDateWithMonth } from '../../utils/formatDate';
 import { readCache, fetchContent } from '../../utils/apiCache';
-import PromoCodeCard from './components/PromoCodeCard';
 import NewsBanner from './components/NewsBanner';
 import SpecialOffersStrip from './components/SpecialOffersStrip';
 import PageHeader from '../../components/navigation/PageHeader';
@@ -215,8 +214,6 @@ const PromotionsPage = () => {
           <NewsBanner userTier={userTier} />
 
           <SpecialOffersStrip userTier={userTier} />
-
-          <PromoCodeCard />
 
           <div className="flex items-baseline justify-between mb-2">
             <h2 className="font-display text-2xl text-foreground">Афиша</h2>

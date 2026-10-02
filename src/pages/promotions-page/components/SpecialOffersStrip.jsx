@@ -40,14 +40,14 @@ const SpecialOffersStrip = ({ userTier }) => {
         <h2 className="font-display text-2xl text-foreground mb-4">
           Спецпредложения
         </h2>
-        <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
+        <div className="space-y-3">
           {offers.map(offer => {
             const tappable = offer.detail_title || offer.detail_body || offer.button_action;
             return (
               <div
                 key={offer.id}
                 onClick={() => handleTap(offer)}
-                className={`flex-shrink-0 w-64 h-40 rounded-2xl overflow-hidden relative ${tappable ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+                className={`w-full h-44 rounded-2xl overflow-hidden relative ${tappable ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''}`}
                 style={{ background: offer.background_color || '#1a1a1a' }}
               >
                 {offer.image_url && (

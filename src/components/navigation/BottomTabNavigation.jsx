@@ -9,7 +9,7 @@ const BottomTabNavigation = ({ cartCount = 0 }) => {
 
   const tabs = [
     { label: 'Команда', path: '/team', icon: 'Users' },
-    { label: 'Награды', path: '/rewards-catalog', icon: 'Gift' },
+    { label: 'Бонусы', path: '/rewards-catalog', icon: 'Gift' },
     { label: 'center-promo', path: '/', isCenter: true },
     { label: 'Заказ', path: '/food-ordering-menu', icon: 'UtensilsCrossed', badge: cartCount > 0 ? cartCount : null },
     { label: 'О нас', path: '/about-branch-locations', icon: 'MapPin' },

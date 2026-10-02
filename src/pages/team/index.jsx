@@ -85,7 +85,7 @@ const Team = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-5">
             <h2 className="font-display text-[26px] leading-tight text-white">
-              Ищем людей, которые любят гостей
+              Стань частью Benedict
             </h2>
             <p className="text-sm text-white/80 mt-1.5">
               Два филиала в Ташкенте: Нукус и Мирабад
