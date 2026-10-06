@@ -28,9 +28,14 @@ const AboutBranchLocations = () => {
         lng: 69.281112
       },
       features: [
-        "Бесплатный Wi-Fi",
-        "Места для работы с ноутбуком",
-        "Детская площадка"
+        "Летняя терраса",
+        "Кальян",
+        "Живая музыка",
+        "Бесплатная парковка",
+        "Детская комната",
+        "Няня",
+        "Пеленальная комната",
+        "Бесплатный Wi-Fi"
       ],
       isNew: false
     },
@@ -49,7 +54,13 @@ const AboutBranchLocations = () => {
       features: [
         "Живая музыка",
         "Банкетный зал на 40 персон",
-        "Круглогодичная терраса"
+        "Круглогодичная терраса",
+        "Кальян",
+        "Бесплатная парковка",
+        "Детская комната",
+        "Няня",
+        "Пеленальная комната",
+        "Бесплатный Wi-Fi"
       ],
       isNew: false
     }
@@ -59,13 +70,13 @@ const AboutBranchLocations = () => {
     {
       platform: "Instagram — Мирабад",
       icon: "Instagram",
-      followers: "25K",
+      followers: "25,4K",
       url: "https://www.instagram.com/benedict_mirabad_tashkent?stkn=dWdsaDVlYTZ6Yjhr"
     },
     {
       platform: "Instagram — Нукус",
       icon: "Instagram",
-      followers: "200",
+      followers: "400",
       url: "https://www.instagram.com/benedict_nukus_tashkent?stkn=MTE2dW5zeHRsMWhhbA=="
     }
   ];
