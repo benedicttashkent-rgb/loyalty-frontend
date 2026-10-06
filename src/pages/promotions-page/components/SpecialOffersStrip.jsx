@@ -38,7 +38,7 @@ const SpecialOffersStrip = ({ userTier }) => {
     <>
       <div className="mb-6">
         <h2 className="font-display text-2xl text-foreground mb-4">
-          Спецпредложения
+          Специальные предложения
         </h2>
         <div className="space-y-3">
           {offers.map(offer => {
@@ -53,12 +53,12 @@ const SpecialOffersStrip = ({ userTier }) => {
                 {offer.image_url && (
                   <SmoothImage src={offer.image_url} alt={offer.title} className="absolute inset-0 w-full h-full object-cover" />
                 )}
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.82) 45%, rgba(0,0,0,0.15) 100%)' }} />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0) 70%)' }} />
                 <div className="absolute inset-0 p-3 flex flex-col justify-between">
                   <span />
                   <div>
-                    <p className="text-white text-sm font-bold leading-snug line-clamp-2 mb-1">{offer.title}</p>
-                    {offer.description && <p className="text-white/60 text-xs line-clamp-1 mb-2">{offer.description}</p>}
+                    <p className="text-white text-sm font-bold leading-snug line-clamp-2 mb-1" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{offer.title}</p>
+                    {offer.description && <p className="text-white/80 text-xs line-clamp-1 mb-2">{offer.description}</p>}
                     {tappable && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold"
                         style={{ background: 'rgba(255,255,255,0.2)', color: 'white', backdropFilter: 'blur(4px)' }}>
