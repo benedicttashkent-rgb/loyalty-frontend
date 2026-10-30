@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../components/AppIcon';
 import { getApiUrl } from '../../config/api';
 import { adminApiRequest } from '../../utils/adminApiClient';
@@ -25,8 +25,38 @@ const TelegramBroadcastEditor = () => {
   const [testChatId, setTestChatId] = useState('');
   const [testSending, setTestSending] = useState(false);
 
+  // Live broadcast progress (polled from backend while a broadcast runs)
+  const [progress, setProgress] = useState(null);
+  const pollRef = useRef(null);
+
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  };
+
+  const pollStatus = async () => {
+    try {
+      const response = await adminApiRequest('admin/broadcast/status', { method: 'GET' });
+      const data = await response.json();
+      if (!data.success) return;
+      if (data.stats) setProgress({ ...data.stats, running: data.running, error: data.error });
+      if (data.running) {
+        if (!pollRef.current) pollRef.current = setInterval(pollStatus, 1500);
+      } else {
+        stopPolling();
+        if (data.stats) setLastResult(data.stats);
+      }
+    } catch (error) {
+      console.error('Broadcast status error:', error);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
+    pollStatus(); // resume progress view if a broadcast is already running
+    return stopPolling;
   }, []);
 
   const fetchStats = async () => {
@@ -116,8 +146,9 @@ const TelegramBroadcastEditor = () => {
       const data = await response.json();
 
       if (data.success) {
-        setLastResult(data.stats);
-        alert(`✅ Рассылка отправлена!\n\nУспешно: ${data.stats.sent}\nОшибок: ${data.stats.failed}`);
+        setProgress({ ...data.stats, running: true });
+        setLastResult(null);
+        pollStatus();
         setFormData({ ...formData, message: '' });
         setPhotoFile(null);
         setPhotoPreview(null);
@@ -185,8 +216,39 @@ const TelegramBroadcastEditor = () => {
         </p>
       </div>
 
+      {/* Live progress */}
+      {progress?.running && (() => {
+        const done = progress.sent + progress.failed;
+        const pct = progress.totalCustomers ? Math.round((done / progress.totalCustomers) * 100) : 0;
+        return (
+          <div className="rounded-2xl p-5 space-y-3" style={{ background: '#f8efe0' }}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Идёт рассылка…
+              </span>
+              <span className="text-sm font-bold text-foreground">
+                {done} / {progress.totalCustomers} ({pct}%)
+              </span>
+            </div>
+            <div className="h-2.5 w-full rounded-full bg-white overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-500"
+                style={{ width: `${pct}%`, background: '#16a34a' }}
+              />
+            </div>
+            <div className="flex gap-6 text-sm">
+              <span>Успешно: <b style={{ color: '#16a34a' }}>{progress.sent}</b></span>
+              <span>Ошибок: <b className="text-destructive">{progress.failed}</b></span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Можно закрыть страницу — рассылка продолжится на сервере.
+            </p>
+          </div>
+        );
+      })()}
+
       {/* Last Result */}
-      {lastResult && (
+      {lastResult && !progress?.running && (
         <div className="rounded-2xl p-5 grid grid-cols-3 gap-4" style={{ background: '#f8efe0' }}>
           <div className="col-span-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide -mb-1">
             Результат последней рассылки
@@ -390,7 +452,7 @@ const TelegramBroadcastEditor = () => {
           <div className="flex gap-4">
             <button
               type="submit"
-              disabled={sending || !stats?.botConfigured || stats?.telegramCustomers === 0}
+              disabled={sending || progress?.running || !stats?.botConfigured || stats?.telegramCustomers === 0}
               className="px-6 py-2.5 rounded-xl text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {sending ? (

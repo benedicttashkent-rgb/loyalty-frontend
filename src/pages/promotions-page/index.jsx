@@ -22,7 +22,7 @@ const mapEvents = (data) => {
       date: dateFormatted.dayMonth,
       month: event.month || dateFormatted.month,
       performer: event.performer,
-      time: event.time || '',
+      time: event.time ? String(event.time).replace(/(\d{1,2}:\d{2}):\d{2}(\.\d+)?/g, '$1') : '',
       type: event.type || 'pianist',
       highlighted: event.is_highlighted || false,
       location: event.location || 'Мирабад',
